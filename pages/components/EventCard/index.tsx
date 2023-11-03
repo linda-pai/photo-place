@@ -3,26 +3,24 @@ import dayjs from "dayjs";
 
 interface EventCardProps {
   event: {
-    id: string;
-    name: string;
-    description: string;
+    id: number;
     date: string;
-    location: string;
-    image: string;
+    eventName: string;
+    coverImg: string;
   };
 }
 
 const EventCard = ({ event }: EventCardProps) => {
-  const { id, name, description, date, location, image } = event;
+  const { id, eventName, date, coverImg } = event;
 
   return (
     <Link href={`/events/${id}`} className="basis-1/4 min-w-[185px]">
       <div className="m-3 bg-white rounded-md overflow-hidden scale-100 hover:scale-105 transition-scale ease-in-out duration-300">
-        <div className="relative w-[100%] aspect-[4/5]">
+        <div className="relative w-full aspect-[4/5]">
           <img
-            src={image}
-            alt={name}
-            className="object-cover h-full opacity-70 hover:opacity-100 duration-300 transition-opacity"
+            src={coverImg}
+            alt={eventName}
+            className="object-cover w-full h-full opacity-70 hover:opacity-100 duration-300 transition-opacity"
           />
         </div>
         <div className="flex items-center">
@@ -32,7 +30,7 @@ const EventCard = ({ event }: EventCardProps) => {
               {dayjs(date).format("DD")}
             </div>
           </div>
-          <div className="m-2">{description}</div>
+          <div className="m-2">{eventName}</div>
         </div>
       </div>
     </Link>
