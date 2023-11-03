@@ -1,15 +1,38 @@
-import Image from 'next/image'
-import { Inter } from 'next/font/google'
+import Image from "next/image";
+import { Inter } from "next/font/google";
+import EventCard from "@/pages/components/EventCard";
+import { useState } from "react";
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] });
 
-export default function Home() {
+interface Event {
+  id: number;
+  date: string;
+  eventName: string;
+  coverImg: string;
+}
+
+export default function Home({ events }: { events: Event[] }) {
+  console.log("events", events);
   return (
     <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
+      className={`flex min-h-screen flex-col items-center justify-between p-10 container mx-auto ${inter.className}`}
     >
-      <h2>Brand Name</h2>
-      <div></div>
+      <h2 className="mb-6">Brand Name</h2>
+      <div className="flex flex-wrap">
+        {events.map((event, key) => (
+          <EventCard event={event} key={key} />
+        ))}
+      </div>
     </main>
-  )
+  );
+}
+
+export async function getServerSideProps(context: any) {
+  // Fetch data from external API
+  const res = await fetch("http://localhost:3001/api/events");
+  const events = await res.json();
+
+  // Pass data to the page via props
+  return { props: { events } };
 }

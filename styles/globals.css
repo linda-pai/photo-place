@@ -24,4 +24,49 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+  min-height: 100vh;
+  
+}
+
+
+.masonry {
+  column-gap: 16px;
+  column-count: 4;
+  max-width: 100%;
+}
+
+.item {
+  box-sizing: border-box;
+  padding: 0px;
+  object-fit: contain;
+  margin-bottom: 16px;
+
+  &__content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 40px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+*:focus {
+  outline: none;
+}
+
+::-webkit-search-cancel-button { 
+  -webkit-appearance: none; 
+}
+
+/* Hide the magnifying glass */
+::-webkit-search-results-button {
+   -webkit-appearance: none; 
+}
+
+input::placeholder {
+  opacity: 0.5;
+  color:#fff;
 }
