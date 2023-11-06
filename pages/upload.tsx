@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import type { UploadProps } from "antd";
 import { message, Select } from "antd";
-import { Uploader } from "@/pages/components/Uploader";
+import Uploader from "@/pages/components/Uploader";
 
 interface Event {
   id: number;

@@ -4,7 +4,7 @@ import { message, Button } from "antd";
 import ImgsViewer from "react-images-viewer";
 // https://guonanci.github.io/react-images-viewer/
 
-import SeachWrapper from "@/pages/components/SearchWrapper";
+import SearchWrapper from "@/pages/components/SearchWrapper";
 
 // Post component
 export default function EventSearchPage({
@@ -43,7 +43,7 @@ export default function EventSearchPage({
   console.log("images", images);
   return (
     <>
-      <SeachWrapper handleOnChange={handleOnChange} onSearch={onSearch} />
+      <SearchWrapper handleOnChange={handleOnChange} onSearch={onSearch} />
       <div className="container mx-auto">
         <div className="text-center m-10">
           <p>試營運期間，只有一位攝影師🥲</p>

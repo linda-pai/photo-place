@@ -3,7 +3,7 @@ import { InboxOutlined } from "@ant-design/icons";
 
 const { Dragger } = Upload;
 
-export const Uploader = (props: any) => {
+const Uploader = (props: any) => {
   return (
     <Dragger {...props}>
       <p className="ant-upload-drag-icon">
@@ -19,3 +19,5 @@ export const Uploader = (props: any) => {
     </Dragger>
   );
 };
+
+export default Uploader;

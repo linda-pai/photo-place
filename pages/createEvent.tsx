@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import type { UploadProps, DatePickerProps } from "antd";
 import { message, DatePicker, Input, Button } from "antd";
-import { Uploader } from "@/pages/components/Uploader";
+import Uploader from "@/pages/components/Uploader";
 
 const CreateEventPage: React.FC = () => {
   const [date, setDate] = useState("");
@@ -113,6 +113,7 @@ const CreateEventPage: React.FC = () => {
         <Button
           onClick={handleUploadEvent}
           disabled={!Boolean(coverImg && eventName && date)}
+          className="bg-white text-white"
         >
           上傳活動
         </Button>

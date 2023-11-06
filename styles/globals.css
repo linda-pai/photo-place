@@ -41,16 +41,16 @@ body {
   object-fit: contain;
   margin-bottom: 16px;
 
-  &__content {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-size: 40px;
-    width: 100%;
-    box-sizing: border-box;
-  }
+}
+.item &__content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 40px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 *:focus {
