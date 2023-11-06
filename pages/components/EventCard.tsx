@@ -1,16 +1,7 @@
 import Link from "next/link";
 import dayjs from "dayjs";
 
-interface EventCardProps {
-  event: {
-    id: number;
-    date: string;
-    eventName: string;
-    coverImg: string;
-  };
-}
-
-const EventCard = ({ event }: EventCardProps) => {
+const EventCard = ({ event }: any) => {
   const { id, eventName, date, coverImg } = event;
 
   return (
