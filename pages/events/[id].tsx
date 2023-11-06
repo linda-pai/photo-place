@@ -1,5 +1,5 @@
 import type { InferGetServerSidePropsType, GetServerSideProps } from "next";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { message, Button } from "antd";
 import ImgsViewer from "react-images-viewer";
 // https://guonanci.github.io/react-images-viewer/
@@ -9,12 +9,17 @@ import SearchWrapper from "@/pages/components/SearchWrapper";
 // Post component
 export default function EventSearchPage({
   eventId,
+  imageList,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const [search, setSearch] = useState("");
   const [images, setImages] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [currImg, setCurrImg] = useState(0);
+
+  useEffect(() => {
+    setImages(imageList);
+  }, []);
 
   const handleOnChange = (e: any) => {
     setSearch(e.target.value.trim());
@@ -82,13 +87,6 @@ export default function EventSearchPage({
             onClickThumbnail={(index: number) => setCurrImg(index)}
             showThumbnails={true}
           />
-
-          {/* <div className="item">
-            <img
-              className="item__content"
-              src="https://photo-place-buckets.s3.ap-northeast-1.amazonaws.com/test/1698748858457-test-logo.png"
-            />
-         </div> */}
         </div>
       </div>
     </>
@@ -97,5 +95,10 @@ export default function EventSearchPage({
 
 export async function getServerSideProps(context: any) {
   const eventId = context.params.id;
-  return { props: { eventId } };
+
+  const imageList = await fetch(
+    `http://localhost:3001/api/images/getByEventId/${eventId}`
+  ).then((res) => res.json());
+
+  return { props: { eventId, imageList } };
 }
