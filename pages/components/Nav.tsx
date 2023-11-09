@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { deleteCookie } from "cookies-next";
 import jwt from "jsonwebtoken";
+import Link from "next/link";
 
 const Nav = ({ userInfo }: any) => {
   const { name, email } = userInfo;
@@ -14,6 +15,7 @@ const Nav = ({ userInfo }: any) => {
       <div>welcome</div>
       <div>{name}</div>
       <div>{email}</div>
+      <Link href="/user/shoppingCart">購物車</Link>
 
       <div>
         <button onClick={logout}>登出</button>
