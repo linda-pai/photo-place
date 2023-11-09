@@ -18,12 +18,14 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
 
   const handleUpload = async (option: any) => {
     const file = option.file as File;
+    const userId = JSON.parse(sessionStorage.getItem("userInfo") || "{}").id;
 
     try {
       if (!eventId) return message.error("請選擇活動");
       const formData = new FormData();
       formData.append("file", file);
       formData.append("eventId", eventId);
+      formData.append("author", userId);
 
       const response = await fetch(
         "http://localhost:3001/api/images/uploadAndDetectText",

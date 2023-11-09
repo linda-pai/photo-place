@@ -2,11 +2,14 @@ import React, { useState } from "react";
 import type { UploadProps, DatePickerProps } from "antd";
 import { message, DatePicker, Input, Button } from "antd";
 import Uploader from "@/pages/components/Uploader";
+import { useRouter } from "next/router";
 
 const CreateEventPage: React.FC = () => {
   const [date, setDate] = useState("");
   const [eventName, setEventName] = useState("");
   const [coverImg, setCoverImg] = useState("");
+
+  const router = useRouter();
 
   const handleUpload = async (option: any) => {
     const file = option.file as File;
@@ -38,10 +41,13 @@ const CreateEventPage: React.FC = () => {
   const handleUploadEvent = async () => {
     if (!date) return message.error("請選擇日期");
     if (!eventName) return message.error("請輸入活動名稱");
+    const userId = JSON.parse(sessionStorage.getItem("userInfo") || "{}").id;
+
     const eventData = {
       date,
       eventName,
       coverImg,
+      userId,
     };
 
     const response = await fetch("http://localhost:3001/api/events/add", {
@@ -53,7 +59,8 @@ const CreateEventPage: React.FC = () => {
     })
       .then((res) => res.json())
       .then(() => {
-        return message.success("活動新增成功");
+        message.success("活動新增成功");
+        router.push("/");
       });
 
     console.log("response", response);

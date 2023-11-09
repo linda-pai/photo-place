@@ -17,7 +17,7 @@ const EventCard = ({ event }: any) => {
         <div className="flex items-center">
           <div className="m-2">
             <div>{dayjs(date).format("YYYY-MM")}</div>
-            <div className="text-[60px] border-b-4  border-cyan-600 leading-[60px]">
+            <div className="text-slate-700 text-[60px] border-b-4  border-cyan-600 leading-[60px]">
               {dayjs(date).format("DD")}
             </div>
           </div>
