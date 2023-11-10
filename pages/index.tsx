@@ -63,5 +63,5 @@ export async function getServerSideProps(context: any) {
   ).then((res) => res.json());
 
   // Pass data to the page via props
-  return { props: { events, userInfo: resUser[0] } };
+  return { props: { events, userInfo: resUser[0] || {} } };
 }

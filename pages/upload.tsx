@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import type { UploadProps } from "antd";
 import { message, Select } from "antd";
 import Uploader from "@/pages/components/Uploader";
+import { getCookie } from "cookies-next";
 
 interface Event {
   id: number;
@@ -18,9 +19,10 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
 
   const handleUpload = async (option: any) => {
     const file = option.file as File;
-    const userId = JSON.parse(sessionStorage.getItem("userInfo") || "{}").id;
+    const userId = getCookie("userId");
 
     try {
+      if (!userId) return message.error("請先登入");
       if (!eventId) return message.error("請選擇活動");
       const formData = new FormData();
       formData.append("file", file);

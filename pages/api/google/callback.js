@@ -9,6 +9,7 @@ export default async function handler(req, res, next) {
     if (err || !user) res.redirect("http://localhost:3000/?error=google");
 
     setCookie("token", info.token, { req, res });
+    setCookie("userId", user.userId, { req, res });
 
     res.redirect("http://localhost:3000/");
   })(req, res, next);

@@ -63,7 +63,7 @@ const checkout = () => {
         paymentMethod: paymentValue,
         totalAmount: total + fee,
         items: checkoutData,
-        orderBy: getCookie("token"),
+        orderBy: getCookie("userId"),
       }),
       headers: {
         "Content-Type": "application/json",

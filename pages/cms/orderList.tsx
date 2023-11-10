@@ -7,7 +7,7 @@ import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import dayjs from "dayjs";
 
 interface Order {
-  id: number;
+  orderId: number;
   totalAmount: number;
   createAt: string;
   paidAt: string;
@@ -40,8 +40,11 @@ const orderList = ({ orders }: OrderListProps) => {
 
   const handleOnConfirm = (record: Order) => {
     console.log("record", record);
-    fetch(`http://localhost:3001/api/orders/update/${record.id}`, {
+    fetch(`http://localhost:3001/api/orders/update/${record.orderId}`, {
       method: "PUT",
+      body: JSON.stringify({
+        ...record,
+      }),
       headers: {
         "Content-Type": "application/json",
       },
@@ -184,7 +187,7 @@ const orderList = ({ orders }: OrderListProps) => {
   ];
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto text-slate-600">
       <h1 className="text-center">orderList</h1>
       <div className="my-20">
         <Table dataSource={orderData} columns={columns} />
