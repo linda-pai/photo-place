@@ -1,16 +1,7 @@
 import Link from "next/link";
 import dayjs from "dayjs";
 
-interface EventCardProps {
-  event: {
-    id: number;
-    date: string;
-    eventName: string;
-    coverImg: string;
-  };
-}
-
-const EventCard = ({ event }: EventCardProps) => {
+const EventCard = ({ event }: any) => {
   const { id, eventName, date, coverImg } = event;
 
   return (
@@ -23,10 +14,10 @@ const EventCard = ({ event }: EventCardProps) => {
             className="object-cover w-full h-full opacity-70 hover:opacity-100 duration-300 transition-opacity"
           />
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center text-slate-700">
           <div className="m-2">
             <div>{dayjs(date).format("YYYY-MM")}</div>
-            <div className="text-[60px] border-b-4  border-cyan-600 leading-[60px]">
+            <div className=" text-[60px] border-b-4  border-cyan-600 leading-[60px]">
               {dayjs(date).format("DD")}
             </div>
           </div>

@@ -3,7 +3,7 @@ interface Props {
   onSearch: () => void;
 }
 
-const SeachWrapper = ({ handleOnChange, onSearch }: Props) => {
+const SearchWrapper = ({ handleOnChange, onSearch }: Props) => {
   return (
     <div className="mb-10">
       <div className="relative w-full h-[360px] bg-cover bg-[url('https://cdn.pixabay.com/photo/2023/08/27/00/08/cycling-8215968_1280.jpg')]">
@@ -45,4 +45,4 @@ const SeachWrapper = ({ handleOnChange, onSearch }: Props) => {
   );
 };
 
-export default SeachWrapper;
+export default SearchWrapper;
