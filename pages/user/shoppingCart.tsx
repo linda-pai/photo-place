@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
-import { Checkbox, Divider, Button } from "antd";
+import { Checkbox, Divider, Button, Spin } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import type { CheckboxChangeEvent } from "antd/es/checkbox";
-import type { CheckboxValueType } from "antd/es/checkbox/Group";
 import Link from "next/link";
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 
 const shoppingCart = () => {
   const [cartData, setCartData] = useState([]);
-  const [checkedList, setCheckedList] = useState<CheckboxValueType[]>([]);
+  const [checkedList, setCheckedList] = useState<CartDataProps[]>([]);
 
   useEffect(() => {
     const session = JSON.parse(sessionStorage.getItem("cart") || "{}");
@@ -75,7 +74,7 @@ const shoppingCart = () => {
       <Divider />
 
       <div className="flex flex-row  items-center">
-        {cartData.length > 0 &&
+        {cartData.length > 0 ? (
           cartData.map((image: any, key: number) => (
             <Checkbox
               onChange={onChange}
@@ -102,8 +101,14 @@ const shoppingCart = () => {
                 </button>
               </div>
             </Checkbox>
-          ))}
+          ))
+        ) : (
+          <div className="text-center w-full text-slate-500">
+            你的購物車是空的
+          </div>
+        )}
       </div>
+
       <Divider />
       <div className="text-end mr-20">
         <p>總金額：TWD {total} 元</p>
@@ -120,3 +125,21 @@ const shoppingCart = () => {
 };
 
 export default shoppingCart;
+
+export const getServerSideProps = async (context: any) => {
+  const previousUrl = context.req.headers.referer;
+  const isLogin = context.req.cookies["token"];
+
+  if (!isLogin) {
+    return {
+      redirect: {
+        destination: `/login?previousUrl=${previousUrl}`,
+        permanent: false,
+      },
+    };
+  } else {
+    return {
+      props: {},
+    };
+  }
+};

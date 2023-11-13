@@ -16,3 +16,19 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+
+export async function getServerSideProps(context: any) {
+  const { token } = context.req.cookies;
+  const previousUrl = context.req.headers.referer;
+
+  if (token) {
+    return {
+      redirect: {
+        destination: previousUrl,
+        permanent: false,
+      },
+    };
+  }
+
+  return { props: {} };
+}

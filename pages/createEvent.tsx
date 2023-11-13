@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import type { UploadProps, DatePickerProps } from "antd";
-import { message, DatePicker, Input, Button } from "antd";
+import { message, DatePicker, Input, Button, Spin } from "antd";
 import Uploader from "@/pages/components/Uploader";
 import { useRouter } from "next/router";
+import userPermission from "@/hooks/userPermission";
 
 const CreateEventPage: React.FC = () => {
+  const isAllowed = userPermission();
+
   const [date, setDate] = useState("");
   const [eventName, setEventName] = useState("");
   const [coverImg, setCoverImg] = useState("");
@@ -100,7 +103,7 @@ const CreateEventPage: React.FC = () => {
     setEventName(e.target.value);
   };
 
-  return (
+  return isAllowed ? (
     <div className="container mx-auto h-[100vh] flex flex-col justify-center">
       <div className="m-4 text-center">
         <DatePicker onChange={onDateChange} />
@@ -126,6 +129,8 @@ const CreateEventPage: React.FC = () => {
         </Button>
       </div>
     </div>
+  ) : (
+    <Spin className="mx-auto my-[40vh] w-full" size="large" />
   );
 };
 

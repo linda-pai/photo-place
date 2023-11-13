@@ -17,8 +17,8 @@ interface Order {
 }
 
 const orders = () => {
-  const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const columns: ColumnsType<Order> = [
     {
@@ -123,17 +123,35 @@ const orders = () => {
     <div className="container mx-auto text-slate-600">
       <h1 className="text-center">orderList</h1>
       <div className="my-20"></div>
-      {loading ? (
-        <Spin />
-      ) : (
-        orders.map((order) => (
+      {!loading ? (
+        orders.map((order: Order) => (
           <div key={order.orderId} className="text-slate-600">
             <Table dataSource={orders} columns={columns} />
           </div>
         ))
+      ) : (
+        <Spin className="mx-auto my-[40vh] w-full" size="large" />
       )}
     </div>
   );
 };
 
 export default orders;
+
+export const getServerSideProps = async (context: any) => {
+  const previousUrl = context.req.headers.referer;
+  const isLogin = context.req.cookies["token"];
+
+  if (!isLogin) {
+    return {
+      redirect: {
+        destination: `/login?previousUrl=${previousUrl}`,
+        permanent: false,
+      },
+    };
+  } else {
+    return {
+      props: {},
+    };
+  }
+};

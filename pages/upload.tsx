@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import type { UploadProps } from "antd";
-import { message, Select } from "antd";
+import { message, Select, Spin } from "antd";
 import Uploader from "@/pages/components/Uploader";
 import { getCookie } from "cookies-next";
+import userPermission from "@/hooks/userPermission";
 
 interface Event {
   id: number;
@@ -11,6 +12,8 @@ interface Event {
 }
 
 const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
+  const isAllowed = userPermission();
+
   const [eventId, setEventId] = useState("");
 
   const handleSelected = (value: string) => {
@@ -65,7 +68,7 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
     },
   };
 
-  return (
+  return isAllowed ? (
     <>
       <div className="m-4 flex justify-center">
         <Select
@@ -82,6 +85,8 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
         <Uploader {...props} />
       </div>
     </>
+  ) : (
+    <Spin className="mx-auto my-[40vh] w-full" size="large" />
   );
 };
 
