@@ -8,6 +8,7 @@ import {
   RadioChangeEvent,
   Button,
   message,
+  Spin,
 } from "antd";
 import { MessageOutlined, LikeOutlined, StarOutlined } from "@ant-design/icons";
 import { getCookie } from "cookies-next";
@@ -16,6 +17,7 @@ import { CartDataProps } from "@/types/interfaces/CartDataProps";
 const checkout = () => {
   const [checkoutData, setCheckoutData] = useState([]);
   const [paymentValue, setPaymentValue] = useState(1);
+  const [loading, setLoading] = useState(true);
 
   const paymentOptions = [
     { label: "信用卡", value: 1, fee: 0 },
@@ -33,7 +35,7 @@ const checkout = () => {
       sessionStorage.getItem("checkoutData") || "{}"
     );
     setCheckoutData(checkoutData);
-    console.log("checkoutData", checkoutData);
+    setLoading(false);
   }, []);
 
   const IconText = ({ icon, text }: { icon: React.FC; text: string }) => (
@@ -56,6 +58,7 @@ const checkout = () => {
   };
 
   const handleOnCheckOut = () => {
+    setLoading(true);
     //成立訂單
     fetch("http://localhost:3001/api/orders/add", {
       method: "POST",
@@ -76,6 +79,7 @@ const checkout = () => {
           sessionStorage.removeItem("cart");
           setCheckoutData([]);
           message.success("訂單建立成功");
+          setLoading(false);
         }
       })
       .catch((err) => {
@@ -87,71 +91,95 @@ const checkout = () => {
     <>
       <div className="container mx-auto my-10">
         <h1 className="text-center text-2xl mb-20">checkout</h1>
-        <div>
-          <List
-            header={<div className="text-center">訂單明細</div>}
-            footer={
-              <div className="text-end">
-                <div>
-                  付款方式：
-                  {
-                    paymentOptions.find(
-                      (option) => option.value === paymentValue
-                    )?.label
-                  }
-                </div>
-                <p>總金額：TWD {total + fee} 元</p>
-              </div>
-            }
-            itemLayout="vertical"
-            bordered
-            dataSource={checkoutData}
-            renderItem={(item: CartDataProps) => (
-              <List.Item
-                key={item.id}
-                actions={[
-                  <IconText
-                    icon={StarOutlined}
-                    text="156"
-                    key="list-vertical-star-o"
-                  />,
-                  <IconText
-                    icon={LikeOutlined}
-                    text="156"
-                    key="list-vertical-like-o"
-                  />,
-                  <IconText
-                    icon={MessageOutlined}
-                    text="2"
-                    key="list-vertical-message"
-                  />,
-                ]}
-                extra={<p>TWD {item.price} 元</p>}
-              >
-                <img width={272} alt="logo" src={item.watermarkedUrl} />
-              </List.Item>
-            )}
-          />
-          <Divider />
+        {!loading ? (
+          <>
+            <div>
+              <List
+                header={<div className="text-center">訂單明細</div>}
+                footer={
+                  <div className="text-end">
+                    <div>
+                      付款方式：
+                      {
+                        paymentOptions.find(
+                          (option) => option.value === paymentValue
+                        )?.label
+                      }
+                    </div>
+                    <p>總金額：TWD {total + fee} 元</p>
+                  </div>
+                }
+                itemLayout="vertical"
+                bordered
+                dataSource={checkoutData}
+                renderItem={(item: CartDataProps) => (
+                  <List.Item
+                    key={item.id}
+                    actions={[
+                      <IconText
+                        icon={StarOutlined}
+                        text="156"
+                        key="list-vertical-star-o"
+                      />,
+                      <IconText
+                        icon={LikeOutlined}
+                        text="156"
+                        key="list-vertical-like-o"
+                      />,
+                      <IconText
+                        icon={MessageOutlined}
+                        text="2"
+                        key="list-vertical-message"
+                      />,
+                    ]}
+                    extra={<p>TWD {item.price} 元</p>}
+                  >
+                    <img width={272} alt="logo" src={item.watermarkedUrl} />
+                  </List.Item>
+                )}
+              />
+              <Divider />
 
-          <Radio.Group onChange={onChange} value={paymentValue}>
-            <Space direction="vertical">
-              {paymentOptions.map((option) => (
-                <Radio value={option.value}>
-                  {option.label}
-                  {option.extension && paymentValue === option.value
-                    ? option.extension
-                    : null}
-                </Radio>
-              ))}
-            </Space>
-          </Radio.Group>
-        </div>
-        <Button className="text-center" onClick={handleOnCheckOut}>
-          結帳
-        </Button>
+              <Radio.Group onChange={onChange} value={paymentValue}>
+                <Space direction="vertical">
+                  {paymentOptions.map((option) => (
+                    <Radio value={option.value}>
+                      {option.label}
+                      {option.extension && paymentValue === option.value
+                        ? option.extension
+                        : null}
+                    </Radio>
+                  ))}
+                </Space>
+              </Radio.Group>
+            </div>
+            <Button className="text-center" onClick={handleOnCheckOut}>
+              結帳
+            </Button>
+          </>
+        ) : (
+          <Spin className="mx-auto my-[40vh] w-full" size="large" />
+        )}
       </div>
     </>
   );
 };
 export default checkout;
+
+export const getServerSideProps = async (context: any) => {
+  const previousUrl = context.req.headers.referer || context.req.url;
+  const isLogin = context.req.cookies["token"];
+
+  if (!isLogin) {
+    return {
+      redirect: {
+        destination: `/login?previousUrl=${previousUrl}`,
+        permanent: false,
+      },
+    };
+  } else {
+    return {
+      props: {},
+    };
+  }
+};

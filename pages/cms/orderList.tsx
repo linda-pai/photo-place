@@ -5,6 +5,7 @@ import { ExclamationCircleOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import dayjs from "dayjs";
+import userPermission from "@/hooks/userPermission";
 
 interface Order {
   orderId: number;
@@ -21,6 +22,8 @@ interface OrderListProps {
 }
 
 const orderList = ({ orders }: OrderListProps) => {
+  userPermission();
+
   console.log("orders", orders);
   const [orderData, setOrderData] = useState<Order[]>(orders);
 
@@ -53,6 +56,10 @@ const orderList = ({ orders }: OrderListProps) => {
       .then(() => {
         getOrderData();
         return message.success("訂單已更新付款狀態");
+      })
+      .catch((err) => {
+        console.log("err", err);
+        return message.error("訂單更新失敗");
       });
   };
 
@@ -75,8 +82,8 @@ const orderList = ({ orders }: OrderListProps) => {
   const columns: ColumnsType<Order> = [
     {
       title: "訂單編號",
-      dataIndex: "id",
-      key: "id",
+      dataIndex: "orderId",
+      key: "orderId",
       width: 140,
       ellipsis: true,
       render: (text) => (
