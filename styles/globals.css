@@ -6,6 +6,12 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+
+  --main-color:#F49586;
+  --main-color-dark:#5F5A5F;
+  --main-color-light:#B0B97A;
+  --main-color-lighter:#fdfdf6;
+  color:#857e85
 }
 
 @media (prefers-color-scheme: dark) {
@@ -18,9 +24,19 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: #fbf7e5;
+  /* background: linear-gradient(
+    180deg,
+    #fff 50%,
+    var(--main-color-lighter) 100%
+  ); */
+  background:#fff;
   min-height: 100vh;
-  
+  font-family: PingFang TC apple-system,system-ui,BlinkMacSystemFont,pingfang-tc,aktiv-grotesk,source-han-sans-traditional,Segoe UI,Roboto,Helvetica Neue,微軟正黑體,Microsoft YaHei,Microsoft JhengHei,Helvetica,Arial,sans-serif;
+  line-height: 26px;
+}
+
+.ant-btn-primary {
+  background-color: #73a579;
 }
 
 
