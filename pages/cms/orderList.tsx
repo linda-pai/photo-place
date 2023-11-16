@@ -22,6 +22,7 @@ interface OrderListProps {
 }
 
 const orderList = ({ orders }: OrderListProps) => {
+  const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   userPermission();
 
   console.log("orders", orders);
@@ -36,14 +37,14 @@ const orderList = ({ orders }: OrderListProps) => {
   };
 
   const getOrderData = () => {
-    fetch("http://localhost:3001/api/orders")
+    fetch(`${domain}/api/orders`)
       .then((res) => res.json())
       .then((data) => setOrderData(data));
   };
 
   const handleOnConfirm = (record: Order) => {
     console.log("record", record);
-    fetch(`http://localhost:3001/api/orders/update/${record.orderId}`, {
+    fetch(`${domain}/api/orders/update/${record.orderId}`, {
       method: "PUT",
       body: JSON.stringify({
         ...record,
@@ -206,7 +207,8 @@ const orderList = ({ orders }: OrderListProps) => {
 export default orderList;
 
 export async function getServerSideProps() {
-  const res = await fetch("http://localhost:3001/api/orders");
+  const domain = process.env.NEXT_PUBLIC_SERVER_URL;
+  const res = await fetch(`${domain}/api/orders`);
   const orders = await res.json();
 
   return {

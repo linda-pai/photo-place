@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import userPermission from "@/hooks/userPermission";
 
 const CreateEventPage: React.FC = () => {
+  const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const isAllowed = userPermission();
 
   const [date, setDate] = useState("");
@@ -21,13 +22,10 @@ const CreateEventPage: React.FC = () => {
     formData.append("file", file);
 
     try {
-      const response = await fetch(
-        "http://localhost:3001/api/singleImgS3Upload",
-        {
-          method: "POST",
-          body: formData,
-        }
-      )
+      const response = await fetch(`${domain}/api/singleImgS3Upload`, {
+        method: "POST",
+        body: formData,
+      })
         .then((res) => res.json())
         .then((data) => {
           console.log("data", data);
@@ -53,7 +51,7 @@ const CreateEventPage: React.FC = () => {
       userId,
     };
 
-    const response = await fetch("http://localhost:3001/api/events/add", {
+    const response = await fetch(`${domain}/api/events/add`, {
       method: "POST",
       body: JSON.stringify(eventData),
       headers: {

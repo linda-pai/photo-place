@@ -16,6 +16,9 @@ export default function Home({ events }: { events: Event[] }) {
     <main
       className={`flex min-h-screen flex-col items-center justify-between p-10 container mx-auto ${inter.className}`}
     >
+      <h3 className="my-6 border-b text-2xl text-[color:var(--main-color-dark)]">
+        各大賽事
+      </h3>
       <div className="flex flex-wrap">
         {events.map((event, key) => (
           <EventCard key={key} event={event} />
@@ -26,8 +29,9 @@ export default function Home({ events }: { events: Event[] }) {
 }
 
 export async function getServerSideProps(context: any) {
+  const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   // Fetch data from external API
-  const res = await fetch("http://localhost:3001/api/events");
+  const res = await fetch(`${domain}/api/events`);
   const events = await res.json();
 
   const { token } = context.req.cookies;
@@ -48,9 +52,9 @@ export async function getServerSideProps(context: any) {
   // );
   // console.log("verifiedToken", verifiedToken);
 
-  const resUser = await fetch(
-    `http://localhost:3001/user/getUserInfo/${token}`
-  ).then((res) => res.json());
+  const resUser = await fetch(`${domain}/user/getUserInfo/${token}`).then(
+    (res) => res.json()
+  );
 
   // Pass data to the page via props
   return { props: { events, userInfo: resUser || {} } };

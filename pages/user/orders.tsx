@@ -1,10 +1,12 @@
-import { Spin } from "antd";
+import { Spin, message, Button } from "antd";
 import { useState, useEffect } from "react";
 import { getCookie } from "cookies-next";
 import { Table, Collapse, Tag } from "antd";
+import { DownloadOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import dayjs from "dayjs";
+import PaymentInfo from "@/pages/components/PaymentInfoModal";
 
 interface Order {
   orderId: number;
@@ -17,8 +19,32 @@ interface Order {
 }
 
 const orders = () => {
+  const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOnDownload = (orderId: any, item: any) => {
+    console.log("item", item);
+    fetch(`${domain}/api/images/download/${orderId}/${item.eventId}/${item.id}`)
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.error) return message.error(result.error);
+        console.log("result", result);
+        const link = document.createElement("a");
+        const fileName = "phohopacer_img_" + new Date() + ".jpg";
+
+        link.href = result.url;
+        link.download = fileName;
+        link.setAttribute("download", "");
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      })
+      .catch((err) => {
+        message.error("下載失敗");
+      });
+  };
 
   const columns: ColumnsType<Order> = [
     {
@@ -58,7 +84,7 @@ const orders = () => {
       key: "items",
       width: 260,
       ellipsis: true,
-      render: (_, { items }, index) => (
+      render: (_, { orderId, items, paidAt }, index) => (
         <div>
           <Collapse
             items={items.map((item) => ({
@@ -67,6 +93,14 @@ const orders = () => {
               children: (
                 <>
                   <img src={item.watermarkedUrl} alt="" />
+                  <Button
+                    className="flex items-center mt-2"
+                    onClick={() => handleOnDownload(orderId, item)}
+                    disabled={!paidAt}
+                  >
+                    <p>下載原圖</p>
+                    <DownloadOutlined />
+                  </Button>
                 </>
               ),
             }))}
@@ -86,7 +120,13 @@ const orders = () => {
           {text ? (
             <Tag color="green">已付款</Tag>
           ) : (
-            <Tag color="volcano">未付款</Tag>
+            <>
+              <Tag color="volcano">未付款</Tag>
+              <InfoCircleOutlined
+                style={{ color: "#f46a58" }}
+                onClick={showModal}
+              />
+            </>
           )}
         </p>
       ),
@@ -108,13 +148,26 @@ const orders = () => {
   const getOrders = () => {
     const userId = getCookie("userId");
 
-    fetch(`http://localhost:3001/api/orders/getByUser/${userId}`)
+    fetch(`${domain}/api/orders/getByUser/${userId}`)
       .then((res) => res.json())
       .then((data) => {
+        console.log("data", data);
         setLoading(false);
         setOrders(data);
         return data;
       });
+  };
+
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleOk = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
   };
 
   console.log("orders", orders);
@@ -124,11 +177,14 @@ const orders = () => {
       <h1 className="text-center">orderList</h1>
       <div className="my-20"></div>
       {!loading ? (
-        orders.map((order: Order) => (
-          <div key={order.orderId} className="text-slate-600">
-            <Table dataSource={orders} columns={columns} />
-          </div>
-        ))
+        <div className="text-slate-600 w-full">
+          <Table dataSource={orders} columns={columns} />
+          <PaymentInfo
+            handleOk={handleOk}
+            handleCancel={handleCancel}
+            isModalOpen={isModalOpen}
+          />
+        </div>
       ) : (
         <Spin className="mx-auto my-[40vh] w-full" size="large" />
       )}

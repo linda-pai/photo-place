@@ -12,14 +12,17 @@ export default function EventSearchPage({
   eventId,
   imageList,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const [search, setSearch] = useState("");
   const [images, setImages] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
-  const [currImg, setCurrImg] = useState(0);
+  const [currImg, setCurrImg] = useState(0); // [0, images.length - 1
+  const [cartData, setCartData] = useState({} as any);
 
   useEffect(() => {
     setImages(imageList);
+    setCartData(JSON.parse(sessionStorage.getItem("cart") || "{}"));
   }, []);
 
   const handleOnChange = (e: any) => {
@@ -30,9 +33,7 @@ export default function EventSearchPage({
     if (search.match(/^[0-9]+$/) == null)
       return message.error("請輸入正確的號碼布");
 
-    fetch(
-      `http://localhost:3001/api/images/getByBidAndEventId/${eventId}/${search}`
-    )
+    fetch(`${domain}/api/images/getByBidAndEventId/${eventId}/${search}`)
       .then((res) => res.json())
       .then((data) => {
         setImages(data);
@@ -45,20 +46,36 @@ export default function EventSearchPage({
     setCurrImg(images.findIndex((item: any) => item.id === id));
   };
 
-  const handleAddToCart = (id: string) => {
-    //check if cart exist
-    const currentCart = JSON.parse(sessionStorage.getItem("cart") || "{}");
+  const updateCart = (data: any) => {
+    sessionStorage.setItem("cart", JSON.stringify(data));
+    setCartData(data);
+  };
 
-    const isExist = currentCart[eventId]?.includes(id);
-    if (!isExist) {
+  const isExistInCart = (id: string) => cartData[eventId]?.includes(id);
+
+  const handleClickCart = (id: string) => {
+    const currentCart = JSON.parse(sessionStorage.getItem("cart") || "{}");
+    //check if cart exist
+    if (!isExistInCart(id)) {
       //存入session
-      currentCart[eventId] = [...(currentCart[eventId] || []), id];
-      sessionStorage.setItem("cart", JSON.stringify(currentCart));
+      const newCart = currentCart[eventId]
+        ? [...currentCart[eventId], id]
+        : [id];
+      currentCart[eventId] = newCart;
+      updateCart(currentCart);
       message.success("已加入購物車");
+    } else {
+      //從session移除
+      const newCart = currentCart[eventId].filter(
+        (item: string) => item !== id
+      );
+      currentCart[eventId] = newCart;
+      updateCart(currentCart);
+      message.success("已從購物車移除");
     }
   };
 
-  const handleAddToFavorite = (id: string) => {};
+  // const handleAddToFavorite = (id: string) => {};
 
   console.log("images", images);
 
@@ -67,11 +84,15 @@ export default function EventSearchPage({
       src: image.watermarkedUrl,
       caption: (
         <div className="flex gap-4">
-          <button onClick={() => handleAddToCart(image.id)}>
-            <ShoppingCartOutlined style={{ fontSize: "32px" }} />
-          </button>
-          <button onClick={() => handleAddToFavorite(image.id)}>
-            <HeartOutlined style={{ fontSize: "32px" }} />
+          <button onClick={() => handleClickCart(image.id)}>
+            <ShoppingCartOutlined
+              style={{
+                fontSize: "32px",
+                ...(isExistInCart(image.id)
+                  ? { color: "red" }
+                  : { color: "white" }),
+              }}
+            />
           </button>
         </div>
       ),
@@ -87,14 +108,14 @@ export default function EventSearchPage({
       onClick={() => handleClickImg(id)}
     >
       <img className="item__content" src={imageUrl} />
-      <p>key:{id} </p>
+      {/* <p>key:{id} </p> */}
     </div>
   );
   return (
     <>
       <SearchWrapper handleOnChange={handleOnChange} onSearch={onSearch} />
       <div className="container mx-auto">
-        <div className="text-center m-10">
+        <div className="text-center m-10 text-[color:var(--main-color-dark)]">
           <p>試營運期間，只有一位攝影師🥲</p>
           {
             <p className={showModal ? "visible" : "invisible h-0"}>{`找到 ${
@@ -126,16 +147,12 @@ export default function EventSearchPage({
 }
 
 export async function getServerSideProps(context: any) {
+  const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const eventId = context.params.id;
 
   const imageList = await fetch(
-    `http://localhost:3001/api/images/getByEventId/${eventId}`
-  )
-    .then((res) => res.json())
-    .then((data) => {
-      const flattenData = data.map((item: any) => item.images).flat();
-      return flattenData;
-    });
+    `${domain}/api/images/getByEventId/${eventId}`
+  ).then((res) => res.json());
 
   return { props: { eventId, imageList } };
 }

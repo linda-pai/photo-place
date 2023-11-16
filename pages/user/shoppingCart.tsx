@@ -6,7 +6,9 @@ import Link from "next/link";
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 
 const shoppingCart = () => {
-  const [cartData, setCartData] = useState([]);
+  const domain = process.env.NEXT_PUBLIC_SERVER_URL;
+
+  const [cartData, setCartData] = useState([] as any);
   const [checkedList, setCheckedList] = useState<CartDataProps[]>([]);
 
   useEffect(() => {
@@ -17,11 +19,10 @@ const shoppingCart = () => {
       const eventId = key;
       const ids = session[key];
       if (!ids.length) return;
-      fetch(`http://localhost:3001/api/images/getByIds/${eventId}/${ids}`)
+      fetch(`${domain}/api/images/getByIds/${eventId}/${ids}`)
         .then((res) => res.json())
         .then((data) => {
-          const flattenData = data.map((item: any) => item.images).flat();
-          setCartData(flattenData);
+          setCartData((prevData: any) => [...prevData, ...data]);
         });
     });
   }, []);
@@ -80,7 +81,7 @@ const shoppingCart = () => {
               onChange={onChange}
               checked={checkAll || checkedList.includes(image)}
               value={image}
-              className="hover:bg-gray-300 p-6"
+              className="hover:bg-gray-100 p-6"
               key={key}
             >
               <div className="basis-3/12 max-w-[300px]">

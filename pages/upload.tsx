@@ -12,6 +12,7 @@ interface Event {
 }
 
 const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
+  const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const isAllowed = userPermission();
 
   const [eventId, setEventId] = useState("");
@@ -32,13 +33,10 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
       formData.append("eventId", eventId);
       formData.append("author", userId);
 
-      const response = await fetch(
-        "http://localhost:3001/api/images/uploadAndDetectText",
-        {
-          method: "POST",
-          body: formData,
-        }
-      ).then((res) => res.json());
+      const response = await fetch(`${domain}/api/images/uploadAndDetectText`, {
+        method: "POST",
+        body: formData,
+      }).then((res) => res.json());
 
       console.log("response", response);
 
@@ -70,7 +68,7 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
 
   return isAllowed ? (
     <>
-      <div className="m-4 flex justify-center">
+      <div className="m-4 flex justify-center h-[200px]">
         <Select
           placeholder="請選擇活動"
           className="w-1/3 "
@@ -91,8 +89,9 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
 };
 
 export async function getServerSideProps(context: any) {
+  const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   // Fetch data from external API
-  const res = await fetch("http://localhost:3001/api/events/getEventOptions");
+  const res = await fetch(`${domain}/api/events/getEventOptions`);
   const eventOption = await res.json();
 
   // Pass data to the page via props
