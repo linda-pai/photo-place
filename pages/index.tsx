@@ -11,10 +11,9 @@ interface Event {
 }
 
 export default function Home({ events }: { events: Event[] }) {
-  console.log("events", events);
   return (
     <main
-      className={`flex min-h-screen flex-col items-center justify-between p-10 container mx-auto ${inter.className}`}
+      className={`flex min-h-screen flex-col items-center justify-between my-24 container mx-auto ${inter.className}`}
     >
       <h3 className="my-6 border-b text-2xl text-[color:var(--main-color-dark)]">
         各大賽事
@@ -31,6 +30,7 @@ export default function Home({ events }: { events: Event[] }) {
 export async function getServerSideProps(context: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   // Fetch data from external API
+  console.log("domain", domain);
   const res = await fetch(`${domain}/api/events`);
   const events = await res.json();
 
