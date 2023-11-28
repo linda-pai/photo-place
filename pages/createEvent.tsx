@@ -3,6 +3,7 @@ import type { UploadProps, DatePickerProps } from "antd";
 import { message, DatePicker, Input, Button, Spin } from "antd";
 import Uploader from "@/pages/components/Uploader";
 import { useRouter } from "next/router";
+import { getCookie } from "cookies-next";
 import userPermission from "@/hooks/userPermission";
 
 const CreateEventPage: React.FC = () => {
@@ -42,7 +43,7 @@ const CreateEventPage: React.FC = () => {
   const handleUploadEvent = async () => {
     if (!date) return message.error("請選擇日期");
     if (!eventName) return message.error("請輸入活動名稱");
-    const userId = JSON.parse(sessionStorage.getItem("userInfo") || "{}").id;
+    const userId = getCookie("userId");
 
     const eventData = {
       date,

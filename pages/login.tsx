@@ -1,16 +1,49 @@
-import { Button } from "antd";
 import Link from "next/link";
-import "../lib/passport";
 
 const LoginPage = () => {
+  const appURL = process.env.NEXT_PUBLIC_APP_URL;
+
   return (
-    <div className="container mx-auto">
-      <div className="flex justify-center items-center">loginPage</div>
-      <Link href="http://localhost:3000/api/google">
-        <Button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded h-fit">
-          Login with Google
-        </Button>
-      </Link>
+    <div className="container mx-auto py-10 h-screen">
+      <div className="flex flex-col h-[90%] w-fit mx-auto justify-center">
+        <div className="p-8 m-4 border rounded-lg min-w-[280px] max-w-[365px]">
+          <h3 className="pb-2 border-b w-[50%] text-center mx-auto text-[color:var(--main-color-dark)]">
+            登入方式
+          </h3>
+          <Link
+            href={`${appURL}/api/google`}
+            className="flex justify-center my-5"
+          >
+            <div className="flex bg-[#4285f4] rounded-[2px] shadow-lg hover:shadow-xl cursor-pointer text-white w-[240px] h-[42px]">
+              <div className="bg-white w-[40px] h-[40px] rounded-[2px] absolute mt-[1px] ml-[1px]">
+                <img
+                  className="absoltue mt-[11px] ml-[11px] w-[18px] h-[18px]"
+                  src="/google-icon.svg"
+                />
+              </div>
+              <p className="w-[240px] flex items-center justify-center ml-[40px] text-[14px]">
+                <b>透過 Google 帳戶繼續操作</b>
+              </p>
+            </div>
+          </Link>
+          {/* <div className="w-[50%] mx-auto m-5">
+            <img src="/photo-pacer.png" />
+          </div> */}
+          <div className="text-xs text-[#857e85] leading-5">
+            <p>
+              若繼續操作，即表示你同意 Photo Pacer{" "}
+              <Link href="/policies/terms-of-use" className="text-[#4285f4]">
+                使用者條款
+              </Link>
+              。請參閱我們的
+              <Link href="/policies/privacy-policy" className="text-[#4285f4]">
+                隱私權政策
+              </Link>
+              。
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

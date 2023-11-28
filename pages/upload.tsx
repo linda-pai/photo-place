@@ -11,15 +11,19 @@ interface Event {
   eventName: string;
 }
 
+interface SelectOption {
+  value: string;
+  label: string;
+}
+
 const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const isAllowed = userPermission();
 
-  const [eventId, setEventId] = useState("");
+  const [eventId, setEventId] = useState({} as SelectOption);
 
-  const handleSelected = (value: string) => {
-    setEventId(value);
-  };
+  const handleSelected = (obj: SelectOption) =>
+    setEventId({ value: obj.value, label: obj.label });
 
   const handleUpload = async (option: any) => {
     const file = option.file as File;
@@ -30,7 +34,8 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
       if (!eventId) return message.error("請選擇活動");
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("eventId", eventId);
+      formData.append("eventId", eventId.value);
+      formData.append("eventName", eventId.label);
       formData.append("author", userId);
 
       const response = await fetch(`${domain}/api/images/uploadAndDetectText`, {
@@ -68,8 +73,9 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
 
   return isAllowed ? (
     <>
-      <div className="m-4 flex justify-center h-[200px]">
+      <div className="my-24 flex justify-center">
         <Select
+          labelInValue
           placeholder="請選擇活動"
           className="w-1/3 "
           onChange={handleSelected}
