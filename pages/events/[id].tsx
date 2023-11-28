@@ -1,8 +1,9 @@
 import type { InferGetServerSidePropsType, GetServerSideProps } from "next";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { message } from "antd";
-import { ShoppingCartOutlined, HeartOutlined } from "@ant-design/icons";
+import { ShoppingCartOutlined } from "@ant-design/icons";
 import ImgsViewer from "react-images-viewer";
+import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
 // https://guonanci.github.io/react-images-viewer/
 
 import SearchWrapper from "@/pages/components/SearchWrapper";
@@ -11,7 +12,8 @@ import SearchWrapper from "@/pages/components/SearchWrapper";
 export default function EventSearchPage({
   eventId,
   imageList,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  navBarRef,
+}: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const [search, setSearch] = useState("");
   const [images, setImages] = useState([]);
@@ -38,6 +40,8 @@ export default function EventSearchPage({
       .then((data) => {
         setImages(data);
         setShowModal(true);
+
+        scrollIntoViewWithOffset(".masonry", 220);
       });
   };
 
@@ -77,21 +81,21 @@ export default function EventSearchPage({
 
   // const handleAddToFavorite = (id: string) => {};
 
-  console.log("images", images);
-
   const viewerImgArray = images.map((image: any, key: number) => {
     return {
       src: image.watermarkedUrl,
       caption: (
         <div className="flex gap-4">
-          <button onClick={() => handleClickCart(image.id)}>
+          <button
+            onClick={() => handleClickCart(image.id)}
+            className="cursor-pointer"
+          >
             <ShoppingCartOutlined
-              style={{
-                fontSize: "32px",
-                ...(isExistInCart(image.id)
-                  ? { color: "red" }
-                  : { color: "white" }),
-              }}
+              className={`text-[32px] ${
+                isExistInCart(image.id)
+                  ? "text-[color:var(--main-color)]"
+                  : "text-white"
+              }`}
             />
           </button>
         </div>
@@ -108,12 +112,13 @@ export default function EventSearchPage({
       onClick={() => handleClickImg(id)}
     >
       <img className="item__content" src={imageUrl} />
-      {/* <p>key:{id} </p> */}
     </div>
   );
   return (
     <>
-      <SearchWrapper handleOnChange={handleOnChange} onSearch={onSearch} />
+      <div ref={navBarRef}>
+        <SearchWrapper handleOnChange={handleOnChange} onSearch={onSearch} />
+      </div>
       <div className="container mx-auto">
         <div className="text-center m-10 text-[color:var(--main-color-dark)]">
           <p>試營運期間，只有一位攝影師🥲</p>
@@ -128,7 +133,7 @@ export default function EventSearchPage({
           }
           <p>不囉唆⚡全部 7 折優惠</p>
         </div>
-        <div className="masonry">
+        <div className="masonry min-h-[100vh-16]">
           {images.map((item: any) => ImageItems(item.watermarkedUrl, item.id))}
           <ImgsViewer
             imgs={flatted}

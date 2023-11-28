@@ -1,12 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/router";
 import { deleteCookie, getCookie } from "cookies-next";
 import Link from "next/link";
-import { message } from "antd";
+import { message, Dropdown } from "antd";
+import { ShoppingCartOutlined, UserOutlined } from "@ant-design/icons";
+import type { MenuProps } from "antd";
 
-const Nav = ({ data }: any) => {
+const Nav = ({ navBarRef }: any) => {
   const [isLogin, setIsLogin] = useState(false);
   const router = useRouter();
+  const [showLightColor, setShowLightColor] = useState(false);
+
+  const observerRef = useRef<any>();
+
+  const routerPath = router.pathname;
 
   useEffect(() => {
     const token = getCookie("token");
@@ -15,27 +22,68 @@ const Nav = ({ data }: any) => {
     }
   }, []);
 
+  useEffect(() => {
+    observerRef.current = new IntersectionObserver(([entry]) =>
+      setShowLightColor(entry.isIntersecting)
+    );
+  }, [routerPath]);
+
+  useEffect(() => {
+    if (!navBarRef.current) return setShowLightColor(false);
+    observerRef.current.observe(navBarRef.current);
+    return () => {
+      observerRef.current.disconnect();
+    };
+  }, [navBarRef, routerPath]);
+
   const logout = async () => {
     deleteCookie("token");
     message.success("登出成功");
-    setIsLogin(false);
+    router.reload();
   };
 
   const login = async () => {
     router.push("/login");
   };
 
+  const items: MenuProps["items"] = [
+    {
+      key: "2",
+      label: "訂單查詢",
+      onClick: () => {
+        router.push("/user/orders");
+      },
+    },
+    {
+      key: "3",
+      label: "登出",
+      onClick: () => logout(),
+    },
+  ];
+
   return (
-    <nav>
+    <nav
+      className={
+        `${
+          showLightColor
+            ? "text-white"
+            : "bg-[#ffffffa7] text-[color:var(--main-color)]"
+        }` + " h-16 fixed top-0 z-10 w-full shadow-sm flex items-center"
+      }
+    >
       <div
-        className="mb-10 flex justify-between items-center h-16 bg-white text-black relative shadow-sm font-mono"
+        className="container mx-auto flex justify-between items-center font-mono"
         role="navigation"
       >
-        <Link href="/">
-          <h2 className="pl-8">Photo Pacer</h2>
+        <Link href="/" className="w-[12%] min-w-[100px]">
+          {showLightColor ? (
+            <img src="/photo-pacer-white.png" />
+          ) : (
+            <img src="/photo-pacer.png" />
+          )}
         </Link>
 
-        <div className="px-4 cursor-pointer md:hidden" id="burger">
+        {/* <div className="px-4 cursor-pointer md:hidden" id="burger">
           <svg
             className="w-8 h-8"
             viewBox="0 0 20 20"
@@ -45,27 +93,24 @@ const Nav = ({ data }: any) => {
             <path className="fill-current text-black" d="M0 0h20v20H0z" />
             <path className="fill-current text-black" d="M0 0h20v20H0z" />
           </svg>
-        </div>
-        <div className="flex items-center pr-8">
+        </div> */}
+        <div className="flex items-center gap-5">
           <Link href="/user/shoppingCart">
-            <div className="p-4">購物車</div>
-          </Link>
-          <Link href="/user/orders">
-            <div className="p-4">訂單查詢</div>
-          </Link>
-          <Link href="/user/checkout">
-            <div className="p-4">結帳</div>
-          </Link>
-          <Link href="/user/profile">
-            <div className="p-4">會員資料</div>
+            <div className="text-2xl hover:text-[#ca7c6f]">
+              <ShoppingCartOutlined />
+            </div>
           </Link>
 
           {isLogin ? (
-            <button className="p-4" onClick={logout}>
-              登出
-            </button>
+            <div className="cursor-pointer">
+              <Dropdown menu={{ items }} placement="bottom">
+                <div className=" text-2xl hover:text-[#ca7c6f]">
+                  <UserOutlined />
+                </div>
+              </Dropdown>
+            </div>
           ) : (
-            <button className="p-4" onClick={login}>
+            <button className="" onClick={login}>
               登入
             </button>
           )}
