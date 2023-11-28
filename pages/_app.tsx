@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import type { ReactElement, ReactNode } from "react";
 import type { NextPage } from "next";
 import type { AppProps } from "next/app";
@@ -14,10 +15,11 @@ type AppPropsWithLayout = AppProps & {
 };
 
 export default function App({ Component, pageProps }: AppPropsWithLayout) {
+  const navBarRef = useRef();
   const getLayout = Component.getLayout ?? ((page) => page);
   return getLayout(
-    <Layout>
-      <Component {...pageProps} />
+    <Layout navBarRef={navBarRef}>
+      <Component {...pageProps} navBarRef={navBarRef} />
     </Layout>
   );
 }
