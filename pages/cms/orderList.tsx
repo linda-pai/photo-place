@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { Space, Table, Collapse, Button, Modal, message, Tag } from "antd";
-import { ExclamationCircleOutlined } from "@ant-design/icons";
+import { ExclamationCircleOutlined, CopyOutlined } from "@ant-design/icons";
 
 import type { ColumnsType } from "antd/es/table";
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import dayjs from "dayjs";
 import userPermission from "@/hooks/userPermission";
+import copyToClipboard from "@/utils/copyToClipboard";
+import paymentOptions from "@/utils/paymentOptions";
 
 interface Order {
   orderId: number;
@@ -25,9 +27,8 @@ const orderList = ({ orders }: OrderListProps) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   userPermission();
 
-  console.log("orders", orders);
   const [orderData, setOrderData] = useState<Order[]>(orders);
-
+  const [loading, setLoading] = useState(false);
   const [toggle, setToggle] = useState<{ [key: number]: boolean }>({});
   const [modal, contextHolder] = Modal.useModal();
 
@@ -39,11 +40,13 @@ const orderList = ({ orders }: OrderListProps) => {
   const getOrderData = () => {
     fetch(`${domain}/api/orders`)
       .then((res) => res.json())
-      .then((data) => setOrderData(data));
+      .then((data) => {
+        setOrderData(data);
+      });
   };
 
   const handleOnConfirm = (record: Order) => {
-    console.log("record", record);
+    setLoading(true);
     fetch(`${domain}/api/orders/update/${record.orderId}`, {
       method: "PUT",
       body: JSON.stringify({
@@ -56,28 +59,25 @@ const orderList = ({ orders }: OrderListProps) => {
       .then((res) => res.json())
       .then(() => {
         getOrderData();
+        setLoading(false);
         return message.success("訂單已更新付款狀態");
       })
       .catch((err) => {
         console.log("err", err);
+        setLoading(false);
         return message.error("訂單更新失敗");
       });
   };
 
   const confirm = (record: Order) => {
     modal.confirm({
-      title: "Confirm",
+      title: record.orderId + " 即將寄出付款確認信 ",
       icon: <ExclamationCircleOutlined />,
-      content: "是否確認已收款",
+      content: record.paidAt ? "訂單已付款，將再次寄出" : "請確認對帳完成",
       okText: "確認",
       cancelText: "取消",
       onOk: () => handleOnConfirm(record),
     });
-  };
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    message.success("已複製");
   };
 
   const columns: ColumnsType<Order> = [
@@ -85,10 +85,11 @@ const orderList = ({ orders }: OrderListProps) => {
       title: "訂單編號",
       dataIndex: "orderId",
       key: "orderId",
-      width: 140,
+      width: 100,
       ellipsis: true,
       render: (text) => (
         <a onClick={() => copyToClipboard(text)} className="cursor-pointer">
+          <CopyOutlined className="mr-2" />
           {text}
         </a>
       ),
@@ -97,9 +98,28 @@ const orderList = ({ orders }: OrderListProps) => {
       title: "訂單成立時間",
       dataIndex: "createAt",
       key: "createAt",
-      width: 120,
+      width: 130,
+      sorter: (a: Order, b: Order) => {
+        const dateA = new Date(a.createAt);
+        const dateB = new Date(b.createAt);
+        return dateA.getTime() - dateB.getTime();
+      },
       render: (text) => (
-        <p>{text ? dayjs(text).format("YYYY-MM-DD HH:mm:ss") : "-"}</p>
+        <p>{text ? dayjs(text).format("YYYY-MM-DD HH:mm") : "-"}</p>
+      ),
+    },
+    {
+      title: "完成付款時間",
+      dataIndex: "paidAt",
+      key: "paidAt",
+      width: 130,
+      sorter: (a: Order, b: Order) => {
+        const dateA = new Date(a.paidAt);
+        const dateB = new Date(b.paidAt);
+        return dateA.getTime() - dateB.getTime();
+      },
+      render: (text) => (
+        <p>{text ? dayjs(text).format("YYYY-MM-DD HH:mm") : "-"}</p>
       ),
     },
 
@@ -107,7 +127,7 @@ const orderList = ({ orders }: OrderListProps) => {
       title: "訂購人",
       dataIndex: "orderBy",
       key: "orderBy",
-      width: 100,
+      width: 90,
       ellipsis: true,
       render: (text) => (
         <p onClick={() => copyToClipboard(text)} className="cursor-pointer">
@@ -119,9 +139,11 @@ const orderList = ({ orders }: OrderListProps) => {
       title: "付款方式",
       dataIndex: "paymentMethod",
       key: "paymentMethod",
-      width: 100,
+      width: 110,
+      render: (text) => (
+        <p>{paymentOptions.find((option) => option.value === text)?.label}</p>
+      ),
     },
-
     {
       title: "訂單明細",
       dataIndex: "items",
@@ -161,7 +183,7 @@ const orderList = ({ orders }: OrderListProps) => {
       title: "款項狀態",
       dataIndex: "paidAt",
       key: "paidAt",
-      width: 120,
+      width: 90,
       render: (text) => (
         <p>
           {text ? (
@@ -195,10 +217,10 @@ const orderList = ({ orders }: OrderListProps) => {
   ];
 
   return (
-    <div className="container mx-auto text-slate-600">
-      <h1 className="text-center">orderList</h1>
-      <div className="my-20">
-        <Table dataSource={orderData} columns={columns} />
+    <div className="container mx-auto my-24 text-slate-600">
+      <h1 className="text-center text-2xl mb-10">訂單管理中心</h1>
+      <div>
+        <Table dataSource={orderData} columns={columns} loading={loading} />
         {contextHolder}
       </div>
     </div>

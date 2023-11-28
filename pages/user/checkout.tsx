@@ -2,19 +2,28 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import {
   Divider,
-  List,
   Space,
   Radio,
-  Input,
   RadioChangeEvent,
   Button,
   message,
   Spin,
+  Table,
 } from "antd";
-import { MessageOutlined, LikeOutlined, StarOutlined } from "@ant-design/icons";
+import type { ColumnsType } from "antd/es/table";
+
 import { getCookie } from "cookies-next";
+
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import PaymentInfo from "@/pages/components/PaymentInfoModal";
+import paymentOptions from "@/utils/paymentOptions";
+
+interface CardDataProps {
+  eventId: number;
+  watermarkedUrl: string;
+  id: string;
+  price: number;
+}
 
 const checkout = () => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
@@ -25,15 +34,34 @@ const checkout = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const paymentOptions = [
+  const columns: ColumnsType<CardDataProps> = [
     {
-      label: "銀行轉帳",
-      value: 0,
-      fee: 0,
-      extension: <Input style={{ width: 100, marginLeft: 10 }} />,
+      title: "活動名稱",
+      dataIndex: "eventName",
+      key: "eventName",
+      width: 120,
     },
-    { label: "信用卡", value: 1, fee: 0, disabled: true },
-    { label: "Line Pay", value: 2, fee: 30, disabled: true },
+    {
+      title: "預覽",
+      dataIndex: "watermarkedUrl",
+      key: "watermarkedUrl",
+      width: 80,
+      render: (url: string, record) => <img className="w-20" src={url} />,
+    },
+    {
+      title: "照片編號",
+      dataIndex: "id",
+      key: "id",
+      width: 100,
+      ellipsis: true,
+    },
+    {
+      title: "價格",
+      dataIndex: "price",
+      key: "price",
+      width: 100,
+      render: (price: number) => <p>TWD {price} 元</p>,
+    },
   ];
 
   useEffect(() => {
@@ -43,13 +71,6 @@ const checkout = () => {
     setCheckoutData(checkoutData);
     setLoading(false);
   }, []);
-
-  const IconText = ({ icon, text }: { icon: React.FC; text: string }) => (
-    <Space>
-      {React.createElement(icon)}
-      {text}
-    </Space>
-  );
 
   const fee =
     paymentOptions.find((option) => option.value === paymentValue)?.fee || 0;
@@ -113,73 +134,59 @@ const checkout = () => {
 
   return (
     <>
-      <div className="container mx-auto my-10">
-        <h1 className="text-center text-2xl mb-20">checkout</h1>
+      <div className="container mx-auto my-24 text-[color:var(--main-color-dark)] w-[70%]">
+        <h1 className="text-center text-2xl mb-10">訂單明細</h1>
         {!loading ? (
           <>
             <div>
-              <List
-                header={<div className="text-center">訂單明細</div>}
-                footer={
-                  <div className="text-end">
-                    <div>
-                      付款方式：
-                      {
-                        paymentOptions.find(
-                          (option) => option.value === paymentValue
-                        )?.label
-                      }
-                    </div>
-                    <p>總金額：TWD {total + fee} 元</p>
-                  </div>
-                }
-                itemLayout="vertical"
-                bordered
+              <Table
                 dataSource={checkoutData}
-                renderItem={(item: CartDataProps) => (
-                  <List.Item
-                    key={item.id}
-                    actions={[
-                      <IconText
-                        icon={StarOutlined}
-                        text="156"
-                        key="list-vertical-star-o"
-                      />,
-                      <IconText
-                        icon={LikeOutlined}
-                        text="156"
-                        key="list-vertical-like-o"
-                      />,
-                      <IconText
-                        icon={MessageOutlined}
-                        text="2"
-                        key="list-vertical-message"
-                      />,
-                    ]}
-                    extra={<p>TWD {item.price} 元</p>}
-                  >
-                    <img width={272} alt="logo" src={item.watermarkedUrl} />
-                  </List.Item>
+                columns={columns}
+                footer={() => (
+                  <div className="flex justify-end">
+                    <div className=" text-[color:var(--main-color-dark)]">
+                      <div className=" text-[color:var(--main-color-light)]">
+                        訂購內容：電子檔共 {checkoutData.length} 張
+                      </div>
+                      <div>
+                        付款方式：
+                        {
+                          paymentOptions.find(
+                            (option) => option.value === paymentValue
+                          )?.label
+                        }
+                      </div>
+                      <b>總金額：TWD {total + fee} 元</b>
+                    </div>
+                  </div>
                 )}
               />
               <Divider />
 
-              <Radio.Group onChange={onChange} value={paymentValue}>
-                <Space direction="vertical">
-                  {paymentOptions.map((option) => (
-                    <Radio value={option.value} disabled={option.disabled}>
-                      {option.label}
-                      {option.extension && paymentValue === option.value
-                        ? option.extension
-                        : null}
-                    </Radio>
-                  ))}
-                </Space>
-              </Radio.Group>
+              <div className="flex justify-end">
+                <Radio.Group onChange={onChange} value={paymentValue}>
+                  <Space direction="vertical">
+                    {paymentOptions.map((option: any) => (
+                      <Radio value={option.value} disabled={option.disabled}>
+                        {option.label}
+                        {option?.extension && paymentValue === option.value
+                          ? option?.extension
+                          : null}
+                      </Radio>
+                    ))}
+                  </Space>
+                </Radio.Group>
+              </div>
             </div>
-            <Button className="text-center" onClick={showModal}>
-              結帳
-            </Button>
+
+            <div className="flex justify-center my-4">
+              <Button
+                onClick={showModal}
+                className="text-[color:var(--main-color-dark)]"
+              >
+                確認結帳
+              </Button>
+            </div>
             <PaymentInfo
               handleOk={handleOk}
               handleCancel={handleCancel}

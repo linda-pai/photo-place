@@ -1,8 +1,10 @@
+import { Divider } from "antd";
+import dayjs from "dayjs";
 import Link from "next/link";
 
 const Footer = () => {
   return (
-    <footer className="bg-[color:var(--main-color-lighter)] py-20 mt-20">
+    <footer className="bg-[color:var(--main-color-lighter)] py-16 mt-20">
       <div className="container mx-auto px-10">
         <div className="flex flex-wrap justify-between">
           <div className="w-full lg:w-1/4">
@@ -27,14 +29,7 @@ const Footer = () => {
                   About Us
                 </a>
               </li>
-              <li>
-                <a
-                  href="#"
-                  className="hover:text-teal-600 transition duration-150 ease-in-out"
-                >
-                  Blog
-                </a>
-              </li>
+
               <li>
                 <Link
                   href="/policies/privacy-policy"
@@ -50,14 +45,6 @@ const Footer = () => {
                 >
                   使用者條款
                 </Link>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="hover:text-teal-600 transition duration-150 ease-in-out"
-                >
-                  Contact Us
-                </a>
               </li>
             </ul>
           </div>
@@ -79,22 +66,6 @@ const Footer = () => {
                   href="#"
                   className="hover:text-teal-600 transition duration-150 ease-in-out"
                 >
-                  Linkedin
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="hover:text-teal-600 transition duration-150 ease-in-out"
-                >
-                  Twitter
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="hover:text-teal-600 transition duration-150 ease-in-out"
-                >
                   Instagram
                 </a>
               </li>
@@ -102,15 +73,19 @@ const Footer = () => {
           </div>
           <div className="w-full lg:w-1/4">
             <h6 className="text-[color:var(--main-color)] text-lg font-bold mb-5">
-              Newsletter
+              客服資訊
             </h6>
-            <p className="text-[color:var(--main-color-light)] leading-loose">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam
-              quod, quibusdam voluptatibus, voluptas quas, voluptates
-              consequuntur fugiat doloribus autem doloremque voluptatum
-              voluptatem? Quia, quibusdam.
-            </p>
+            <ul className="text-[color:var(--main-color-light)]">
+              <li>客服信箱：photopacer@gmail.com</li>
+              <li>服務時間：週一至週日 8:30 - 21:00</li>
+            </ul>
           </div>
+        </div>
+        <Divider />
+        <div className="w-full text-center text-[color:var(--main-color-light)]">
+          <p className="text-sm">
+            © {dayjs().year()} Photo Pacer. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>
