@@ -11,9 +11,17 @@ import {
 import type { ColumnsType } from "antd/es/table";
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import dayjs from "dayjs";
-import PaymentInfo from "@/pages/components/PaymentInfoModal";
 import copyToClipboard from "@/utils/copyToClipboard";
 import paymentOptions from "@/utils/paymentOptions";
+
+import dynamic from "next/dynamic";
+
+const PaymentInfo = dynamic(
+  () => import("@/pages/components/PaymentInfoModal"),
+  {
+    ssr: false,
+  }
+);
 
 interface Order {
   orderId: string;

@@ -15,8 +15,15 @@ import type { ColumnsType } from "antd/es/table";
 import { getCookie } from "cookies-next";
 
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
-import PaymentInfo from "@/pages/components/PaymentInfoModal";
 import paymentOptions from "@/utils/paymentOptions";
+import dynamic from "next/dynamic";
+
+const PaymentInfo = dynamic(
+  () => import("@/pages/components/PaymentInfoModal"),
+  {
+    ssr: false,
+  }
+);
 
 interface CardDataProps {
   eventId: number;

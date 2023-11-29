@@ -5,8 +5,14 @@ import { ShoppingCartOutlined } from "@ant-design/icons";
 import ImgsViewer from "react-images-viewer";
 import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
 // https://guonanci.github.io/react-images-viewer/
+import dynamic from "next/dynamic";
 
-import SearchWrapper from "@/pages/components/SearchWrapper";
+const SearchWrapper = dynamic(
+  () => import("@/pages/components/SearchWrapper"),
+  {
+    ssr: false,
+  }
+);
 
 // Post component
 export default function EventSearchPage({

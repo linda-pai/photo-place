@@ -1,5 +1,9 @@
 import { Inter } from "next/font/google";
-import EventCard from "@/pages/components/EventCard";
+import dynamic from "next/dynamic";
+
+const EventCard = dynamic(() => import("@/pages/components/EventCard"), {
+  ssr: false,
+});
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,6 +33,7 @@ export default function Home({ events }: { events: Event[] }) {
 
 export async function getServerSideProps(context: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
+  console.log("NEXT_PUBLIC_TEST", process.env.NEXT_PUBLIC_TEST);
   // Fetch data from external API
   const res = await fetch(`${domain}/api/events`);
   const events = await res.json();

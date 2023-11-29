@@ -1,9 +1,13 @@
 import React, { useState } from "react";
 import type { UploadProps } from "antd";
 import { message, Select, Spin } from "antd";
-import Uploader from "@/pages/components/Uploader";
 import { getCookie } from "cookies-next";
 import userPermission from "@/hooks/userPermission";
+import dynamic from "next/dynamic";
+
+const Uploader = dynamic(() => import("@/pages/components/Uploader"), {
+  ssr: false,
+});
 
 interface Event {
   id: number;
