@@ -57,7 +57,7 @@ export async function getServerSideProps(context: any) {
   if (token) {
     return {
       redirect: {
-        destination: previousUrl,
+        destination: previousUrl || "/",
         permanent: false,
       },
     };

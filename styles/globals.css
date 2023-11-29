@@ -36,6 +36,7 @@ body {
     Helvetica Neue, 微軟正黑體, Microsoft YaHei, Microsoft JhengHei, Helvetica,
     Arial, sans-serif;
   line-height: 26px;
+  min-height: 100%;
 }
 
 th,

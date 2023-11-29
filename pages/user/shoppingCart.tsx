@@ -137,7 +137,7 @@ const shoppingCart = () => {
         <p className="text-[color:var(--main-color)]">
           共 {cartData.length} 張，總金額：TWD {total} 元
         </p>
-        <Button>
+        <Button disabled={cartData.length === 0}>
           <Link href="/user/checkout" onClick={handleOnSubmit}>
             選擇付款方式
           </Link>

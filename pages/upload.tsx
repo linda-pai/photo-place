@@ -85,7 +85,7 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
           }))}
         />
       </div>
-      <div className="mx-auto max-w-[800px]">
+      <div className="mx-auto max-w-[800px] min-h-[30vh]">
         <Uploader {...props} />
       </div>
     </>

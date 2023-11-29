@@ -7,7 +7,7 @@ const Footer = () => {
     <footer className="bg-[color:var(--main-color-lighter)] py-16 mt-20">
       <div className="container mx-auto px-10">
         <div className="flex flex-wrap justify-between">
-          <div className="w-full lg:w-1/4">
+          {/* <div className="w-full lg:w-1/4">
             <h6 className="text-[color:var(--main-color)] text-lg font-bold mb-5">
               About Us
             </h6>
@@ -15,20 +15,20 @@ const Footer = () => {
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam
               quod, quibusdam voluptatibus, voluptas quas, voluptates
             </p>
-          </div>
+          </div> */}
           <div className="w-full lg:w-1/4">
             <h6 className="text-[color:var(--main-color)] text-lg font-bold mb-5">
-              Company
+              Photo Pacer
             </h6>
             <ul className="text-[color:var(--main-color-light)]">
-              <li>
+              {/* <li>
                 <a
                   href="#"
                   className="hover:text-teal-600 transition duration-150 ease-in-out"
                 >
                   About Us
                 </a>
-              </li>
+              </li> */}
 
               <li>
                 <Link
@@ -50,23 +50,34 @@ const Footer = () => {
           </div>
           <div className="w-full lg:w-1/4">
             <h6 className="text-[color:var(--main-color)] text-lg font-bold mb-5">
-              Social
+              社群媒體
             </h6>
             <ul className="text-[color:var(--main-color-light)]">
               <li>
                 <a
-                  href="#"
-                  className=" hover:text-teal-600 transition duration-150 ease-in-out"
+                  href="https://www.facebook.com/profile.php?id=61554260632079"
+                  className="hover:text-teal-600 transition duration-150 ease-in-out"
+                  target="_blank"
                 >
                   Facebook
                 </a>
               </li>
               <li>
                 <a
-                  href="#"
+                  href="https://www.instagram.com/photopacer/"
                   className="hover:text-teal-600 transition duration-150 ease-in-out"
+                  target="_blank"
                 >
                   Instagram
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://lin.ee/n4xOm2O"
+                  className="hover:text-teal-600 transition duration-150 ease-in-out"
+                  target="_blank"
+                >
+                  Line
                 </a>
               </li>
             </ul>

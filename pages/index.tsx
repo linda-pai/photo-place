@@ -13,7 +13,7 @@ interface Event {
 export default function Home({ events }: { events: Event[] }) {
   return (
     <main
-      className={`flex min-h-screen flex-col items-center justify-between my-24 container mx-auto ${inter.className}`}
+      className={`flex flex-col items-center justify-between my-24 container mx-auto ${inter.className}`}
     >
       <h3 className="my-6 border-b text-2xl text-[color:var(--main-color-dark)]">
         各大賽事
@@ -30,7 +30,6 @@ export default function Home({ events }: { events: Event[] }) {
 export async function getServerSideProps(context: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   // Fetch data from external API
-  console.log("domain", domain);
   const res = await fetch(`${domain}/api/events`);
   const events = await res.json();
 
@@ -52,9 +51,9 @@ export async function getServerSideProps(context: any) {
   // );
   // console.log("verifiedToken", verifiedToken);
 
-  const resUser = await fetch(`${domain}/user/getUserInfo/${token}`).then(
-    (res) => res.json()
-  );
+  const resUser = await fetch(`${domain}/api/user/getUserInfo/${token}`)
+    .then((res) => res.json())
+    .catch((err) => console.log(err));
 
   // Pass data to the page via props
   return { props: { events, userInfo: resUser || {} } };
