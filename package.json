@@ -6,6 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "start:dev": "NODE_ENV=development next dev",
+    "start:prod": "NODE_ENV=production next start",
     "lint": "next lint"
   },
   "dependencies": {

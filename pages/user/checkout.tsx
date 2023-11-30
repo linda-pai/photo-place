@@ -83,11 +83,10 @@ const checkout = () => {
     paymentOptions.find((option) => option.value === paymentValue)?.fee || 0;
 
   const total = checkoutData
-    .map((item: CartDataProps) => Number(item.price))
+    ?.map((item: CartDataProps) => Number(item.price))
     .reduce((a, b) => a + b, 0);
 
   const onChange = (e: RadioChangeEvent) => {
-    console.log("radio checked", e.target.value);
     setPaymentValue(e.target.value);
   };
 
@@ -107,7 +106,6 @@ const checkout = () => {
       },
     })
       .then((res) => {
-        console.log("res", res);
         if (res.status === 200) {
           sessionStorage.removeItem("checkoutData");
           sessionStorage.removeItem("cart");

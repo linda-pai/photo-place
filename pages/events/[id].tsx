@@ -137,7 +137,7 @@ export default function EventSearchPage({
                 : "太有緣份了！"
             }`}</p>
           }
-          <p>不囉唆⚡全部 7 折優惠</p>
+          <p>不囉唆⚡全面 65 折優惠</p>
         </div>
         <div className="masonry min-h-[100vh-16]">
           {images.map((item: any) => ImageItems(item.watermarkedUrl, item.id))}

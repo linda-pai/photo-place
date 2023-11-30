@@ -47,8 +47,6 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
         body: formData,
       }).then((res) => res.json());
 
-      console.log("response", response);
-
       option.onSuccess(response.url);
     } catch (error) {
       option.onError(error);
@@ -62,7 +60,6 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
     onChange(info) {
       const { status } = info.file;
       if (status !== "uploading") {
-        console.log(info.file, info.fileList);
       }
       if (status === "done") {
         message.success(`${info.file.name} file uploaded successfully.`);
@@ -70,9 +67,7 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
         message.error(`${info.file.name} file upload failed.`);
       }
     },
-    onDrop(e) {
-      console.log("Dropped files", e.dataTransfer.files);
-    },
+    onDrop(e) {},
   };
 
   return isAllowed ? (

@@ -45,7 +45,6 @@ const orders = () => {
       .then((res) => res.json())
       .then((result) => {
         if (result.error) return message.error(result.error);
-        console.log("result", result);
         const link = document.createElement("a");
         const fileName = "phohopacer_img_" + new Date() + ".jpg";
 
@@ -210,7 +209,6 @@ const orders = () => {
     fetch(`${domain}/api/orders/getByUser/${userId}`)
       .then((res) => res.json())
       .then((data) => {
-        console.log("data", data);
         setLoading(false);
         setOrders(data);
         return data;
@@ -228,8 +226,6 @@ const orders = () => {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
-
-  console.log("orders", orders);
 
   return (
     <div className="container mx-auto text-slate-600 my-24">

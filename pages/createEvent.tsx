@@ -34,7 +34,6 @@ const CreateEventPage: React.FC = () => {
       })
         .then((res) => res.json())
         .then((data) => {
-          console.log("data", data);
           setCoverImg(data.Location);
           return data.Location;
         });
@@ -70,7 +69,6 @@ const CreateEventPage: React.FC = () => {
         router.push("/");
       });
 
-    console.log("response", response);
     setCoverImg("");
   };
 
@@ -82,7 +80,6 @@ const CreateEventPage: React.FC = () => {
     onChange(info) {
       const { status } = info.file;
       if (status !== "uploading") {
-        console.log(info.file, info.fileList);
       }
       if (status === "done") {
         message.success(`${info.file.name} file uploaded successfully.`);
@@ -90,9 +87,7 @@ const CreateEventPage: React.FC = () => {
         message.error(`${info.file.name} file upload failed.`);
       }
     },
-    onDrop(e) {
-      console.log("Dropped files", e.dataTransfer.files);
-    },
+    onDrop(e) {},
     onRemove() {
       setCoverImg("");
     },
@@ -103,7 +98,6 @@ const CreateEventPage: React.FC = () => {
   };
 
   const onEventNameChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    console.log(e.target.value);
     setEventName(e.target.value);
   };
 

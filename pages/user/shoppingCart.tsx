@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Spin, Table, Space } from "antd";
+import { Button, Table, Space } from "antd";
 import { DeleteOutlined, CopyOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import Link from "next/link";
@@ -96,7 +96,6 @@ const shoppingCart = () => {
       fetch(`${domain}/api/images/getByIds/${eventId}/${ids}`)
         .then((res) => res.json())
         .then((data) => {
-          console.log("data", data);
           setCartData((prevData: any) => [...prevData, ...data]);
         });
     });
@@ -127,8 +126,6 @@ const shoppingCart = () => {
     setShowImageViewer(true);
     setCurrImg(cartData.findIndex((item: any) => item.id === id));
   };
-
-  console.log("cartData", cartData);
 
   return (
     <div className="container mx-auto my-24 text-[color:var(--main-color-dark)]">

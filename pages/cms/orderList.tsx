@@ -33,7 +33,6 @@ const orderList = ({ orders }: OrderListProps) => {
   const [modal, contextHolder] = Modal.useModal();
 
   const handleOnToggle = (index: number) => {
-    console.log("handleToggle");
     setToggle((prevToggle) => ({ ...prevToggle, [index]: !prevToggle[index] }));
   };
 
@@ -63,7 +62,6 @@ const orderList = ({ orders }: OrderListProps) => {
         return message.success("訂單已更新付款狀態");
       })
       .catch((err) => {
-        console.log("err", err);
         setLoading(false);
         return message.error("訂單更新失敗");
       });
