@@ -6,6 +6,7 @@ import ImgsViewer from "react-images-viewer";
 import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
 // https://guonanci.github.io/react-images-viewer/
 import dynamic from "next/dynamic";
+import Head from "next/head";
 
 const SearchWrapper = dynamic(
   () => import("@/pages/components/SearchWrapper"),
@@ -16,7 +17,7 @@ const SearchWrapper = dynamic(
 
 // Post component
 export default function EventSearchPage({
-  eventId,
+  eventInfo,
   imageList,
   navBarRef,
 }: any) {
@@ -27,6 +28,11 @@ export default function EventSearchPage({
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [currImg, setCurrImg] = useState(0); // [0, images.length - 1
   const [cartData, setCartData] = useState({} as any);
+
+  //id as evetId
+  const { eventId, eventName, coverImg } = eventInfo;
+
+  console.log("window.location.href", window.location.href);
 
   useEffect(() => {
     setImages(imageList);
@@ -122,6 +128,17 @@ export default function EventSearchPage({
   );
   return (
     <>
+      <Head>
+        <title>{eventName} | 搜尋照片</title>
+        <meta property="og:title" content={`${eventName} | 搜尋照片`} />
+        <meta name="description" content={`${eventName} | 號碼布搜尋照片`} />
+        <meta property="og:url" content={window.location.href} />
+        <meta
+          property="og:description"
+          content={`${eventName} | 號碼布搜尋照片`}
+        />
+        <meta property="og:image" content={coverImg} />
+      </Head>
       <div ref={navBarRef}>
         <SearchWrapper handleOnChange={handleOnChange} onSearch={onSearch} />
       </div>
@@ -165,5 +182,11 @@ export async function getServerSideProps(context: any) {
     `${domain}/api/images/getByEventId/${eventId}`
   ).then((res) => res.json());
 
-  return { props: { eventId, imageList } };
+  const eventInfo = await fetch(`${domain}/api/events/${eventId}`).then((res) =>
+    res.json()
+  );
+
+  console.log("eventInfo", eventInfo);
+
+  return { props: { imageList, eventInfo } };
 }

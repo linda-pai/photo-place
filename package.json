@@ -8,7 +8,8 @@
     "start": "next start",
     "start:dev": "NODE_ENV=development next dev",
     "start:prod": "NODE_ENV=production next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postbuild": "next-sitemap"
   },
   "dependencies": {
     "antd": "^5.10.3",
@@ -16,6 +17,7 @@
     "dayjs": "^1.11.10",
     "jsonwebtoken": "^9.0.2",
     "next": "14.0.0",
+    "next-sitemap": "^4.2.3",
     "next-themes": "^0.2.1",
     "passport": "^0.6.0",
     "passport-google-oauth20": "^2.0.0",
