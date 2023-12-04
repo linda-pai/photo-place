@@ -32,8 +32,6 @@ export default function EventSearchPage({
   //id as evetId
   const { eventId, eventName, coverImg } = eventInfo;
 
-  console.log("window.location.href", window.location.href);
-
   useEffect(() => {
     setImages(imageList);
     setCartData(JSON.parse(sessionStorage.getItem("cart") || "{}"));
@@ -185,8 +183,6 @@ export async function getServerSideProps(context: any) {
   const eventInfo = await fetch(`${domain}/api/events/${eventId}`).then((res) =>
     res.json()
   );
-
-  console.log("eventInfo", eventInfo);
 
   return { props: { imageList, eventInfo } };
 }
