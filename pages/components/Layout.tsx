@@ -10,7 +10,7 @@ export const metadata = {
 
 export default function Layout({ children, navBarRef }: any) {
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <Head>
         <title>{metadata.title}</title>
         <meta name="description" content={metadata.description} />
@@ -20,12 +20,12 @@ export default function Layout({ children, navBarRef }: any) {
         <meta property="og:type" content="website" />
         <meta
           property="og:image"
-          content="https://photo-pacer-buckets.s3.ap-northeast-1.amazonaws.com/images/a8dabef6edd01faf5089db252278d27cb55fe1317075cc503eec03481940e213-photo-pacer-logo.png"
+          content="https://photo-pacer-buckets.s3.ap-northeast-1.amazonaws.com/images/36a1511f7e9e805b6b059023852a2a68a225adbd919d6e2a0ec8aa95ff1be446-photo-pacer-high-resolution-logo+(4).png"
         />
       </Head>
       <Navbar navBarRef={navBarRef} />
-      <main>{children}</main>
+      <main className="flex-1">{children}</main>
       <Footer />
-    </>
+    </div>
   );
 }

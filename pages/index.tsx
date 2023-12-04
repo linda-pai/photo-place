@@ -16,23 +16,25 @@ interface Event {
 
 export default function Home({ events }: { events: Event[] }) {
   return (
-    <main
+    <div
       className={`flex flex-col items-center justify-between my-24 container mx-auto ${inter.className}`}
     >
       <h3 className="my-6 border-b text-2xl text-[color:var(--main-color-dark)]">
         各大賽事
       </h3>
-      <div className="flex flex-wrap">
+      <div className="flex flex-wrap justify-center">
         {events.map((event, key) => (
           <EventCard key={key} event={event} />
         ))}
       </div>
-    </main>
+    </div>
   );
 }
 
 export async function getServerSideProps(context: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
+
+  console.log("NEXT_PUBLIC_TEST", process.env.NEXT_PUBLIC_TEST);
   // Fetch data from external API
   const res = await fetch(`${domain}/api/events`);
   const events = await res.json();

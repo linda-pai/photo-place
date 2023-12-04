@@ -22,6 +22,7 @@
   }
 }
 
+html,
 body {
   color: rgb(var(--foreground-rgb));
   /* background: linear-gradient(
@@ -30,12 +31,13 @@ body {
     var(--main-color-lighter) 100%
   ); */
   background: #fff;
-  min-height: 100vh;
   font-family: PingFang TC apple-system, system-ui, BlinkMacSystemFont,
     pingfang-tc, aktiv-grotesk, source-han-sans-traditional, Segoe UI, Roboto,
     Helvetica Neue, 微軟正黑體, Microsoft YaHei, Microsoft JhengHei, Helvetica,
     Arial, sans-serif;
   line-height: 26px;
+  display: flex;
+  flex-direction: column;
   min-height: 100%;
 }
 
