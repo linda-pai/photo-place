@@ -2,10 +2,10 @@ import Link from "next/link";
 import dayjs from "dayjs";
 
 const EventCard = ({ event }: any) => {
-  const { id, eventName, date, coverImg } = event || {};
+  const { eventId, eventName, date, coverImg } = event || {};
 
   return (
-    <Link href={`/events/${id}`} className="basis-1/5 min-w-[185px]">
+    <Link href={`/events/${eventId}`} className="basis-1/5 min-w-[185px]">
       <div className="m-3 bg-[#fff] rounded-md overflow-hidden scale-100 hover:scale-105 transition-scale ease-in-out duration-300 shadow-md">
         <div className="relative w-full aspect-[5/6]">
           <img

@@ -8,7 +8,7 @@ const EventCard = dynamic(() => import("@/pages/components/EventCard"), {
 const inter = Inter({ subsets: ["latin"] });
 
 interface Event {
-  id: number;
+  eventId: number;
   date: string;
   eventName: string;
   coverImg: string;
