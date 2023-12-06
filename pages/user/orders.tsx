@@ -1,6 +1,6 @@
 import { Spin, message, Button } from "antd";
 import { useState, useEffect } from "react";
-import { getCookie } from "cookies-next";
+import { useSession } from "next-auth/react";
 import { Table, Modal, Tag, Space } from "antd";
 import {
   DownloadOutlined,
@@ -13,7 +13,7 @@ import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import dayjs from "dayjs";
 import copyToClipboard from "@/utils/copyToClipboard";
 import paymentOptions from "@/utils/paymentOptions";
-
+import useAuth from "@/hooks/useAuth";
 import dynamic from "next/dynamic";
 
 const PaymentInfo = dynamic(
@@ -34,6 +34,9 @@ interface Order {
 }
 
 const orders = () => {
+  const isLogin = useAuth();
+  const { data: session }: any = useSession();
+
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -209,13 +212,11 @@ const orders = () => {
   ];
 
   useEffect(() => {
-    getOrders();
-  }, []);
+    if (session) getOrders();
+  }, [session]);
 
   const getOrders = () => {
-    const userId = getCookie("userId");
-
-    fetch(`${domain}/api/orders/getByUser/${userId}`)
+    fetch(`${domain}/api/orders/getByUser/${session.id}`)
       .then((res) => res.json())
       .then((data) => {
         setLoading(false);
@@ -236,7 +237,7 @@ const orders = () => {
     setIsModalOpen(false);
   };
 
-  return (
+  return isLogin ? (
     <div className="container mx-auto text-slate-600 my-24 overflow-hidden">
       <h1 className="text-center text-2xl mb-8">訂單查詢</h1>
       {!loading ? (
@@ -259,25 +260,9 @@ const orders = () => {
         <Spin className="mx-auto my-[40vh] w-full" size="large" />
       )}
     </div>
+  ) : (
+    <Spin className="mx-auto my-[40vh] w-full" size="large" />
   );
 };
 
 export default orders;
-
-export const getServerSideProps = async (context: any) => {
-  const previousUrl = context.req.headers.referer;
-  const isLogin = context.req.cookies["token"];
-
-  if (!isLogin) {
-    return {
-      redirect: {
-        destination: `/login?previousUrl=${previousUrl}`,
-        permanent: false,
-      },
-    };
-  } else {
-    return {
-      props: {},
-    };
-  }
-};

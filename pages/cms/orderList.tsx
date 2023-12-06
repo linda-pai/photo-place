@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { Space, Table, Collapse, Button, Modal, message, Tag } from "antd";
+import {
+  Space,
+  Table,
+  Collapse,
+  Button,
+  Modal,
+  message,
+  Tag,
+  Spin,
+} from "antd";
 import { ExclamationCircleOutlined, CopyOutlined } from "@ant-design/icons";
 
 import type { ColumnsType } from "antd/es/table";
@@ -25,7 +34,7 @@ interface OrderListProps {
 
 const orderList = ({ orders }: OrderListProps) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-  userPermission();
+  const isAllowed = userPermission();
 
   const [orderData, setOrderData] = useState<Order[]>(orders);
   const [loading, setLoading] = useState(false);
@@ -214,7 +223,7 @@ const orderList = ({ orders }: OrderListProps) => {
     },
   ];
 
-  return (
+  return isAllowed ? (
     <div className="container mx-auto my-24 text-slate-600">
       <h1 className="text-center text-2xl mb-10">訂單管理中心</h1>
       <div>
@@ -222,6 +231,8 @@ const orderList = ({ orders }: OrderListProps) => {
         {contextHolder}
       </div>
     </div>
+  ) : (
+    <Spin className="mx-auto my-[40vh] w-full" size="large" />
   );
 };
 export default orderList;
