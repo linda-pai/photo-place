@@ -72,7 +72,7 @@ const Nav = ({ navBarRef }: any) => {
       }
     >
       <div
-        className="container mx-auto flex justify-between items-center font-mono"
+        className="container mx-auto sm:px-0 px-4 flex justify-between items-center font-mono"
         role="navigation"
       >
         <Link href="/" className="w-[12%] min-w-[100px]">
@@ -83,17 +83,6 @@ const Nav = ({ navBarRef }: any) => {
           )}
         </Link>
 
-        {/* <div className="px-4 cursor-pointer md:hidden" id="burger">
-          <svg
-            className="w-8 h-8"
-            viewBox="0 0 20 20"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path className="fill-current text-black" d="M0 0h20v20H0z" />
-            <path className="fill-current text-black" d="M0 0h20v20H0z" />
-            <path className="fill-current text-black" d="M0 0h20v20H0z" />
-          </svg>
-        </div> */}
         <div className="flex items-center gap-5">
           <Link href="/user/shoppingCart">
             <div className="text-2xl hover:text-[#ca7c6f]">

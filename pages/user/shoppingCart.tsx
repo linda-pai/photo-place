@@ -140,7 +140,7 @@ const shoppingCart = () => {
           </Link>
         </Button>
       </div>
-      <Table dataSource={cartData} columns={columns} />
+      <Table dataSource={cartData} columns={columns} className="sm:mx-0 mx-4" />
 
       <ImgsViewer
         imgs={cartData.map((item: any) => ({

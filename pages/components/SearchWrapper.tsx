@@ -12,7 +12,7 @@ const SearchWrapper = ({ handleOnChange, onSearch }: Props) => {
             <div className="relative w-[90%] mx-auto">
               <input
                 type="search"
-                className="w-full rounded-full h-[60px] py-3 px-16 border border-white bg-white bg-opacity-30 text-white text-lg backdrop-blur-[2px]"
+                className="w-full rounded-full h-[60px] py-3 px-16 border border-white bg-white bg-opacity-30 text-white sm:text-lg text-sm backdrop-blur-[2px]"
                 placeholder="請輸入號碼布"
                 onChange={handleOnChange}
                 onKeyDown={(e) => {
@@ -30,7 +30,7 @@ const SearchWrapper = ({ handleOnChange, onSearch }: Props) => {
                 />
               </div>
               <button onClick={onSearch} className="absolute right-1 h-[60px]">
-                <div className="h-[80%] bg-white text-[color:var(--main-color-dark)] text-md px-6 mx-1 rounded-full flex items-center justify-center">
+                <div className="h-[80%] bg-white text-[color:var(--main-color-dark)] sm:text-lg text-sm px-6 mx-1 rounded-full flex items-center justify-center">
                   搜尋號碼布
                 </div>
               </button>

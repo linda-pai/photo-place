@@ -15,9 +15,9 @@ const EventCard = ({ event }: any) => {
           />
         </div>
         <div className=" items-center text-[color:var(--main-color-dark)]">
-          <div className="m-2 text-xl text-center">{eventName}</div>
-          <div className="m-2 text-[color:var(--main-color-light)] text-center text-sm">
-            <div>{dayjs(date).format("MM-DD")}</div>
+          <div className="m-2 sm:text-xl text-sm text-center">{eventName}</div>
+          <div className="m-2 rounded-md mx-auto py-1 px-2 w-fit bg-[color:var(--main-color)] text-[color:var(--main-color-dark)] opacity-90 text-center sm:text-xs text-[11px]">
+            <div>{dayjs(date).format("YYYY-MM-DD")}</div>
           </div>
         </div>
       </div>

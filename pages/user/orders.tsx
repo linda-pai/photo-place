@@ -89,8 +89,12 @@ const orders = () => {
       key: "orderId",
       width: 140,
       ellipsis: true,
-      render: (text) => (
-        <a onClick={() => copyToClipboard(text)} className="cursor-pointer">
+      render: (text, _, key) => (
+        <a
+          onClick={() => copyToClipboard(text)}
+          className="cursor-pointer"
+          key={key}
+        >
           <CopyOutlined className="mr-2" />
           {text}
         </a>
@@ -106,8 +110,8 @@ const orders = () => {
         const dateB = new Date(b.createAt);
         return dateA.getTime() - dateB.getTime();
       },
-      render: (text) => (
-        <p>{text ? dayjs(text).format("YYYY-MM-DD HH:mm") : "-"}</p>
+      render: (text, _, key) => (
+        <p key={key}>{text ? dayjs(text).format("YYYY-MM-DD HH:mm") : "-"}</p>
       ),
     },
     {
@@ -117,7 +121,7 @@ const orders = () => {
       width: 260,
       ellipsis: true,
       render: (_, record, index) => (
-        <div>
+        <div key={index}>
           <div className="flex gap-2 overflow-scroll">
             {record.items.map((item) => (
               <div
@@ -148,8 +152,10 @@ const orders = () => {
       dataIndex: "paymentMethod",
       key: "paymentMethod",
       width: 130,
-      render: (text) => (
-        <p>{paymentOptions.find((option) => option.value === text)?.label}</p>
+      render: (text, _, key) => (
+        <p key={key}>
+          {paymentOptions.find((option) => option.value === text)?.label}
+        </p>
       ),
     },
     {
@@ -157,20 +163,17 @@ const orders = () => {
       dataIndex: "paidAt",
       key: "paidAt",
       width: 120,
-      render: (text) => (
-        <p>
+      render: (text, _, key) => (
+        <div key={key}>
           {text ? (
             <Tag color="#B0B97A">已付款</Tag>
           ) : (
-            <>
-              <Tag color="#F49586">未付款</Tag>
-              <InfoCircleOutlined
-                style={{ color: "#F49586" }}
-                onClick={showModal}
-              />
-            </>
+            <div onClick={showModal} className="hover:cursor-pointer">
+              <Tag color="#f0cf02">未付款</Tag>
+              <InfoCircleOutlined style={{ color: "#f0cf02" }} />
+            </div>
           )}
-        </p>
+        </div>
       ),
     },
     {
@@ -178,21 +181,27 @@ const orders = () => {
       dataIndex: "totalAmount",
       key: "totalAmount",
       width: 100,
-      render: (totalAmount: number) => <p>TWD {totalAmount} 元</p>,
+      render: (totalAmount: number, _, key) => (
+        <p key={key} className="text-center">
+          TWD {totalAmount} 元
+        </p>
+      ),
     },
     {
       title: "Action",
       key: "action",
-      width: 100,
-      render: (_, record) => (
-        <Space size="middle">
+      width: 120,
+      render: (_, record, key) => (
+        <Space size="small" key={key}>
           <Button
             onClick={() => handleOnDownloadAll(record)}
             className="flex items-center"
             disabled={!record.paidAt}
           >
-            <DownloadOutlined />
-            全部下載
+            <div className="sm:block hidden">
+              <DownloadOutlined />
+            </div>
+            下載全部
           </Button>
         </Space>
       ),
@@ -228,10 +237,10 @@ const orders = () => {
   };
 
   return (
-    <div className="container mx-auto text-slate-600 my-24">
+    <div className="container mx-auto text-slate-600 my-24 overflow-hidden">
       <h1 className="text-center text-2xl mb-8">訂單查詢</h1>
       {!loading ? (
-        <div className="text-slate-600 w-full">
+        <div className="text-slate-600 w-full sm:mx-0 mx-4">
           <Table
             dataSource={orders}
             columns={columns}
