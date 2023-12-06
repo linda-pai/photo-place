@@ -80,7 +80,7 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
           onChange={handleSelected}
           options={eventOption.map((event: any) => ({
             label: event.date + "-" + event.eventName,
-            value: event.id,
+            value: event.eventId,
           }))}
         />
       </div>

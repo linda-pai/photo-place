@@ -22,6 +22,11 @@ export default function Layout({ children, navBarRef }: any) {
           property="og:image"
           content="https://photo-pacer-buckets.s3.ap-northeast-1.amazonaws.com/images/36a1511f7e9e805b6b059023852a2a68a225adbd919d6e2a0ec8aa95ff1be446-photo-pacer-high-resolution-logo+(4).png"
         />
+        <meta
+          name="keywords"
+          content="photopacer, 攝影小隊, 馬拉松, 活動, 照片"
+        />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
       <Navbar navBarRef={navBarRef} />
       <main className="flex-1">{children}</main>
