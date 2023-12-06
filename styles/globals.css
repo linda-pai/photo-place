@@ -7,9 +7,9 @@
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
 
-  --main-color: #f49586;
-  --main-color-dark: #5f5a5f;
-  --main-color-light: #b0b97a;
+  --main-color: #ffd700;
+  --main-color-dark: #5f5b50;
+  --main-color-light: #8f8f8f;
   --main-color-lighter: #fdfdf6;
   color: #857e85;
 }
@@ -46,6 +46,9 @@ td {
   color: var(--main-color-dark) !important;
 }
 
+.ant-table-wrapper {
+  overflow-x: scroll;
+}
 .ant-message-notice-content {
   z-index: 100;
 }
@@ -77,26 +80,10 @@ td {
 }
 
 .masonry {
-  column-gap: 16px;
-  column-count: 5;
-  max-width: 100%;
-}
-
-.item {
-  box-sizing: border-box;
-  padding: 0px;
-  object-fit: contain;
-  margin-bottom: 16px;
-}
-.item &__content {
-  position: relative;
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 16px;
   justify-content: center;
-  align-items: center;
-  font-size: 40px;
-  width: 100%;
-  box-sizing: border-box;
 }
 
 *:focus {
