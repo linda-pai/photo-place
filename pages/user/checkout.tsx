@@ -11,12 +11,12 @@ import {
   Table,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
-
-import { getCookie } from "cookies-next";
+import dynamic from "next/dynamic";
+import { useSession } from "next-auth/react";
 
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import paymentOptions from "@/utils/paymentOptions";
-import dynamic from "next/dynamic";
+import useAuth from "@/hooks/useAuth";
 
 const PaymentInfo = dynamic(
   () => import("@/pages/components/PaymentInfoModal"),
@@ -33,6 +33,9 @@ interface CardDataProps {
 }
 
 const checkout = () => {
+  const isLogin = useAuth();
+  const { data: session }: any = useSession();
+
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const router = useRouter();
 
@@ -93,31 +96,32 @@ const checkout = () => {
   const createOrder = async () => {
     setLoading(true);
     //成立訂單
-    fetch(`${domain}/api/orders/add`, {
-      method: "POST",
-      body: JSON.stringify({
-        paymentMethod: paymentValue,
-        totalAmount: total + fee,
-        items: checkoutData,
-        orderBy: getCookie("userId"),
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => {
-        if (res.status === 200) {
-          sessionStorage.removeItem("checkoutData");
-          sessionStorage.removeItem("cart");
-          setCheckoutData([]);
-          message.success("訂單建立成功");
-          router.push("/user/orders");
-          setLoading(false);
-        }
+    if (session)
+      fetch(`${domain}/api/orders/add`, {
+        method: "POST",
+        body: JSON.stringify({
+          paymentMethod: paymentValue,
+          totalAmount: total + fee,
+          items: checkoutData,
+          orderBy: session.id,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
       })
-      .catch((err) => {
-        console.log("err", err);
-      });
+        .then((res) => {
+          if (res.status === 200) {
+            sessionStorage.removeItem("checkoutData");
+            sessionStorage.removeItem("cart");
+            setCheckoutData([]);
+            message.success("訂單建立成功");
+            router.push("/user/orders");
+            setLoading(false);
+          }
+        })
+        .catch((err) => {
+          console.log("err", err);
+        });
   };
 
   // const handleOnCheckOut = () => {
@@ -137,7 +141,7 @@ const checkout = () => {
     setIsModalOpen(false);
   };
 
-  return (
+  return isLogin ? (
     <>
       <div className="container mx-auto my-24 text-[color:var(--main-color-dark)] w-[70%]">
         <h1 className="text-center text-2xl mb-10">訂單明細</h1>
@@ -203,24 +207,8 @@ const checkout = () => {
         )}
       </div>
     </>
+  ) : (
+    <Spin className="mx-auto my-[40vh] w-full" size="large" />
   );
 };
 export default checkout;
-
-export const getServerSideProps = async (context: any) => {
-  const previousUrl = context.req.headers.referer || context.req.url;
-  const isLogin = context.req.cookies["token"];
-
-  if (!isLogin) {
-    return {
-      redirect: {
-        destination: `/login?previousUrl=${previousUrl}`,
-        permanent: false,
-      },
-    };
-  } else {
-    return {
-      props: {},
-    };
-  }
-};

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { Button, Table, Space } from "antd";
+import { Button, Table, Space, Spin } from "antd";
 import { DeleteOutlined, CopyOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import Link from "next/link";
 import ImgsViewer from "react-images-viewer";
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import copyToClipboard from "@/utils/copyToClipboard";
+import useAuth from "@/hooks/useAuth";
 
 interface CardDataProps {
   eventId: number;
@@ -15,6 +16,7 @@ interface CardDataProps {
 }
 
 const shoppingCart = () => {
+  const isLogin = useAuth();
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
   const [cartData, setCartData] = useState([] as any);
@@ -127,7 +129,7 @@ const shoppingCart = () => {
     setCurrImg(cartData.findIndex((item: any) => item.id === id));
   };
 
-  return (
+  return isLogin ? (
     <div className="container mx-auto my-24 text-[color:var(--main-color-dark)]">
       <h1 className="text-center text-2xl mb-4">購物車</h1>
       <div className="my-4 mr-2 flex justify-end items-center gap-4">
@@ -155,25 +157,9 @@ const shoppingCart = () => {
         showThumbnails={true}
       />
     </div>
+  ) : (
+    <Spin className="mx-auto my-[40vh] w-full" size="large" />
   );
 };
 
 export default shoppingCart;
-
-export const getServerSideProps = async (context: any) => {
-  const previousUrl = context.req.headers.referer;
-  const isLogin = context.req.cookies["token"];
-
-  if (!isLogin) {
-    return {
-      redirect: {
-        destination: `/login?previousUrl=${previousUrl}`,
-        permanent: false,
-      },
-    };
-  } else {
-    return {
-      props: {},
-    };
-  }
-};

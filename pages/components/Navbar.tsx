@@ -1,13 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/router";
-import { deleteCookie, getCookie } from "cookies-next";
 import Link from "next/link";
 import { message, Dropdown } from "antd";
 import { ShoppingCartOutlined, UserOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
+import { useSession, signOut } from "next-auth/react";
 
 const Nav = ({ navBarRef }: any) => {
-  const [isLogin, setIsLogin] = useState(false);
   const router = useRouter();
   const [showLightColor, setShowLightColor] = useState(false);
 
@@ -15,12 +14,7 @@ const Nav = ({ navBarRef }: any) => {
 
   const routerPath = router.pathname;
 
-  useEffect(() => {
-    const token = getCookie("token");
-    if (token) {
-      setIsLogin(true);
-    }
-  }, []);
+  const { data: session } = useSession();
 
   useEffect(() => {
     observerRef.current = new IntersectionObserver(([entry]) =>
@@ -37,13 +31,12 @@ const Nav = ({ navBarRef }: any) => {
   }, [navBarRef, routerPath]);
 
   const logout = async () => {
-    deleteCookie("token");
+    signOut();
     message.success("登出成功");
-    router.reload();
   };
 
   const login = async () => {
-    router.push("/login");
+    router.push("/auth/signIn");
   };
 
   const items: MenuProps["items"] = [
@@ -90,7 +83,7 @@ const Nav = ({ navBarRef }: any) => {
             </div>
           </Link>
 
-          {isLogin ? (
+          {session ? (
             <div className="cursor-pointer">
               <Dropdown menu={{ items }} placement="bottom">
                 <div className=" text-2xl hover:text-[#ca7c6f]">

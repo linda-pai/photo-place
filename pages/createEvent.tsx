@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import type { UploadProps, DatePickerProps } from "antd";
 import { message, DatePicker, Input, Button, Spin } from "antd";
 import { useRouter } from "next/router";
-import { getCookie } from "cookies-next";
 import userPermission from "@/hooks/userPermission";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 
 const Uploader = dynamic(() => import("@/pages/components/Uploader"), {
@@ -12,6 +12,8 @@ const Uploader = dynamic(() => import("@/pages/components/Uploader"), {
 });
 
 const CreateEventPage: React.FC = () => {
+  const { data: session }: any = useSession();
+
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const isAllowed = userPermission();
 
@@ -47,7 +49,7 @@ const CreateEventPage: React.FC = () => {
   const handleUploadEvent = async () => {
     if (!date) return message.error("請選擇日期");
     if (!eventName) return message.error("請輸入活動名稱");
-    const userId = getCookie("userId");
+    const userId = session.id;
 
     const eventData = {
       date,

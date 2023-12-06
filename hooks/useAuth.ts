@@ -1,18 +1,19 @@
 import { useEffect } from "react";
 import { useRouter } from "next/router";
-import { getCookie } from "cookies-next";
+import { useSession } from "next-auth/react";
 
 //TODO: 是否需要加入權限判斷
 const useAuth = () => {
+  const { data: session } = useSession();
   const router = useRouter();
-  const isAuthenticated = Boolean(getCookie("token"));
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
+    const previousUrl = router.asPath;
+    if (session !== undefined && !session) {
+      router.push(`/auth/signIn?previousUrl=${previousUrl}`);
     }
-  }, [isAuthenticated, router]);
+  }, [session, router]);
 
-  return isAuthenticated;
+  return session;
 };
 
 export default useAuth;

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import type { UploadProps } from "antd";
 import { message, Select, Spin } from "antd";
-import { getCookie } from "cookies-next";
 import userPermission from "@/hooks/userPermission";
+import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 
 const Uploader = dynamic(() => import("@/pages/components/Uploader"), {
@@ -21,6 +21,8 @@ interface SelectOption {
 }
 
 const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
+  const { data: session }: any = useSession();
+
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const isAllowed = userPermission();
 
@@ -31,7 +33,7 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
 
   const handleUpload = async (option: any) => {
     const file = option.file as File;
-    const userId = getCookie("userId");
+    const userId = session.id;
 
     try {
       if (!userId) return message.error("請先登入");
