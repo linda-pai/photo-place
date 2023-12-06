@@ -7,6 +7,7 @@ import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
 // https://guonanci.github.io/react-images-viewer/
 import dynamic from "next/dynamic";
 import Head from "next/head";
+import Image from "next/image";
 
 const SearchWrapper = dynamic(
   () => import("@/pages/components/SearchWrapper"),
@@ -115,13 +116,20 @@ export default function EventSearchPage({
 
   const flatted = viewerImgArray.flat();
 
-  const ImageItems = (imageUrl: any, id: string) => (
+  const ImageItems = ({ watermarkedUrl, id }: any) => (
     <div
-      className="item cursor-pointer scale-100 hover:scale-105 transition-all duration-300"
+      className="sm:basis-[calc(20%_-_16px)] basis-[calc(33%_-_16px)] cursor-pointer scale-100 hover:scale-105 transition-all duration-300"
       key={id}
       onClick={() => handleClickImg(id)}
     >
-      <img className="item__content" src={imageUrl} />
+      <Image
+        className="item__content"
+        src={watermarkedUrl}
+        alt={id}
+        width={300}
+        height={400}
+        quality={70}
+      />
     </div>
   );
   return (
@@ -130,7 +138,6 @@ export default function EventSearchPage({
         <title>{eventName} | 搜尋照片</title>
         <meta property="og:title" content={`${eventName} | 搜尋照片`} />
         <meta name="description" content={`${eventName} | 號碼布搜尋照片`} />
-        <meta property="og:url" content={window.location.href} />
         <meta
           property="og:description"
           content={`${eventName} | 號碼布搜尋照片`}
@@ -140,7 +147,7 @@ export default function EventSearchPage({
       <div ref={navBarRef}>
         <SearchWrapper handleOnChange={handleOnChange} onSearch={onSearch} />
       </div>
-      <div className="container mx-auto">
+      <div className="container mx-auto my-10">
         <div className="text-center m-10 text-[color:var(--main-color-dark)]">
           <p>試營運期間，只有一位攝影師🥲</p>
           {
@@ -154,8 +161,8 @@ export default function EventSearchPage({
           }
           <p>不囉唆⚡全面 65 折優惠</p>
         </div>
-        <div className="masonry min-h-[100vh-16]">
-          {images.map((item: any) => ImageItems(item.watermarkedUrl, item.id))}
+        <div className="masonry min-h-[60vh]">
+          {images.map((item: any) => ImageItems(item))}
           <ImgsViewer
             imgs={flatted}
             isOpen={showImageViewer}
@@ -180,8 +187,8 @@ export async function getServerSideProps(context: any) {
     `${domain}/api/images/getByEventId/${eventId}`
   ).then((res) => res.json());
 
-  const eventInfo = await fetch(`${domain}/api/events/${eventId}`).then((res) =>
-    res.json()
+  const eventInfo = await fetch(`${domain}/api/events/getBy/${eventId}`).then(
+    (res) => res.json()
   );
 
   return { props: { imageList, eventInfo } };
