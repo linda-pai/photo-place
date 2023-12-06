@@ -5,7 +5,7 @@ import Head from "next/head";
 export const metadata = {
   title: "Photopacer 攝影小隊 - 陪你跑出最難忘的瞬間",
   description:
-    "在您參與的馬拉松、自行車賽，或是其他各種運動活動中，Photopacer 攝影小隊將會在現場捕捉到最令人難忘的瞬間。我們的目標是透過專業攝影，讓您的運動經歷得以永久保存，同時也讓其他熱愛運動的人們分享您的榮耀時刻。",
+    "在您參與的馬拉松、自行車賽，或是其他各種運動活動中，Photopacer 攝影小隊將會在現場捕捉到最令人難忘的瞬間。我們的目標是透過專業攝影的照片，讓您的運動經歷得以永久保存，同時也讓其他熱愛運動的人們分享您的榮耀時刻。",
 };
 
 export default function Layout({ children, navBarRef }: any) {
