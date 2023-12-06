@@ -1,121 +1,84 @@
+import { Divider } from "antd";
+import dayjs from "dayjs";
+import Link from "next/link";
+
 const Footer = () => {
   return (
-    <footer className="bg-gray-800 py-20 mt-20">
+    <footer className="bg-[color:var(--main-color-lighter)] py-16">
       <div className="container mx-auto px-10">
-        <div className="flex flex-wrap justify-between">
+        <div className="flex flex-wrap justify-between sm:gap-0 gap-6">
           <div className="w-full lg:w-1/4">
-            <h6 className="text-lg font-bold mb-5">About Us</h6>
-            <p className="text-gray-500 leading-loose">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam
-              quod, quibusdam voluptatibus, voluptas quas, voluptates
-              consequuntur fugiat doloribus autem doloremque voluptatum
-              voluptatem? Quia, quibusdam. Quisquam quod, quibusdam
-              voluptatibus, voluptas quas, voluptates consequuntur fugiat
-              doloribus autem doloremque voluptatum voluptatem? Quia, quibusdam.
-            </p>
-          </div>
-          <div className="w-full lg:w-1/4">
-            <h6 className="text-lg font-bold mb-5">Company</h6>
-            <ul>
+            <h6 className="text-[color:var(--main-color-dark)] text-lg font-bold mb-5">
+              Photo Pacer
+            </h6>
+            <ul className="text-[color:var(--main-color-light)]">
               <li>
-                <a
-                  href="#"
-                  className="text-gray-500 hover:text-teal-600 transition duration-150 ease-in-out"
+                <Link
+                  href="/policies/privacy-policy"
+                  className="hover:text-teal-600 transition duration-150 ease-in-out"
                 >
-                  About Us
-                </a>
+                  隱私權政策
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="text-gray-500 hover:text-teal-600 transition duration-150 ease-in-out"
+                <Link
+                  href="/policies/terms-of-use"
+                  className="hover:text-teal-600 transition duration-150 ease-in-out"
                 >
-                  Blog
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-500 hover:text-teal-600 transition duration-150 ease-in-out"
-                >
-                  Press
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-500 hover:text-teal-600 transition duration
-                -150 ease-in-out"
-                >
-                  Careers
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-500 hover:text-teal-600 transition duration-150 ease-in-out"
-                >
-                  Contact Us
-                </a>
+                  使用者條款
+                </Link>
               </li>
             </ul>
           </div>
           <div className="w-full lg:w-1/4">
-            <h6 className="text-lg font-bold mb-5">Social</h6>
-            <ul>
+            <h6 className="text-[color:var(--main-color-dark)] text-lg font-bold mb-5">
+              社群媒體
+            </h6>
+            <ul className="text-[color:var(--main-color-light)]">
               <li>
                 <a
-                  href="#"
-                  className="text-gray-500 hover:text-teal-600 transition duration-150 ease-in-out"
+                  href="https://www.facebook.com/profile.php?id=61554260632079"
+                  className="hover:text-teal-600 transition duration-150 ease-in-out"
+                  target="_blank"
                 >
                   Facebook
                 </a>
               </li>
               <li>
                 <a
-                  href="#"
-                  className="text-gray-500 hover:text-teal-600 transition duration-150 ease-in-out"
-                >
-                  Linkedin
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-500 hover:text-teal-600 transition duration-150 ease-in-out"
-                >
-                  Twitter
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-500 hover:text-teal-600 transition duration-150 ease-in-out"
+                  href="https://www.instagram.com/photopacer/"
+                  className="hover:text-teal-600 transition duration-150 ease-in-out"
+                  target="_blank"
                 >
                   Instagram
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://lin.ee/n4xOm2O"
+                  className="hover:text-teal-600 transition duration-150 ease-in-out"
+                  target="_blank"
+                >
+                  Line
                 </a>
               </li>
             </ul>
           </div>
           <div className="w-full lg:w-1/4">
-            <h6 className="text-lg font-bold mb-5">Newsletter</h6>
-            <p className="text-gray-500 leading-loose">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam
-              quod, quibusdam voluptatibus, voluptas quas, voluptates
-              consequuntur fugiat doloribus autem doloremque voluptatum
-              voluptatem? Quia, quibusdam.
-            </p>
-            <form className="mt-6">
-              <input
-                type="text"
-                className="bg-gray-800 px-4 py-2 border border-gray-700 focus:outline-none focus:border-teal-500 transition duration-150 ease-in-out text-gray-500 rounded-full"
-                placeholder="Your email address"
-              />
-              <button className="bg-teal-500 hover:bg-teal-600 transition duration-150 ease-in-out ml-2 px-4 py-2 rounded-full">
-                Subscribe
-              </button>
-            </form>
+            <h6 className="text-[color:var(--main-color-dark)] text-lg font-bold mb-5">
+              客服資訊
+            </h6>
+            <ul className="text-[color:var(--main-color-light)]">
+              <li>客服信箱：photopacer@gmail.com</li>
+              <li>服務時間：週一至週日 8:30 - 21:00</li>
+            </ul>
           </div>
+        </div>
+        <Divider />
+        <div className="w-full text-center text-[color:var(--main-color-light)]">
+          <p className="text-sm">
+            © {dayjs().year()} Photo Pacer. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>

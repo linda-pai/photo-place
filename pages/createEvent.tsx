@@ -1,11 +1,18 @@
 import React, { useState } from "react";
 import type { UploadProps, DatePickerProps } from "antd";
 import { message, DatePicker, Input, Button, Spin } from "antd";
-import Uploader from "@/pages/components/Uploader";
 import { useRouter } from "next/router";
+import { getCookie } from "cookies-next";
 import userPermission from "@/hooks/userPermission";
+import Image from "next/image";
+import dynamic from "next/dynamic";
+
+const Uploader = dynamic(() => import("@/pages/components/Uploader"), {
+  ssr: false,
+});
 
 const CreateEventPage: React.FC = () => {
+  const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const isAllowed = userPermission();
 
   const [date, setDate] = useState("");
@@ -21,16 +28,12 @@ const CreateEventPage: React.FC = () => {
     formData.append("file", file);
 
     try {
-      const response = await fetch(
-        "http://localhost:3001/api/singleImgS3Upload",
-        {
-          method: "POST",
-          body: formData,
-        }
-      )
+      const response = await fetch(`${domain}/api/singleImgS3Upload`, {
+        method: "POST",
+        body: formData,
+      })
         .then((res) => res.json())
         .then((data) => {
-          console.log("data", data);
           setCoverImg(data.Location);
           return data.Location;
         });
@@ -44,7 +47,7 @@ const CreateEventPage: React.FC = () => {
   const handleUploadEvent = async () => {
     if (!date) return message.error("請選擇日期");
     if (!eventName) return message.error("請輸入活動名稱");
-    const userId = JSON.parse(sessionStorage.getItem("userInfo") || "{}").id;
+    const userId = getCookie("userId");
 
     const eventData = {
       date,
@@ -53,7 +56,7 @@ const CreateEventPage: React.FC = () => {
       userId,
     };
 
-    const response = await fetch("http://localhost:3001/api/events/add", {
+    const response = await fetch(`${domain}/api/events/add`, {
       method: "POST",
       body: JSON.stringify(eventData),
       headers: {
@@ -66,7 +69,6 @@ const CreateEventPage: React.FC = () => {
         router.push("/");
       });
 
-    console.log("response", response);
     setCoverImg("");
   };
 
@@ -78,7 +80,6 @@ const CreateEventPage: React.FC = () => {
     onChange(info) {
       const { status } = info.file;
       if (status !== "uploading") {
-        console.log(info.file, info.fileList);
       }
       if (status === "done") {
         message.success(`${info.file.name} file uploaded successfully.`);
@@ -86,9 +87,7 @@ const CreateEventPage: React.FC = () => {
         message.error(`${info.file.name} file upload failed.`);
       }
     },
-    onDrop(e) {
-      console.log("Dropped files", e.dataTransfer.files);
-    },
+    onDrop(e) {},
     onRemove() {
       setCoverImg("");
     },
@@ -99,7 +98,6 @@ const CreateEventPage: React.FC = () => {
   };
 
   const onEventNameChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    console.log(e.target.value);
     setEventName(e.target.value);
   };
 
@@ -117,7 +115,13 @@ const CreateEventPage: React.FC = () => {
         <Uploader {...props} />
       </div>
       {coverImg && (
-        <img src={coverImg} width="300" height="300" className="mx-auto my-5" />
+        <Image
+          src={coverImg}
+          width="300"
+          height="300"
+          className="mx-auto my-5"
+          alt="封面圖片"
+        />
       )}
       <div className="text-center my-5">
         <Button

@@ -1,13 +1,89 @@
 import { useEffect, useState } from "react";
-import { Checkbox, Divider, Button, Spin } from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
-import type { CheckboxChangeEvent } from "antd/es/checkbox";
+import { Button, Table, Space } from "antd";
+import { DeleteOutlined, CopyOutlined } from "@ant-design/icons";
+import type { ColumnsType } from "antd/es/table";
 import Link from "next/link";
+import ImgsViewer from "react-images-viewer";
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
+import copyToClipboard from "@/utils/copyToClipboard";
+
+interface CardDataProps {
+  eventId: number;
+  watermarkedUrl: string;
+  id: string;
+  price: number;
+}
 
 const shoppingCart = () => {
-  const [cartData, setCartData] = useState([]);
-  const [checkedList, setCheckedList] = useState<CartDataProps[]>([]);
+  const domain = process.env.NEXT_PUBLIC_SERVER_URL;
+
+  const [cartData, setCartData] = useState([] as any);
+  const [showImageViewer, setShowImageViewer] = useState(false);
+  const [currImg, setCurrImg] = useState(0); // [0, images.length - 1
+
+  const columns: ColumnsType<CardDataProps> = [
+    {
+      title: "活動名稱",
+      dataIndex: "eventName",
+      key: "eventName",
+      width: 120,
+    },
+    {
+      title: "預覽",
+      dataIndex: "watermarkedUrl",
+      key: "watermarkedUrl",
+      width: 80,
+      render: (url: string, record) => (
+        <div
+          className="item cursor-pointer scale-100 hover:scale-105 transition-all duration-300"
+          key={record.id}
+          onClick={() => handleClickImg(record.id)}
+        >
+          <img className="item__content" src={url} />
+        </div>
+      ),
+    },
+    {
+      title: "照片編號",
+      dataIndex: "id",
+      key: "id",
+      width: 100,
+      ellipsis: true,
+      render: (id: string) => (
+        <button
+          className="text-slate-500 hover:text-slate-700"
+          onClick={() => copyToClipboard(id)}
+        >
+          <CopyOutlined className="mr-2" />
+          {id}
+        </button>
+      ),
+    },
+    {
+      title: "價格",
+      dataIndex: "price",
+      key: "price",
+      width: 100,
+      render: (price: number) => <p className="text-center">TWD {price} 元</p>,
+    },
+    {
+      title: "Action",
+      key: "action",
+      width: 100,
+      render: (_, record) => (
+        <Space size="middle">
+          <Button
+            danger
+            onClick={() => handleRemoveFromCart(record.id)}
+            className="flex items-center"
+          >
+            <DeleteOutlined />
+            移除
+          </Button>
+        </Space>
+      ),
+    },
+  ];
 
   useEffect(() => {
     const session = JSON.parse(sessionStorage.getItem("cart") || "{}");
@@ -17,11 +93,10 @@ const shoppingCart = () => {
       const eventId = key;
       const ids = session[key];
       if (!ids.length) return;
-      fetch(`http://localhost:3001/api/images/getByIds/${eventId}/${ids}`)
+      fetch(`${domain}/api/images/getByIds/${eventId}/${ids}`)
         .then((res) => res.json())
         .then((data) => {
-          const flattenData = data.map((item: any) => item.images).flat();
-          setCartData(flattenData);
+          setCartData((prevData: any) => [...prevData, ...data]);
         });
     });
   }, []);
@@ -39,87 +114,46 @@ const shoppingCart = () => {
     setCartData(cartData.filter((item: CartDataProps) => item.id !== id));
   };
 
-  const checkAll = cartData.length === checkedList.length;
-
-  console.log("checkedList", checkedList);
-
-  const onChange = (e: CheckboxChangeEvent) => {
-    const removedData = checkedList.filter(
-      (item: any) => item !== e.target.value
-    );
-    setCheckedList(
-      e.target.checked ? [...checkedList, e.target.value] : removedData
-    );
-  };
-
-  const onCheckAllChange = (e: CheckboxChangeEvent) => {
-    setCheckedList(e.target.checked ? cartData : []);
-  };
-
   const handleOnSubmit = () => {
-    sessionStorage.setItem("checkoutData", JSON.stringify(checkedList));
+    sessionStorage.setItem("checkoutData", JSON.stringify(cartData));
   };
 
-  const total = checkedList
-    .map((item) => Number(item.price))
-    .reduce((a, b) => a + b, 0);
+  const total = cartData
+    .map((item: CardDataProps) => Number(item.price))
+    .reduce((a: number, b: number) => a + b, 0);
+
+  const handleClickImg = (id: string) => {
+    setShowImageViewer(true);
+    setCurrImg(cartData.findIndex((item: any) => item.id === id));
+  };
 
   return (
-    <div className="container mx-auto my-10">
-      <h1 className="text-center text-2xl mb-20">shoppingCart</h1>
-
-      <Checkbox onChange={onCheckAllChange} checked={checkAll}>
-        Check all
-      </Checkbox>
-      <Divider />
-
-      <div className="flex flex-row  items-center">
-        {cartData.length > 0 ? (
-          cartData.map((image: any, key: number) => (
-            <Checkbox
-              onChange={onChange}
-              checked={checkAll || checkedList.includes(image)}
-              value={image}
-              className="hover:bg-gray-300 p-6"
-              key={key}
-            >
-              <div className="basis-3/12 max-w-[300px]">
-                <img src={image.watermarkedUrl} className="m-4" />
-              </div>
-              <div className="basis-3/12 text-center">
-                <p>TWD {image.price} 元</p>
-              </div>
-              <div className="basis-3/12 text-center">
-                <button
-                  className="cursor-pointer w-[48px] h-[48px]"
-                  onClick={() => handleRemoveFromCart(image.id)}
-                >
-                  <div>移除</div>
-                  <DeleteOutlined
-                    style={{ fontSize: "32px", color: "#fa5e52" }}
-                  />
-                </button>
-              </div>
-            </Checkbox>
-          ))
-        ) : (
-          <div className="text-center w-full text-slate-500">
-            你的購物車是空的
-          </div>
-        )}
-      </div>
-
-      <Divider />
-      <div className="text-end mr-20">
-        <p>總金額：TWD {total} 元</p>
-      </div>
-      <div className="text-center mt-10">
-        <Button>
+    <div className="container mx-auto my-24 text-[color:var(--main-color-dark)]">
+      <h1 className="text-center text-2xl mb-4">購物車</h1>
+      <div className="my-4 mr-2 flex justify-end items-center gap-4">
+        <p className="text-[color:var(--main-color)]">
+          共 {cartData.length} 張，總金額：TWD {total} 元
+        </p>
+        <Button disabled={cartData.length === 0}>
           <Link href="/user/checkout" onClick={handleOnSubmit}>
             選擇付款方式
           </Link>
         </Button>
       </div>
+      <Table dataSource={cartData} columns={columns} className="sm:mx-0 mx-4" />
+
+      <ImgsViewer
+        imgs={cartData.map((item: any) => ({
+          src: item.watermarkedUrl,
+        }))}
+        isOpen={showImageViewer}
+        currImg={currImg}
+        onClickPrev={() => setCurrImg((prev) => prev - 1)}
+        onClickNext={() => setCurrImg((prev) => prev + 1)}
+        onClose={() => setShowImageViewer(false)}
+        onClickThumbnail={(index: number) => setCurrImg(index)}
+        showThumbnails={true}
+      />
     </div>
   );
 };

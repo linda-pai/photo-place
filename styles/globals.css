@@ -6,6 +6,12 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+
+  --main-color: #ffd700;
+  --main-color-dark: #5f5b50;
+  --main-color-light: #8f8f8f;
+  --main-color-lighter: #fdfdf6;
+  color: #857e85;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -16,52 +22,84 @@
   }
 }
 
+html,
 body {
   color: rgb(var(--foreground-rgb));
-  background: #fbf7e5;
-  min-height: 100vh;
-  
-}
-
-
-.masonry {
-  column-gap: 16px;
-  column-count: 4;
-  max-width: 100%;
-}
-
-.item {
-  box-sizing: border-box;
-  padding: 0px;
-  object-fit: contain;
-  margin-bottom: 16px;
-
-}
-.item &__content {
-  position: relative;
+  /* background: linear-gradient(
+    180deg,
+    #fff 50%,
+    var(--main-color-lighter) 100%
+  ); */
+  background: #fff;
+  font-family: PingFang TC apple-system, system-ui, BlinkMacSystemFont,
+    pingfang-tc, aktiv-grotesk, source-han-sans-traditional, Segoe UI, Roboto,
+    Helvetica Neue, 微軟正黑體, Microsoft YaHei, Microsoft JhengHei, Helvetica,
+    Arial, sans-serif;
+  line-height: 26px;
   display: flex;
   flex-direction: column;
+  min-height: 100%;
+}
+
+th,
+td {
+  color: var(--main-color-dark) !important;
+}
+
+.ant-table-wrapper {
+  overflow-x: scroll;
+}
+.ant-message-notice-content {
+  z-index: 100;
+}
+#viewerBackdrop {
+  z-index: 99;
+}
+.ant-btn-primary {
+  background-color: var(--main-color-light);
+}
+.ant-btn-default {
+  color: var(--main-color-dark);
+}
+.ant-modal-title {
+  color: var(--main-color-dark) !important;
+}
+:where(.css-dev-only-do-not-override-2i2tap).ant-pagination
+  .ant-pagination-item
+  a {
+  color: var(--main-color-dark) !important;
+}
+:where(.css-dev-only-do-not-override-2i2tap).ant-pagination
+  .ant-pagination-item-active
+  a {
+  color: var(--main-color-light) !important;
+}
+:where(.css-dev-only-do-not-override-2i2tap).ant-pagination
+  .ant-pagination-item-active {
+  border-color: var(--main-color-light) !important;
+}
+
+.masonry {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
   justify-content: center;
-  align-items: center;
-  font-size: 40px;
-  width: 100%;
-  box-sizing: border-box;
 }
 
 *:focus {
   outline: none;
 }
 
-::-webkit-search-cancel-button { 
-  -webkit-appearance: none; 
+::-webkit-search-cancel-button {
+  -webkit-appearance: none;
 }
 
 /* Hide the magnifying glass */
 ::-webkit-search-results-button {
-   -webkit-appearance: none; 
+  -webkit-appearance: none;
 }
 
 input::placeholder {
   opacity: 0.5;
-  color:#fff;
+  color: #fff;
 }

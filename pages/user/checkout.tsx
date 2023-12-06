@@ -1,33 +1,74 @@
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import {
   Divider,
-  List,
   Space,
   Radio,
-  Input,
   RadioChangeEvent,
   Button,
   message,
   Spin,
+  Table,
 } from "antd";
-import { MessageOutlined, LikeOutlined, StarOutlined } from "@ant-design/icons";
+import type { ColumnsType } from "antd/es/table";
+
 import { getCookie } from "cookies-next";
+
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
+import paymentOptions from "@/utils/paymentOptions";
+import dynamic from "next/dynamic";
+
+const PaymentInfo = dynamic(
+  () => import("@/pages/components/PaymentInfoModal"),
+  {
+    ssr: false,
+  }
+);
+
+interface CardDataProps {
+  eventId: number;
+  watermarkedUrl: string;
+  id: string;
+  price: number;
+}
 
 const checkout = () => {
-  const [checkoutData, setCheckoutData] = useState([]);
-  const [paymentValue, setPaymentValue] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const domain = process.env.NEXT_PUBLIC_SERVER_URL;
+  const router = useRouter();
 
-  const paymentOptions = [
-    { label: "信用卡", value: 1, fee: 0 },
+  const [checkoutData, setCheckoutData] = useState([]);
+  const [paymentValue, setPaymentValue] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const columns: ColumnsType<CardDataProps> = [
     {
-      label: "銀行轉帳",
-      value: 2,
-      fee: 0,
-      extension: <Input style={{ width: 100, marginLeft: 10 }} />,
+      title: "活動名稱",
+      dataIndex: "eventName",
+      key: "eventName",
+      width: 120,
     },
-    { label: "Line Pay", value: 3, fee: 30 },
+    {
+      title: "預覽",
+      dataIndex: "watermarkedUrl",
+      key: "watermarkedUrl",
+      width: 80,
+      render: (url: string, record) => <img className="w-20" src={url} />,
+    },
+    {
+      title: "照片編號",
+      dataIndex: "id",
+      key: "id",
+      width: 100,
+      ellipsis: true,
+    },
+    {
+      title: "價格",
+      dataIndex: "price",
+      key: "price",
+      width: 100,
+      render: (price: number) => <p>TWD {price} 元</p>,
+    },
   ];
 
   useEffect(() => {
@@ -38,29 +79,21 @@ const checkout = () => {
     setLoading(false);
   }, []);
 
-  const IconText = ({ icon, text }: { icon: React.FC; text: string }) => (
-    <Space>
-      {React.createElement(icon)}
-      {text}
-    </Space>
-  );
-
   const fee =
     paymentOptions.find((option) => option.value === paymentValue)?.fee || 0;
 
   const total = checkoutData
-    .map((item: CartDataProps) => Number(item.price))
+    ?.map((item: CartDataProps) => Number(item.price))
     .reduce((a, b) => a + b, 0);
 
   const onChange = (e: RadioChangeEvent) => {
-    console.log("radio checked", e.target.value);
     setPaymentValue(e.target.value);
   };
 
-  const handleOnCheckOut = () => {
+  const createOrder = async () => {
     setLoading(true);
     //成立訂單
-    fetch("http://localhost:3001/api/orders/add", {
+    fetch(`${domain}/api/orders/add`, {
       method: "POST",
       body: JSON.stringify({
         paymentMethod: paymentValue,
@@ -73,12 +106,12 @@ const checkout = () => {
       },
     })
       .then((res) => {
-        console.log("res", res);
         if (res.status === 200) {
           sessionStorage.removeItem("checkoutData");
           sessionStorage.removeItem("cart");
           setCheckoutData([]);
           message.success("訂單建立成功");
+          router.push("/user/orders");
           setLoading(false);
         }
       })
@@ -87,75 +120,83 @@ const checkout = () => {
       });
   };
 
+  // const handleOnCheckOut = () => {
+  //   setIsModalOpen(true);
+  // };
+
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleOk = () => {
+    setIsModalOpen(false);
+    createOrder();
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+
   return (
     <>
-      <div className="container mx-auto my-10">
-        <h1 className="text-center text-2xl mb-20">checkout</h1>
+      <div className="container mx-auto my-24 text-[color:var(--main-color-dark)] w-[70%]">
+        <h1 className="text-center text-2xl mb-10">訂單明細</h1>
         {!loading ? (
           <>
             <div>
-              <List
-                header={<div className="text-center">訂單明細</div>}
-                footer={
-                  <div className="text-end">
-                    <div>
-                      付款方式：
-                      {
-                        paymentOptions.find(
-                          (option) => option.value === paymentValue
-                        )?.label
-                      }
-                    </div>
-                    <p>總金額：TWD {total + fee} 元</p>
-                  </div>
-                }
-                itemLayout="vertical"
-                bordered
+              <Table
                 dataSource={checkoutData}
-                renderItem={(item: CartDataProps) => (
-                  <List.Item
-                    key={item.id}
-                    actions={[
-                      <IconText
-                        icon={StarOutlined}
-                        text="156"
-                        key="list-vertical-star-o"
-                      />,
-                      <IconText
-                        icon={LikeOutlined}
-                        text="156"
-                        key="list-vertical-like-o"
-                      />,
-                      <IconText
-                        icon={MessageOutlined}
-                        text="2"
-                        key="list-vertical-message"
-                      />,
-                    ]}
-                    extra={<p>TWD {item.price} 元</p>}
-                  >
-                    <img width={272} alt="logo" src={item.watermarkedUrl} />
-                  </List.Item>
+                columns={columns}
+                footer={() => (
+                  <div className="flex justify-end">
+                    <div className=" text-[color:var(--main-color-dark)]">
+                      <div className=" text-[color:var(--main-color-light)]">
+                        訂購內容：電子檔共 {checkoutData.length} 張
+                      </div>
+                      <div>
+                        付款方式：
+                        {
+                          paymentOptions.find(
+                            (option) => option.value === paymentValue
+                          )?.label
+                        }
+                      </div>
+                      <b>總金額：TWD {total + fee} 元</b>
+                    </div>
+                  </div>
                 )}
               />
               <Divider />
 
-              <Radio.Group onChange={onChange} value={paymentValue}>
-                <Space direction="vertical">
-                  {paymentOptions.map((option) => (
-                    <Radio value={option.value}>
-                      {option.label}
-                      {option.extension && paymentValue === option.value
-                        ? option.extension
-                        : null}
-                    </Radio>
-                  ))}
-                </Space>
-              </Radio.Group>
+              <div className="flex justify-end">
+                <Radio.Group onChange={onChange} value={paymentValue}>
+                  <Space direction="vertical">
+                    {paymentOptions.map((option: any) => (
+                      <Radio value={option.value} disabled={option.disabled}>
+                        {option.label}
+                        {option?.extension && paymentValue === option.value
+                          ? option?.extension
+                          : null}
+                      </Radio>
+                    ))}
+                  </Space>
+                </Radio.Group>
+              </div>
             </div>
-            <Button className="text-center" onClick={handleOnCheckOut}>
-              結帳
-            </Button>
+
+            <div className="flex justify-center my-4">
+              <Button
+                onClick={showModal}
+                className="text-[color:var(--main-color-dark)]"
+              >
+                確認結帳
+              </Button>
+            </div>
+            <PaymentInfo
+              handleOk={handleOk}
+              handleCancel={handleCancel}
+              isModalOpen={isModalOpen}
+            />
           </>
         ) : (
           <Spin className="mx-auto my-[40vh] w-full" size="large" />
