@@ -61,7 +61,7 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
 
   const handleUpload = async () => {
     if (!session.id) return message.error("請先登入");
-    // if (!eventId.value) return message.error("請選擇活動");
+    if (!eventId.value) return message.error("請選擇活動");
 
     modal.confirm({
       title: "上傳照片",
@@ -70,7 +70,7 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
       okText: "確認",
       cancelText: "取消",
       onOk: () => {
-        //setInterval + for loop 1秒上傳一張
+        //setTimeout + for loop 1秒上傳一張
         for (var x = 0, ln = fileOptionsList.length; x < ln; x++) {
           setTimeout(
             function (y) {
