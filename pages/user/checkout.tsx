@@ -76,7 +76,7 @@ const checkout = () => {
 
   useEffect(() => {
     const checkoutData = JSON.parse(
-      sessionStorage.getItem("checkoutData") || "{}"
+      sessionStorage.getItem("checkoutData") || "[]"
     );
     setCheckoutData(checkoutData);
     setLoading(false);

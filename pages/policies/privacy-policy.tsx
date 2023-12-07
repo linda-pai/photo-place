@@ -24,6 +24,10 @@ const PrivacyPolicy = () => {
                 本網站在您使用服務信箱、問卷調查等互動性功能時，會保留您所提供的姓名、電子郵件地址、聯絡方式及使用時間等。
               </li>
               <li className="before:content-['•'] before:mr-4 flex">
+                本網站在您透過第三方服務（例如
+                Google、Line、或其他社交媒體平台）登入的選項。當您選擇使用此方式進行註冊或登入時，本網站會收集您授權分享的基本個人資訊，包括您的電子郵件地址。
+              </li>
+              <li className="before:content-['•'] before:mr-4 flex">
                 於一般瀏覽時，伺服器會自行記錄相關行徑，包括您使用連線設備的 IP
                 位址、使用時間、使用的瀏覽器、瀏覽及點選資料記錄等，做為我們增進網站服務的參考依據，此記錄為內部應用，決不對外公佈。
               </li>
@@ -96,7 +100,11 @@ const PrivacyPolicy = () => {
             </p>
           </li>
           <li className="my-4">
-            <b className="text-xl">七、隱私權保護政策之修正</b>
+            <b className="text-xl">七、傳送電子郵件之政策</b>
+            <p className="pl-8">我們收集您的電子郵件地址主要用於以下目的：</p>
+          </li>
+          <li className="my-4">
+            <b className="text-xl">八、隱私權保護政策之修正</b>
             <p className="pl-8">
               本網站隱私權保護政策將因應需求隨時進行修正，修正後的條款將刊登於網站上，不再另行通知。
             </p>
