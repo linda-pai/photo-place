@@ -7,7 +7,7 @@ import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
 // https://guonanci.github.io/react-images-viewer/
 import dynamic from "next/dynamic";
 import Head from "next/head";
-import Image from "next/image";
+// import Image from "next/image";
 
 const SearchWrapper = dynamic(
   () => import("@/pages/components/SearchWrapper"),
@@ -122,13 +122,13 @@ export default function EventSearchPage({
       key={id}
       onClick={() => handleClickImg(id)}
     >
-      <Image
+      <img
         className="item__content"
         src={watermarkedUrl}
         alt={id}
-        width={300}
-        height={400}
-        quality={70}
+        // width={300}
+        // height={400}
+        // quality={70}
       />
     </div>
   );

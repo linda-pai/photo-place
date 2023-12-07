@@ -33,28 +33,12 @@ export default function Home({ events }: { events: Event[] }) {
 
 export async function getServerSideProps(context: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-
   // Fetch data from external API
   const res = await fetch(`${domain}/api/events`);
   const events = await res.json();
 
   const { token } = context.req.cookies;
   if (!token) return { props: { events } };
-
-  // if (!token) {
-  //   return {
-  //     redirect: {
-  //       destination: "/login",
-  //       permanent: false,
-  //     },
-  //   };
-  // }
-
-  // const verifiedToken = await jwt.verify(
-  //   token,
-  //   process.env.NEXT_PUBLIC_JWT_SECRET
-  // );
-  // console.log("verifiedToken", verifiedToken);
 
   const resUser = await fetch(`${domain}/api/user/getUserInfo/${token}`)
     .then((res) => res.json())

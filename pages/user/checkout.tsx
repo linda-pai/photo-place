@@ -120,7 +120,7 @@ const checkout = () => {
           }
         })
         .catch((err) => {
-          console.log("err", err);
+          message.error("訂單建立失敗, 請稍後再試");
         });
   };
 

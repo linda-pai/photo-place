@@ -28,6 +28,7 @@ const CreateEventPage: React.FC = () => {
 
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("path", "/cover/");
 
     try {
       const response = await fetch(`${domain}/api/singleImgS3Upload`, {
@@ -117,10 +118,10 @@ const CreateEventPage: React.FC = () => {
         <Uploader {...props} />
       </div>
       {coverImg && (
-        <Image
+        <img
           src={coverImg}
-          width="300"
-          height="300"
+          // width="300"
+          // height="300"
           className="mx-auto my-5"
           alt="封面圖片"
         />
