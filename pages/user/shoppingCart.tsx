@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Table, Space, Spin } from "antd";
+import { Button, Table, Space, Spin, Checkbox } from "antd";
 import { DeleteOutlined, CopyOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import Link from "next/link";
@@ -20,6 +20,7 @@ const shoppingCart = () => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
   const [cartData, setCartData] = useState([] as any);
+  const [selectedRows, setSelectedRows] = useState([] as any);
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [currImg, setCurrImg] = useState(0); // [0, images.length - 1
 
@@ -34,10 +35,10 @@ const shoppingCart = () => {
       title: "預覽",
       dataIndex: "watermarkedUrl",
       key: "watermarkedUrl",
-      width: 80,
+      width: 100,
       render: (url: string, record) => (
         <div
-          className="item cursor-pointer scale-100 hover:scale-105 transition-all duration-300"
+          className="item cursor-pointer scale-100 hover:scale-105 transition-all duration-300 max-w-[100px]"
           key={record.id}
           onClick={() => handleClickImg(record.id)}
         >
@@ -65,13 +66,13 @@ const shoppingCart = () => {
       title: "價格",
       dataIndex: "price",
       key: "price",
-      width: 100,
-      render: (price: number) => <p className="text-center">TWD {price} 元</p>,
+      width: 80,
+      render: (price: number) => <p className="max-w-[80px]">TWD {price} 元</p>,
     },
     {
-      title: "Action",
+      title: "",
       key: "action",
-      width: 100,
+      width: 80,
       render: (_, record) => (
         <Space size="middle">
           <Button
@@ -80,7 +81,7 @@ const shoppingCart = () => {
             className="flex items-center"
           >
             <DeleteOutlined />
-            移除
+            <p className="sm:block hidden">&nbsp;移除</p>
           </Button>
         </Space>
       ),
@@ -97,9 +98,7 @@ const shoppingCart = () => {
       if (!ids.length) return;
       fetch(`${domain}/api/images/getByIds/${eventId}/${ids}`)
         .then((res) => res.json())
-        .then((data) => {
-          setCartData((prevData: any) => [...prevData, ...data]);
-        });
+        .then((data) => setCartData((prevData: any) => [...prevData, ...data]));
     });
   }, []);
 
@@ -117,10 +116,10 @@ const shoppingCart = () => {
   };
 
   const handleOnSubmit = () => {
-    sessionStorage.setItem("checkoutData", JSON.stringify(cartData));
+    sessionStorage.setItem("checkoutData", JSON.stringify(selectedRows));
   };
 
-  const total = cartData
+  const total = selectedRows
     .map((item: CardDataProps) => Number(item.price))
     .reduce((a: number, b: number) => a + b, 0);
 
@@ -129,20 +128,34 @@ const shoppingCart = () => {
     setCurrImg(cartData.findIndex((item: any) => item.id === id));
   };
 
+  const rowSelection = {
+    onChange: (keys: React.Key[], rows: CardDataProps[]) =>
+      setSelectedRows(rows),
+  };
+
   return isLogin ? (
     <div className="container mx-auto my-24 text-[color:var(--main-color-dark)]">
       <h1 className="text-center text-2xl mb-4">購物車</h1>
-      <div className="my-4 mr-2 flex justify-end items-center gap-4">
-        <p className="text-[color:var(--main-color)]">
-          共 {cartData.length} 張，總金額：TWD {total} 元
+      <Table
+        dataSource={cartData}
+        columns={columns}
+        className="sm:mx-0 mx-4 my-16"
+        pagination={false}
+        rowSelection={rowSelection}
+      />
+      <div className="my-4 text-center">
+        <p className="text-[color:var(--main-color-dark)] my-3">
+          共 {selectedRows.length} 張，總金額：TWD {total} 元
         </p>
-        <Button disabled={cartData.length === 0}>
+        <Button
+          disabled={selectedRows.length === 0}
+          className="bg-[color:var(--main-color-dark)] text-white hover:bg-[color:var(--main-color-dark-hover)] hover:border-[color:var(--main-color-dark-hover)] transition-all duration-300"
+        >
           <Link href="/user/checkout" onClick={handleOnSubmit}>
-            選擇付款方式
+            前往結帳
           </Link>
         </Button>
       </div>
-      <Table dataSource={cartData} columns={columns} className="sm:mx-0 mx-4" />
 
       <ImgsViewer
         imgs={cartData.map((item: any) => ({

@@ -1,6 +1,6 @@
 import type { InferGetServerSidePropsType, GetServerSideProps } from "next";
 import { useEffect, useState, useRef } from "react";
-import { message } from "antd";
+import { message, Button } from "antd";
 import { ShoppingCartOutlined } from "@ant-design/icons";
 import ImgsViewer from "react-images-viewer";
 import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
@@ -24,7 +24,7 @@ export default function EventSearchPage({
 }: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const [search, setSearch] = useState("");
-  const [images, setImages] = useState([]);
+  const [images, setImages] = useState([] as any);
   const [showModal, setShowModal] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [currImg, setCurrImg] = useState(0); // [0, images.length - 1
@@ -73,11 +73,7 @@ export default function EventSearchPage({
     //check if cart exist
     if (!isExistInCart(id)) {
       //存入session
-      const newCart = currentCart[eventId]
-        ? [...currentCart[eventId], id]
-        : [id];
-      currentCart[eventId] = newCart;
-      updateCart(currentCart);
+      pushToCart(id);
       message.success("已加入購物車");
     } else {
       //從session移除
@@ -116,6 +112,13 @@ export default function EventSearchPage({
 
   const flatted = viewerImgArray.flat();
 
+  const pushToCart = (id: string) => {
+    const currentCart = JSON.parse(sessionStorage.getItem("cart") || "{}");
+    const newCart = currentCart[eventId] ? [...currentCart[eventId], id] : [id];
+    currentCart[eventId] = newCart;
+    updateCart(currentCart);
+  };
+
   const ImageItems = ({ watermarkedUrl, id }: any) => (
     <div
       className="sm:basis-[calc(20%_-_16px)] basis-[calc(33%_-_16px)] cursor-pointer scale-100 hover:scale-105 transition-all duration-300"
@@ -145,7 +148,11 @@ export default function EventSearchPage({
         <meta property="og:image" content={coverImg} />
       </Head>
       <div ref={navBarRef}>
-        <SearchWrapper handleOnChange={handleOnChange} onSearch={onSearch} />
+        <SearchWrapper
+          handleOnChange={handleOnChange}
+          onSearch={onSearch}
+          eventName={eventName}
+        />
       </div>
       <div className="container mx-auto my-10">
         <div className="text-center m-10 text-[color:var(--main-color-dark)]">
@@ -161,7 +168,8 @@ export default function EventSearchPage({
           }
           <p>不囉唆⚡全面 65 折優惠</p>
         </div>
-        <div className="masonry min-h-[60vh]">
+
+        <div className="masonry min-h-[50vh]">
           {images.map((item: any) => ImageItems(item))}
           <ImgsViewer
             imgs={flatted}
@@ -173,6 +181,19 @@ export default function EventSearchPage({
             onClickThumbnail={(index: number) => setCurrImg(index)}
             showThumbnails={true}
           />
+        </div>
+        <div>
+          {images.length > 0 && search && (
+            <Button
+              onClick={() => {
+                pushToCart(images.map((item: any) => item.id));
+                message.success(`已將 ${images.length} 張照片加入購物車`);
+              }}
+              className="mx-auto block mb-10"
+            >
+              全部加入購物車
+            </Button>
+          )}
         </div>
       </div>
     </>

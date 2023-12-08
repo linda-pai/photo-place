@@ -42,6 +42,7 @@ const orders = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modal, contextHolder] = Modal.useModal();
+  const [currentOrder, setCurrentOrder] = useState({} as Order);
 
   const handleOnDownload = (orderId: any, item: any) => {
     fetch(`${domain}/api/images/download/${orderId}/${item.eventId}/${item.id}`)
@@ -166,12 +167,18 @@ const orders = () => {
       dataIndex: "paidAt",
       key: "paidAt",
       width: 120,
-      render: (text, _, key) => (
+      render: (text, orderInfo, key) => (
         <div key={key}>
           {text ? (
             <Tag color="#B0B97A">已付款</Tag>
           ) : (
-            <div onClick={showModal} className="hover:cursor-pointer">
+            <div
+              onClick={() => {
+                showModal();
+                setCurrentOrder(orderInfo);
+              }}
+              className="hover:cursor-pointer"
+            >
               <Tag color="#f0cf02">未付款</Tag>
               <InfoCircleOutlined style={{ color: "#f0cf02" }} />
             </div>
@@ -246,7 +253,8 @@ const orders = () => {
             dataSource={orders}
             columns={columns}
             pagination={{
-              pageSize: 20,
+              pageSize: 10,
+              position: ["bottomCenter"],
             }}
           />
           {contextHolder}
@@ -254,6 +262,7 @@ const orders = () => {
             handleOk={handleOk}
             handleCancel={handleCancel}
             isModalOpen={isModalOpen}
+            orderId={currentOrder.orderId}
           />
         </div>
       ) : (

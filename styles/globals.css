@@ -45,9 +45,17 @@ th,
 td {
   color: var(--main-color-dark) !important;
 }
-
-.ant-table-wrapper {
+@media only screen and (max-width: 768px) {
+  .content_e296pg {
+    width: 80%;
+  }
+}
+.ant-table {
   overflow-x: scroll;
+}
+.ant-modal-footer {
+  display: flex;
+  justify-content: center;
 }
 .ant-message-notice-content {
   z-index: 100;
@@ -58,9 +66,7 @@ td {
 .ant-btn-primary {
   background-color: var(--main-color-light);
 }
-.ant-btn-default {
-  color: var(--main-color-dark);
-}
+
 .ant-modal-title {
   color: var(--main-color-dark) !important;
 }

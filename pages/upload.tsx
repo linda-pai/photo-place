@@ -110,7 +110,7 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
           className="w-1/3 "
           onChange={handleSelected}
           options={eventOption.map((event: any) => ({
-            label: event.date + "-" + event.eventName,
+            label: event.eventName,
             value: event.eventId,
           }))}
         />

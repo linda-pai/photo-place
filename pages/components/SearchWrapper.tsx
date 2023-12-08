@@ -1,14 +1,19 @@
 interface Props {
   handleOnChange: (e: any) => void;
   onSearch: () => void;
+  eventName?: string;
 }
 
-const SearchWrapper = ({ handleOnChange, onSearch }: Props) => {
+const SearchWrapper = ({ handleOnChange, onSearch, eventName }: Props) => {
   return (
     <div className="mb-10">
       <div className="relative w-full h-screen bg-cover bg-[url('/banner.png')]">
-        <div className=" rounded-tl-3xl rounded-br-3xl bg-[#ffffff5e] w-[90%] outline outline-2 outline-white outline-offset-[-10px] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-          <div className="w-full max-w-[800px] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+        <div className="rounded-tl-3xl rounded-br-3xl bg-[#ffffff5e] w-[90%] outline outline-2 outline-white outline-offset-[-10px] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <div className="w-full max-w-[800px] absolute mt-4 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+            <h2 className="text-white sm:text-3xl text-xl font-bold text-center w-[90%] mx-auto my-3 pl-4 drop-shadow-lg ">
+              {eventName}
+            </h2>
+
             <div className="relative w-[90%] mx-auto">
               <input
                 type="search"

@@ -13,6 +13,7 @@ import {
 import type { ColumnsType } from "antd/es/table";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
+import { v4 as uuidv4 } from "uuid";
 
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import paymentOptions from "@/utils/paymentOptions";
@@ -35,6 +36,8 @@ interface CardDataProps {
 const checkout = () => {
   const isLogin = useAuth();
   const { data: session }: any = useSession();
+
+  const orderId = "ord-" + uuidv4().substring(0, 12);
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const router = useRouter();
@@ -100,6 +103,7 @@ const checkout = () => {
       fetch(`${domain}/api/orders/add`, {
         method: "POST",
         body: JSON.stringify({
+          orderId,
           paymentMethod: paymentValue,
           totalAmount: total + fee,
           items: checkoutData,
@@ -143,12 +147,13 @@ const checkout = () => {
 
   return isLogin ? (
     <>
-      <div className="container mx-auto my-24 text-[color:var(--main-color-dark)] w-[70%]">
+      <div className="container mx-auto my-24 text-[color:var(--main-color-dark)] sm:w-[70%] w-[90%]">
         <h1 className="text-center text-2xl mb-10">訂單明細</h1>
         {!loading ? (
           <>
             <div>
               <Table
+                pagination={false}
                 dataSource={checkoutData}
                 columns={columns}
                 footer={() => (
@@ -200,6 +205,7 @@ const checkout = () => {
               handleOk={handleOk}
               handleCancel={handleCancel}
               isModalOpen={isModalOpen}
+              orderId={orderId}
             />
           </>
         ) : (
