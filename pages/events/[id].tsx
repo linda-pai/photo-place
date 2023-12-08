@@ -189,7 +189,7 @@ export default function EventSearchPage({
                 pushToCart(images.map((item: any) => item.id));
                 message.success(`已將 ${images.length} 張照片加入購物車`);
               }}
-              className="mx-auto block mb-10"
+              className="mx-auto block my-10"
             >
               全部加入購物車
             </Button>

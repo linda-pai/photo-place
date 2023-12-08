@@ -46,6 +46,7 @@ td {
   color: var(--main-color-dark) !important;
 }
 @media only screen and (max-width: 768px) {
+  ._e296pg,
   .content_e296pg {
     width: 80%;
   }
