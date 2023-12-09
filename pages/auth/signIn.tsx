@@ -51,6 +51,7 @@ const SignInPage = ({
                         buttonStyle[provider.id as keyof typeof buttonStyle]
                           .icon
                       }
+                      alt="login-icon"
                     />
                   </div>
                   <p className="w-[240px] flex items-center justify-center ml-[40px] text-[14px]">

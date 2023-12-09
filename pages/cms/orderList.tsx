@@ -175,7 +175,7 @@ const orderList = ({ orders }: OrderListProps) => {
                 children: (
                   <>
                     <p>TWD {item.price} 元</p>
-                    <img src={item.watermarkedUrl} alt="" />
+                    <img src={item.watermarkedUrl} alt={item.watermarkedUrl} />
                   </>
                 ),
               }))}

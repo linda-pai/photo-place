@@ -42,7 +42,7 @@ const shoppingCart = () => {
           key={record.id}
           onClick={() => handleClickImg(record.id)}
         >
-          <img className="item__content" src={url} />
+          <img className="item__content" src={url} alt={record.id} />
         </div>
       ),
     },

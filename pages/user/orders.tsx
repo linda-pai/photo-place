@@ -137,6 +137,7 @@ const orders = () => {
                   <img
                     src={item.watermarkedUrl}
                     className="w-full object-contain"
+                    alt={item.id}
                   />
                 </div>
                 <div className="group-hover:visible invisible">

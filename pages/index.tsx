@@ -19,9 +19,9 @@ export default function Home({ events }: { events: Event[] }) {
     <div
       className={`flex flex-col items-center justify-between my-24 container mx-auto ${inter.className}`}
     >
-      <h3 className="my-6 border-b text-2xl text-[color:var(--main-color-dark)]">
-        各大賽事
-      </h3>
+      <h1 className="my-6 border-b text-2xl text-[color:var(--main-color-dark)]">
+        運動賽事照片
+      </h1>
       <div className="flex flex-wrap justify-center">
         {events.map((event, key) => (
           <EventCard key={key} event={event} />

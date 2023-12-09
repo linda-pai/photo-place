@@ -59,7 +59,9 @@ const checkout = () => {
       dataIndex: "watermarkedUrl",
       key: "watermarkedUrl",
       width: 80,
-      render: (url: string, record) => <img className="w-20" src={url} />,
+      render: (url: string, record) => (
+        <img className="w-20" src={url} alt={record.id} />
+      ),
     },
     {
       title: "照片編號",

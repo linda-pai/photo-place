@@ -31,13 +31,13 @@ const SearchWrapper = ({ handleOnChange, onSearch, eventName }: Props) => {
                   src="/searchIcon.svg"
                   height={32}
                   width={32}
-                  alt="Follow us on Twitter"
+                  alt="search-icon"
                 />
               </div>
               <button onClick={onSearch} className="absolute right-1 h-[60px]">
-                <div className="h-[80%] bg-white text-[color:var(--main-color-dark)] sm:text-lg text-sm px-6 mx-1 rounded-full flex items-center justify-center">
+                <h3 className="h-[80%] bg-white text-[color:var(--main-color-dark)] sm:text-lg text-sm px-6 mx-1 rounded-full flex items-center justify-center">
                   搜尋號碼布
-                </div>
+                </h3>
               </button>
             </div>
           </div>

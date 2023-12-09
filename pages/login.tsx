@@ -19,6 +19,7 @@ const LoginPage = () => {
                 <img
                   className="absoltue mt-[11px] ml-[11px] w-[18px] h-[18px]"
                   src="/google-icon.svg"
+                  alt="google-icon"
                 />
               </div>
               <p className="w-[240px] flex items-center justify-center ml-[40px] text-[14px]">
@@ -26,9 +27,7 @@ const LoginPage = () => {
               </p>
             </div>
           </Link>
-          {/* <div className="w-[50%] mx-auto m-5">
-            <img src="/photo-pacer.png" />
-          </div> */}
+
           <div className="text-xs text-[#857e85] leading-5">
             <p>
               若繼續操作，即表示你同意 Photo Pacer{" "}

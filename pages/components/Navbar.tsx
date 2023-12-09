@@ -70,9 +70,9 @@ const Nav = ({ navBarRef }: any) => {
       >
         <Link href="/" className="w-[12%] min-w-[100px]">
           {showLightColor ? (
-            <img src="/photo-pacer-white.png" />
+            <img src="/photo-pacer-white.png" alt="photopacer-logo" />
           ) : (
-            <img src="/photo-pacer.png" />
+            <img src="/photo-pacer.png" alt="photopacer-logo" />
           )}
         </Link>
 

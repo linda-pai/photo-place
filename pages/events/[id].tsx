@@ -128,7 +128,7 @@ export default function EventSearchPage({
       <img
         className="item__content"
         src={watermarkedUrl}
-        alt={id}
+        alt={watermarkedUrl}
         // width={300}
         // height={400}
         // quality={70}
@@ -146,6 +146,10 @@ export default function EventSearchPage({
           content={`${eventName} | 號碼布搜尋照片`}
         />
         <meta property="og:image" content={coverImg} />
+        <link
+          rel="canonical"
+          href={`${process.env.NEXT_PUBLIC_APP_URL}/events/${eventId}`}
+        />
       </Head>
       <div ref={navBarRef}>
         <SearchWrapper
