@@ -25,14 +25,14 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
     },
     callbacks: {
       async session({ session, token }: any) {
-        session.id = token.id;
+        session.id = token.sub || token.id;
         console.log("session", session);
         console.log("token", token);
         const user = {
           email: session.user.email,
           name: session.user.name,
           token: token.jti,
-          userId: token.id,
+          userId: token.sub || token.id,
         };
         //登入成功後，將資料存入資料庫
         await fetch(`${domain}/api/user/createUser`, {

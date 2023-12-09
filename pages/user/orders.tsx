@@ -263,6 +263,7 @@ const orders = () => {
             handleCancel={handleCancel}
             isModalOpen={isModalOpen}
             orderId={currentOrder.orderId}
+            confirmBtnText="確認"
           />
         </div>
       ) : (

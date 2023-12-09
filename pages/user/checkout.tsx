@@ -206,6 +206,7 @@ const checkout = () => {
               handleCancel={handleCancel}
               isModalOpen={isModalOpen}
               orderId={orderId}
+              confirmBtnText="建立訂單"
             />
           </>
         ) : (

@@ -50,9 +50,19 @@ td {
   .content_e296pg {
     width: 80%;
   }
+
+  :where(.css-dev-only-do-not-override-6j9yrn).ant-modal .ant-modal-content {
+    padding: 20px 16px !important;
+  }
 }
 .ant-table {
   overflow-x: scroll;
+}
+.ant-modal-content {
+  max-width: 450px;
+}
+:where(.css-dev-only-do-not-override-6j9yrn).ant-modal .ant-modal-content {
+  padding: 24px 36px;
 }
 .ant-modal-footer {
   display: flex;
