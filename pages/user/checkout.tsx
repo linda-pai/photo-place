@@ -13,6 +13,7 @@ import {
 import type { ColumnsType } from "antd/es/table";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
+import { deleteCookie, getCookie } from "cookies-next";
 import { v4 as uuidv4 } from "uuid";
 
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
@@ -80,9 +81,7 @@ const checkout = () => {
   ];
 
   useEffect(() => {
-    const checkoutData = JSON.parse(
-      sessionStorage.getItem("checkoutData") || "[]"
-    );
+    const checkoutData = JSON.parse(getCookie("checkoutData") || "[]");
     setCheckoutData(checkoutData);
     setLoading(false);
   }, []);
@@ -117,8 +116,8 @@ const checkout = () => {
       })
         .then((res) => {
           if (res.status === 200) {
-            sessionStorage.removeItem("checkoutData");
-            sessionStorage.removeItem("cart");
+            deleteCookie("checkoutData");
+            deleteCookie("cart");
             setCheckoutData([]);
             message.success("訂單建立成功");
             router.push("/user/orders");

@@ -24,19 +24,17 @@ export default function Layout({ children, navBarRef }: any) {
         />
         <meta
           name="Keywords"
-          content="photopacer, 攝影小隊, 馬拉松, 照片, 賽事"
+          content="photopacer, photo pacer, 攝影小隊, 馬拉松照片, 賽事"
         />
         <meta
           name="search_keywords"
-          content="photopacer, 攝影小隊, 馬拉松, 照片, 賽事"
+          content="photopacer, photo pacer, 攝影小隊, 馬拉松照片 , 賽事"
         />
-        <meta property="og:url" content="https://photopacer.com" />
         <meta property="og:locale" content="zh_TW" />
         <link rel="icon" href="/favicon.ico" />
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <link rel="canonical" href="https://photopacer.com" />
       </Head>
       <Navbar navBarRef={navBarRef} />
       <main className="flex-1">{children}</main>

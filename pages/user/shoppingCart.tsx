@@ -4,6 +4,7 @@ import { DeleteOutlined, CopyOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import Link from "next/link";
 import ImgsViewer from "react-images-viewer";
+import { setCookie, getCookie } from "cookies-next";
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import copyToClipboard from "@/utils/copyToClipboard";
 import useAuth from "@/hooks/useAuth";
@@ -89,7 +90,7 @@ const shoppingCart = () => {
   ];
 
   useEffect(() => {
-    const session = JSON.parse(sessionStorage.getItem("cart") || "{}");
+    const session = JSON.parse(getCookie("cart") || "{}");
 
     if (!session) return;
     Object.keys(session).forEach((key) => {
@@ -103,20 +104,24 @@ const shoppingCart = () => {
   }, []);
 
   const handleRemoveFromCart = (id: string) => {
-    const currentCart = JSON.parse(sessionStorage.getItem("cart") || "{}");
+    const currentCart = JSON.parse(getCookie("cart") || "{}");
     const eventId = Object.keys(currentCart).find((key) =>
       currentCart[key].includes(id)
     );
     if (!eventId) return;
     const newCart = currentCart[eventId].filter((item: string) => item !== id);
     currentCart[eventId] = newCart;
-    sessionStorage.setItem("cart", JSON.stringify(currentCart));
+    setCookie("cart", JSON.stringify(currentCart), {
+      expires: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+    });
 
     setCartData(cartData.filter((item: CartDataProps) => item.id !== id));
   };
 
   const handleOnSubmit = () => {
-    sessionStorage.setItem("checkoutData", JSON.stringify(selectedRows));
+    setCookie("checkoutData", JSON.stringify(selectedRows), {
+      expires: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+    });
   };
 
   const total = selectedRows

@@ -26,8 +26,6 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
     callbacks: {
       async session({ session, token }: any) {
         session.id = token.sub || token.id;
-        console.log("session", session);
-        console.log("token", token);
         const user = {
           email: session.user.email,
           name: session.user.name,

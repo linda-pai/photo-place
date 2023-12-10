@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { message, Button } from "antd";
 import { ShoppingCartOutlined } from "@ant-design/icons";
 import ImgsViewer from "react-images-viewer";
+import { setCookie, getCookie } from "cookies-next";
 import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
 // https://guonanci.github.io/react-images-viewer/
 import dynamic from "next/dynamic";
@@ -35,7 +36,7 @@ export default function EventSearchPage({
 
   useEffect(() => {
     setImages(imageList);
-    setCartData(JSON.parse(sessionStorage.getItem("cart") || "{}"));
+    setCartData(JSON.parse(getCookie("cart") || "{}"));
   }, []);
 
   const handleOnChange = (e: any) => {
@@ -62,21 +63,24 @@ export default function EventSearchPage({
   };
 
   const updateCart = (data: any) => {
-    sessionStorage.setItem("cart", JSON.stringify(data));
+    setCookie("cart", JSON.stringify(data), {
+      expires: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+    });
+
     setCartData(data);
   };
 
   const isExistInCart = (id: string) => cartData[eventId]?.includes(id);
 
   const handleClickCart = (id: string) => {
-    const currentCart = JSON.parse(sessionStorage.getItem("cart") || "{}");
+    const currentCart = JSON.parse(getCookie("cart") || "{}");
     //check if cart exist
     if (!isExistInCart(id)) {
-      //存入session
+      //存入cookie
       pushToCart(id);
       message.success("已加入購物車");
     } else {
-      //從session移除
+      //從cookie移除
       const newCart = currentCart[eventId].filter(
         (item: string) => item !== id
       );
@@ -113,7 +117,7 @@ export default function EventSearchPage({
   const flatted = viewerImgArray.flat();
 
   const pushToCart = (id: string) => {
-    const currentCart = JSON.parse(sessionStorage.getItem("cart") || "{}");
+    const currentCart = JSON.parse(getCookie("cart") || "{}");
     const newCart = currentCart[eventId] ? [...currentCart[eventId], id] : [id];
     currentCart[eventId] = newCart;
     updateCart(currentCart);
