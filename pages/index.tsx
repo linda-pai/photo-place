@@ -8,10 +8,12 @@ const EventCard = dynamic(() => import("@/pages/components/EventCard"), {
 const inter = Inter({ subsets: ["latin"] });
 
 interface Event {
-  eventId: number;
-  date: string;
+  data: string;
   eventName: string;
   coverImg: string;
+  userId: string;
+  isShow: boolean;
+  eventId: string;
 }
 
 export default function Home({ events }: { events: Event[] }) {
@@ -23,9 +25,9 @@ export default function Home({ events }: { events: Event[] }) {
         運動賽事照片
       </h1>
       <div className="flex flex-wrap justify-center">
-        {events.map((event, key) => (
-          <EventCard key={key} event={event} />
-        ))}
+        {events.map(
+          (event, key) => event.isShow && <EventCard key={key} event={event} />
+        )}
       </div>
     </div>
   );

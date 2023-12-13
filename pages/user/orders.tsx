@@ -108,7 +108,7 @@ const orders = () => {
       title: "訂單成立時間",
       dataIndex: "createAt",
       key: "createAt",
-      width: 120,
+      width: 140,
       sorter: (a: Order, b: Order) => {
         const dateA = new Date(a.createAt);
         const dateB = new Date(b.createAt);
@@ -201,20 +201,40 @@ const orders = () => {
     {
       title: "Action",
       key: "action",
-      width: 120,
+      width: 190,
       render: (_, record, key) => (
-        <Space size="small" key={key}>
-          <Button
-            onClick={() => handleOnDownloadAll(record)}
-            className="flex items-center"
-            disabled={!record.paidAt}
-          >
-            <div className="sm:block hidden">
-              <DownloadOutlined />
-            </div>
-            下載全部
-          </Button>
-        </Space>
+        // 這邊因為手機的全部下載功能會只下載到最後一張，所以先隱藏
+        // 考慮 pharse2 用 zip 方式下載
+        <>
+          <Space className="sm:block hidden" size="small" key={key}>
+            <Button
+              onClick={() => handleOnDownloadAll(record)}
+              className="flex items-center"
+              disabled={!record.paidAt}
+            >
+              <div className="sm:block hidden">
+                <DownloadOutlined />
+              </div>
+              下載全部
+            </Button>
+          </Space>
+          <div className="sm:hidden block">
+            {record.items.map((item) => (
+              <Button
+                onClick={() => handleConfirm(record, item)}
+                className="flex items-center mb-1"
+                disabled={!record.paidAt}
+              >
+                <div className="sm:block hidden">
+                  <DownloadOutlined />
+                </div>
+                <p className="text-xs">
+                  下載 {item.watermarkedUrl.split("-watermarked-")[1]}
+                </p>
+              </Button>
+            ))}
+          </div>
+        </>
       ),
     },
   ];
@@ -249,7 +269,7 @@ const orders = () => {
     <div className="container mx-auto text-slate-600 my-24 overflow-hidden">
       <h1 className="text-center text-2xl mb-8">訂單查詢</h1>
       {!loading ? (
-        <div className="text-slate-600 w-full sm:mx-0 mx-4">
+        <div className="text-slate-600 sm:mx-0 mx-4">
           <Table
             dataSource={orders}
             columns={columns}

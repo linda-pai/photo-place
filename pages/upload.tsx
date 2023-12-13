@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import type { UploadProps } from "antd";
 import { message, Select, Spin, Button, Modal } from "antd";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
-import userPermission from "@/hooks/userPermission";
+import userPermission from "@/hooks/usePermission";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 

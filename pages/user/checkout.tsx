@@ -9,12 +9,14 @@ import {
   message,
   Spin,
   Table,
+  Tag,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
-import { deleteCookie, getCookie } from "cookies-next";
+import { setCookie, getCookie, deleteCookie } from "cookies-next";
 import { v4 as uuidv4 } from "uuid";
+import ImgsViewer from "react-images-viewer";
 
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import paymentOptions from "@/utils/paymentOptions";
@@ -43,10 +45,12 @@ const checkout = () => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const router = useRouter();
 
-  const [checkoutData, setCheckoutData] = useState([]);
+  const [checkoutData, setCheckoutData] = useState([] as any);
   const [paymentValue, setPaymentValue] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showImageViewer, setShowImageViewer] = useState(false);
+  const [currImg, setCurrImg] = useState(0); // [0, images.length - 1
 
   const columns: ColumnsType<CardDataProps> = [
     {
@@ -61,15 +65,13 @@ const checkout = () => {
       key: "watermarkedUrl",
       width: 80,
       render: (url: string, record) => (
-        <img className="w-20" src={url} alt={record.id} />
+        <img
+          className="w-20 cursor-pointer"
+          src={url}
+          alt={record.id}
+          onClick={() => handleClickImg(record.id)}
+        />
       ),
-    },
-    {
-      title: "照片編號",
-      dataIndex: "id",
-      key: "id",
-      width: 100,
-      ellipsis: true,
     },
     {
       title: "價格",
@@ -91,7 +93,7 @@ const checkout = () => {
 
   const total = checkoutData
     ?.map((item: CartDataProps) => Number(item.price))
-    .reduce((a, b) => a + b, 0);
+    .reduce((a: string, b: string) => a + b, 0);
 
   const onChange = (e: RadioChangeEvent) => {
     setPaymentValue(e.target.value);
@@ -116,22 +118,36 @@ const checkout = () => {
       })
         .then((res) => {
           if (res.status === 200) {
-            deleteCookie("checkoutData");
-            deleteCookie("cart");
-            setCheckoutData([]);
             message.success("訂單建立成功");
+
+            const currentCart = JSON.parse(getCookie("cart") || "{}");
+            setCookie(
+              "cart",
+              JSON.stringify({
+                ...currentCart,
+                [checkoutData[0]?.eventId]: Object.values(currentCart)
+                  .flat()
+                  .filter(
+                    (item: any) =>
+                      !checkoutData.map((item: any) => item.id).includes(item)
+                  ),
+              }),
+              {
+                expires: new Date(
+                  new Date().setFullYear(new Date().getFullYear() + 1)
+                ),
+              }
+            );
+            deleteCookie("checkoutData");
             router.push("/user/orders");
             setLoading(false);
           }
         })
         .catch((err) => {
+          console.log("err", err);
           message.error("訂單建立失敗, 請稍後再試");
         });
   };
-
-  // const handleOnCheckOut = () => {
-  //   setIsModalOpen(true);
-  // };
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -146,10 +162,18 @@ const checkout = () => {
     setIsModalOpen(false);
   };
 
+  const handleClickImg = (id: string) => {
+    setShowImageViewer(true);
+    setCurrImg(checkoutData.findIndex((item: any) => item.id === id));
+  };
+
   return isLogin ? (
     <>
-      <div className="container mx-auto my-24 text-[color:var(--main-color-dark)] sm:w-[70%] w-[90%]">
+      <div className="container sm:px-4 px-0 mx-auto my-24 text-[color:var(--main-color-dark)] sm:w-[70%] w-[90%]">
         <h1 className="text-center text-2xl mb-10">訂單明細</h1>
+        <h3 className="text-end my-4 text-sm">
+          訂單狀態： <Tag color="gold">尚未建立</Tag>
+        </h3>
         {!loading ? (
           <>
             <div>
@@ -158,7 +182,7 @@ const checkout = () => {
                 dataSource={checkoutData}
                 columns={columns}
                 footer={() => (
-                  <div className="flex justify-end">
+                  <div className="flex justify-center">
                     <div className=" text-[color:var(--main-color-dark)]">
                       <div className=" text-[color:var(--main-color-light)]">
                         訂購內容：電子檔共 {checkoutData.length} 張
@@ -178,7 +202,7 @@ const checkout = () => {
               />
               <Divider />
 
-              <div className="flex justify-end">
+              <div className="flex justify-center">
                 <Radio.Group onChange={onChange} value={paymentValue}>
                   <Space direction="vertical">
                     {paymentOptions.map((option: any) => (
@@ -194,7 +218,7 @@ const checkout = () => {
               </div>
             </div>
 
-            <div className="flex justify-center my-4">
+            <div className="flex justify-center my-8">
               <Button
                 onClick={showModal}
                 className="text-[color:var(--main-color-dark)]"
@@ -208,6 +232,18 @@ const checkout = () => {
               isModalOpen={isModalOpen}
               orderId={orderId}
               confirmBtnText="建立訂單"
+            />
+            <ImgsViewer
+              imgs={checkoutData.map((item: any) => ({
+                src: item.watermarkedUrl,
+              }))}
+              isOpen={showImageViewer}
+              currImg={currImg}
+              onClickPrev={() => setCurrImg((prev) => prev - 1)}
+              onClickNext={() => setCurrImg((prev) => prev + 1)}
+              onClose={() => setShowImageViewer(false)}
+              onClickThumbnail={(index: number) => setCurrImg(index)}
+              showThumbnails={true}
             />
           </>
         ) : (

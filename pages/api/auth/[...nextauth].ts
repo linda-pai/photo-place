@@ -14,6 +14,7 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
     LineProvider({
       clientId: process.env.NEXT_PUBLIC_LINE_CHANNEL_ID as string,
       clientSecret: process.env.NEXT_PUBLIC_LINE_CHANNEL_SECRET as string,
+      authorization: { params: { scope: "profile openid email" } },
     }),
   ];
 

@@ -6,7 +6,6 @@ import Link from "next/link";
 import ImgsViewer from "react-images-viewer";
 import { setCookie, getCookie } from "cookies-next";
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
-import copyToClipboard from "@/utils/copyToClipboard";
 import useAuth from "@/hooks/useAuth";
 
 interface CardDataProps {
@@ -47,22 +46,7 @@ const shoppingCart = () => {
         </div>
       ),
     },
-    {
-      title: "照片編號",
-      dataIndex: "id",
-      key: "id",
-      width: 100,
-      ellipsis: true,
-      render: (id: string) => (
-        <button
-          className="text-slate-500 hover:text-slate-700"
-          onClick={() => copyToClipboard(id)}
-        >
-          <CopyOutlined className="mr-2" />
-          {id}
-        </button>
-      ),
-    },
+
     {
       title: "價格",
       dataIndex: "price",
@@ -99,7 +83,10 @@ const shoppingCart = () => {
       if (!ids.length) return;
       fetch(`${domain}/api/images/getByIds/${eventId}/${ids}`)
         .then((res) => res.json())
-        .then((data) => setCartData((prevData: any) => [...prevData, ...data]));
+        .then((data) => {
+          setCartData((prevData: any) => [...prevData, ...data]);
+          setSelectedRows((prevData: any) => [...prevData, ...data]);
+        });
     });
   }, []);
 
@@ -116,6 +103,9 @@ const shoppingCart = () => {
     });
 
     setCartData(cartData.filter((item: CartDataProps) => item.id !== id));
+    setSelectedRows(
+      selectedRows.filter((item: CartDataProps) => item.id !== id)
+    );
   };
 
   const handleOnSubmit = () => {
@@ -136,10 +126,11 @@ const shoppingCart = () => {
   const rowSelection = {
     onChange: (keys: React.Key[], rows: CardDataProps[]) =>
       setSelectedRows(rows),
+    selectedRowKeys: selectedRows.map((item: CardDataProps) => item.id),
   };
 
   return isLogin ? (
-    <div className="container mx-auto my-24 text-[color:var(--main-color-dark)]">
+    <div className="container sm:px-4 px-0 mx-auto my-24 text-[color:var(--main-color-dark)]">
       <h1 className="text-center text-2xl mb-4">購物車</h1>
       <Table
         dataSource={cartData}

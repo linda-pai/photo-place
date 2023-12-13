@@ -14,7 +14,7 @@ import { ExclamationCircleOutlined, CopyOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import dayjs from "dayjs";
-import userPermission from "@/hooks/userPermission";
+import usePermission from "@/hooks/usePermission";
 import copyToClipboard from "@/utils/copyToClipboard";
 import paymentOptions from "@/utils/paymentOptions";
 
@@ -34,7 +34,7 @@ interface OrderListProps {
 
 const orderList = ({ orders }: OrderListProps) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-  const isAllowed = userPermission();
+  const isAllowed = usePermission();
 
   const [orderData, setOrderData] = useState<Order[]>(orders);
   const [loading, setLoading] = useState(false);
@@ -92,7 +92,7 @@ const orderList = ({ orders }: OrderListProps) => {
       title: "訂單編號",
       dataIndex: "orderId",
       key: "orderId",
-      width: 100,
+      width: 190,
       ellipsis: true,
       render: (text) => (
         <a onClick={() => copyToClipboard(text)} className="cursor-pointer">

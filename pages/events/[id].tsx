@@ -109,6 +109,10 @@ export default function EventSearchPage({
               }`}
             />
           </button>
+          <div>
+            <p className="line-through text-xs text-[#8f8f8f]">TWD: 169</p>
+            <p className="text-red-500 ">TWD: 109 </p>
+          </div>
         </div>
       ),
     };

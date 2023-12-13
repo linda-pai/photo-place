@@ -51,7 +51,7 @@ td {
     width: 80%;
   }
 
-  :where(.css-dev-only-do-not-override-6j9yrn).ant-modal .ant-modal-content {
+  :where(.css-6j9yrn).ant-modal .ant-modal-content {
     padding: 20px 16px !important;
   }
 }
@@ -61,7 +61,7 @@ td {
 .ant-modal-content {
   max-width: 450px;
 }
-:where(.css-dev-only-do-not-override-6j9yrn).ant-modal .ant-modal-content {
+:where(.css-6j9yrn).ant-modal .ant-modal-content {
   padding: 24px 36px;
 }
 .ant-modal-footer {
@@ -81,19 +81,28 @@ td {
 .ant-modal-title {
   color: var(--main-color-dark) !important;
 }
-:where(.css-dev-only-do-not-override-2i2tap).ant-pagination
-  .ant-pagination-item
-  a {
+:where(.css-2i2tap).ant-pagination .ant-pagination-item a {
   color: var(--main-color-dark) !important;
 }
-:where(.css-dev-only-do-not-override-2i2tap).ant-pagination
-  .ant-pagination-item-active
-  a {
+:where(.css-2i2tap).ant-pagination .ant-pagination-item-active a {
   color: var(--main-color-light) !important;
 }
-:where(.css-dev-only-do-not-override-2i2tap).ant-pagination
-  .ant-pagination-item-active {
+:where(.css-2i2tap).ant-pagination .ant-pagination-item-active {
   border-color: var(--main-color-light) !important;
+}
+
+:where(.css-6j9yrn).ant-table-wrapper
+  .ant-table-tbody
+  .ant-table-row.ant-table-row-selected
+  > .ant-table-cell {
+  background-color: var(--main-color-lighter) !important;
+}
+:where(.css-6j9yrn).ant-checkbox-checked .ant-checkbox-inner {
+  background-color: var(--main-color-light) !important;
+  border-color: var(--main-color-light) !important;
+}
+:where(.css-6j9yrn).ant-checkbox-indeterminate .ant-checkbox-inner:after {
+  background-color: var(--main-color-light) !important;
 }
 
 .masonry {

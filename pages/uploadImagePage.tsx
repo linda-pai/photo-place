@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import type { UploadProps } from "antd";
 import { message, Spin } from "antd";
-import userPermission from "@/hooks/userPermission";
+import userPermission from "@/hooks/usePermission";
 
 import dynamic from "next/dynamic";
 
