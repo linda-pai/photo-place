@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 
 const Uploader = dynamic(() => import("@/pages/components/Uploader"), {
-  ssr: false,
+  loading: () => <Spin />,
 });
 
 interface Event {

@@ -25,7 +25,7 @@ import useAuth from "@/hooks/useAuth";
 const PaymentInfo = dynamic(
   () => import("@/pages/components/PaymentInfoModal"),
   {
-    ssr: false,
+    loading: () => <Spin />,
   }
 );
 
