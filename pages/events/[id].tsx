@@ -1,6 +1,6 @@
 import type { InferGetServerSidePropsType, GetServerSideProps } from "next";
 import { useEffect, useState, useRef } from "react";
-import { message, Button } from "antd";
+import { message, Button, Tag, Spin } from "antd";
 import { ShoppingCartOutlined } from "@ant-design/icons";
 import ImgsViewer from "react-images-viewer";
 import { setCookie, getCookie } from "cookies-next";
@@ -8,12 +8,12 @@ import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
 // https://guonanci.github.io/react-images-viewer/
 import dynamic from "next/dynamic";
 import Head from "next/head";
-// import Image from "next/image";
+import Image from "next/image";
 
 const SearchWrapper = dynamic(
   () => import("@/pages/components/SearchWrapper"),
   {
-    ssr: false,
+    loading: () => <Spin />,
   }
 );
 
@@ -21,6 +21,7 @@ const SearchWrapper = dynamic(
 export default function EventSearchPage({
   eventInfo,
   imageList,
+  commonImages,
   navBarRef,
 }: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
@@ -133,13 +134,13 @@ export default function EventSearchPage({
       key={id}
       onClick={() => handleClickImg(id)}
     >
-      <img
+      <Image
         className="item__content"
         src={watermarkedUrl}
         alt={watermarkedUrl}
-        // width={300}
-        // height={400}
-        // quality={70}
+        width={300}
+        height={400}
+        quality={20}
       />
     </div>
   );
@@ -181,19 +182,47 @@ export default function EventSearchPage({
           <p>不囉唆⚡全面 65 折優惠</p>
         </div>
 
-        <div className="masonry min-h-[50vh]">
-          {images.map((item: any) => ImageItems(item))}
-          <ImgsViewer
-            imgs={flatted}
-            isOpen={showImageViewer}
-            currImg={currImg}
-            onClickPrev={() => setCurrImg((prev) => prev - 1)}
-            onClickNext={() => setCurrImg((prev) => prev + 1)}
-            onClose={() => setShowImageViewer(false)}
-            onClickThumbnail={(index: number) => setCurrImg(index)}
-            showThumbnails={true}
-          />
-        </div>
+        {images.length > 0 && (
+          <>
+            <div className="my-2 text-[color:var(--main-color-dark)] text-sm">
+              <Tag color="#B0B97A">已完成辨識號碼布</Tag>
+            </div>
+            <div className="masonry min-h-[50vh]">
+              {images.map((item: any) => ImageItems(item))}
+              <ImgsViewer
+                imgs={flatted}
+                isOpen={showImageViewer}
+                currImg={currImg}
+                onClickPrev={() => setCurrImg((prev) => prev - 1)}
+                onClickNext={() => setCurrImg((prev) => prev + 1)}
+                onClose={() => setShowImageViewer(false)}
+                onClickThumbnail={(index: number) => setCurrImg(index)}
+                showThumbnails={true}
+              />
+            </div>
+          </>
+        )}
+
+        {commonImages && commonImages.length > 0 && !search && (
+          <>
+            <div className="my-2 mt-16 mb-4 text-[color:var(--main-color-dark)] text-sm">
+              <Tag>未成功辨識號碼布</Tag>
+            </div>
+            <div className="masonry min-h-[50vh]">
+              {commonImages.map((item: any) => ImageItems(item))}
+              <ImgsViewer
+                imgs={flatted}
+                isOpen={showImageViewer}
+                currImg={currImg}
+                onClickPrev={() => setCurrImg((prev) => prev - 1)}
+                onClickNext={() => setCurrImg((prev) => prev + 1)}
+                onClose={() => setShowImageViewer(false)}
+                onClickThumbnail={(index: number) => setCurrImg(index)}
+                showThumbnails={true}
+              />
+            </div>
+          </>
+        )}
         <div>
           {images.length > 0 && search && (
             <Button
@@ -224,5 +253,9 @@ export async function getServerSideProps(context: any) {
     (res) => res.json()
   );
 
-  return { props: { imageList, eventInfo } };
+  const commonImages = await fetch(
+    `${domain}/api/images/getByPathAndEventId/${eventId}/common`
+  ).then((res) => res.json());
+
+  return { props: { imageList, commonImages, eventInfo } };
 }
