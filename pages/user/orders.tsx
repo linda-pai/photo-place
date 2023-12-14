@@ -13,13 +13,14 @@ import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import dayjs from "dayjs";
 import copyToClipboard from "@/utils/copyToClipboard";
 import paymentOptions from "@/utils/paymentOptions";
+import downloadImage from "@/utils/downloadImage";
 import useAuth from "@/hooks/useAuth";
 import dynamic from "next/dynamic";
 
 const PaymentInfo = dynamic(
   () => import("@/pages/components/PaymentInfoModal"),
   {
-    ssr: false,
+    loading: () => <Spin />,
   }
 );
 
@@ -44,32 +45,24 @@ const orders = () => {
   const [modal, contextHolder] = Modal.useModal();
   const [currentOrder, setCurrentOrder] = useState({} as Order);
 
-  const handleOnDownload = (orderId: any, item: any) => {
-    fetch(`${domain}/api/images/download/${orderId}/${item.eventId}/${item.id}`)
-      .then((res) => res.json())
-      .then((result) => {
-        if (result.error) return message.error(result.error);
-        const link = document.createElement("a");
-        const fileName = "phohopacer_img_" + new Date() + ".jpg";
+  const handleOnDownload = async (record: any, key: number) => {
+    setLoading(true);
+    const imageList = await getImageDownloadInfo(record);
 
-        link.href = result.url;
-        link.download = fileName;
-        link.setAttribute("download", "");
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-
-        message.success("下載成功");
-      })
-      .catch((err) => {
-        message.error("下載失敗");
-      });
+    try {
+      const url = imageList[key].url;
+      downloadImage(url);
+      setLoading(false);
+      message.success("下載成功");
+    } catch {
+      setLoading(false);
+      message.error("下載失敗");
+    }
   };
 
-  const handleConfirm = (record: Order, item: CartDataProps) => {
-    const { paidAt, orderId } = record;
-
-    if (paidAt) return handleOnDownload(orderId, item);
+  const handleClickImage = (record: Order, key: number) => {
+    const { paidAt } = record;
+    if (paidAt) return handleOnDownload(record, key);
     modal.confirm({
       title: "照片下載失敗",
       icon: <ExclamationCircleOutlined />,
@@ -79,11 +72,38 @@ const orders = () => {
     });
   };
 
-  const handleOnDownloadAll = (record: Order) => {
-    const { items } = record;
-    items.forEach((item: any) => {
-      handleConfirm(record, item);
-    });
+  const getImageDownloadInfo = async (record: Order) => {
+    const { items, orderId } = record;
+
+    const imageIdList = items.map((item: any) => item.id);
+    const eventId = items[0].eventId;
+
+    return await fetch(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/images/getByEventIdAndImageIds/${orderId}/${eventId}/${imageIdList}`
+    )
+      .then((res) => res.json())
+      .then((result) => result)
+      .catch((err) => {
+        message.error("下載失敗");
+      });
+  };
+
+  const getImagesZip = async (record: any) => {
+    setLoading(true);
+
+    try {
+      const imageList = await getImageDownloadInfo(record);
+
+      const url = `${
+        process.env.NEXT_PUBLIC_APP_URL
+      }/api/imageZip?imageList=${JSON.stringify(imageList)}`;
+
+      downloadImage(url);
+      setLoading(false);
+    } catch {
+      message.error("下載失敗");
+      setLoading(false);
+    }
   };
 
   const columns: ColumnsType<Order> = [
@@ -127,11 +147,11 @@ const orders = () => {
       render: (_, record, index) => (
         <div key={index}>
           <div className="flex gap-2 overflow-scroll">
-            {record.items.map((item) => (
+            {record.items.map((item, key) => (
               <div
                 className="relative group cursor-pointer"
                 key={item.id}
-                onClick={() => handleConfirm(record, item)}
+                onClick={() => handleClickImage(record, key)}
               >
                 <div className="w-24">
                   <img
@@ -201,14 +221,12 @@ const orders = () => {
     {
       title: "Action",
       key: "action",
-      width: 190,
+      width: 120,
       render: (_, record, key) => (
-        // 這邊因為手機的全部下載功能會只下載到最後一張，所以先隱藏
-        // 考慮 pharse2 用 zip 方式下載
         <>
-          <Space className="sm:block hidden" size="small" key={key}>
+          <Space size="small" key={key}>
             <Button
-              onClick={() => handleOnDownloadAll(record)}
+              onClick={() => getImagesZip(record)}
               className="flex items-center"
               disabled={!record.paidAt}
             >
@@ -218,22 +236,6 @@ const orders = () => {
               下載全部
             </Button>
           </Space>
-          <div className="sm:hidden block">
-            {record.items.map((item) => (
-              <Button
-                onClick={() => handleConfirm(record, item)}
-                className="flex items-center mb-1"
-                disabled={!record.paidAt}
-              >
-                <div className="sm:block hidden">
-                  <DownloadOutlined />
-                </div>
-                <p className="text-xs">
-                  下載 {item.watermarkedUrl.split("-watermarked-")[1]}
-                </p>
-              </Button>
-            ))}
-          </div>
         </>
       ),
     },
