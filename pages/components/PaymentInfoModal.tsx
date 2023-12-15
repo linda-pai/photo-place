@@ -98,6 +98,7 @@ const PaymentInfo: React.FC<Props> = ({
               href="https://lin.ee/n4xOm2O"
               target="_blank"
               className="text-center"
+              title="點擊加入好友"
             >
               <img src="/line.png" alt="點擊加入好友" />
               <p className="text-[10px] text-[#09b239]">點擊加入好友</p>

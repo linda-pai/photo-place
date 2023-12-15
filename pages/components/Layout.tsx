@@ -31,7 +31,11 @@ export default function Layout({ children, navBarRef }: any) {
           content="photopacer, photo pacer, 攝影小隊, 馬拉松照片 , 賽事"
         />
         <meta property="og:locale" content="zh_TW" />
-        <link rel="icon" href="/favicon.ico" />
+        <link
+          rel="icon"
+          href="https://www.photopacer.com/favicon.ico"
+          sizes="96x96"
+        />
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />

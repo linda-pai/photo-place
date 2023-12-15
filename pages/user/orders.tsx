@@ -118,6 +118,7 @@ const orders = () => {
           onClick={() => copyToClipboard(text)}
           className="cursor-pointer"
           key={key}
+          title="複製訂單編號"
         >
           <CopyOutlined className="mr-2" />
           {text}

@@ -95,7 +95,11 @@ const orderList = ({ orders }: OrderListProps) => {
       width: 190,
       ellipsis: true,
       render: (text) => (
-        <a onClick={() => copyToClipboard(text)} className="cursor-pointer">
+        <a
+          onClick={() => copyToClipboard(text)}
+          className="cursor-pointer"
+          title="複製訂單編號"
+        >
           <CopyOutlined className="mr-2" />
           {text}
         </a>
