@@ -9,6 +9,7 @@ import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import Image from "next/image";
+import { useRouter } from "next/router";
 
 const SearchWrapper = dynamic(
   () => import("@/pages/components/SearchWrapper"),
@@ -23,9 +24,12 @@ export default function EventSearchPage({
   imageList,
   commonImages,
   navBarRef,
+  bib,
 }: any) {
+  const router = useRouter();
+
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(bib || "");
   const [images, setImages] = useState([] as any);
   const [showModal, setShowModal] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
@@ -40,21 +44,34 @@ export default function EventSearchPage({
     setCartData(JSON.parse(getCookie("cart") || "{}"));
   }, []);
 
+  useEffect(() => {
+    onSearch();
+  }, []);
+
   const handleOnChange = (e: any) => {
     setSearch(e.target.value.trim());
   };
 
   const onSearch = () => {
-    if (search.match(/^[0-9]+$/) == null)
+    if (search !== "" && search.match(/^[0-9]+$/) == null)
       return message.error("請輸入正確的號碼布");
 
+    // //set url query
+    router.push(
+      {
+        pathname: `/events/${eventId}`,
+        query: { bib: search },
+      },
+      undefined,
+      { shallow: true }
+    );
     fetch(`${domain}/api/images/getByBidAndEventId/${eventId}/${search}`)
       .then((res) => res.json())
       .then((data) => {
         setImages(data);
         setShowModal(true);
 
-        scrollIntoViewWithOffset(".masonry", 220);
+        scrollIntoViewWithOffset(".masonry", 180);
       });
   };
 
@@ -147,7 +164,7 @@ export default function EventSearchPage({
   return (
     <>
       <Head>
-        <title>{eventName} | 搜尋照片</title>
+        <title>{`${eventName} | 搜尋照片`}</title>
         <meta property="og:title" content={`${eventName} | 搜尋照片`} />
         <meta name="description" content={`${eventName} | 號碼布搜尋照片`} />
         <meta
@@ -184,7 +201,7 @@ export default function EventSearchPage({
 
         {images.length > 0 && (
           <>
-            <div className="my-2 text-[color:var(--main-color-dark)] text-sm">
+            <div className="my-2 mx-3 text-[color:var(--main-color-dark)] text-sm">
               <Tag color="#B0B97A">已完成辨識號碼布</Tag>
             </div>
             <div className="masonry min-h-[50vh]">
@@ -244,6 +261,7 @@ export default function EventSearchPage({
 export async function getServerSideProps(context: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const eventId = context.params.id;
+  const bib = context.query.bib || "";
 
   const imageList = await fetch(
     `${domain}/api/images/getByEventId/${eventId}`
@@ -257,5 +275,5 @@ export async function getServerSideProps(context: any) {
     `${domain}/api/images/getByPathAndEventId/${eventId}/common`
   ).then((res) => res.json());
 
-  return { props: { imageList, commonImages, eventInfo } };
+  return { props: { imageList, commonImages, eventInfo, bib } };
 }
