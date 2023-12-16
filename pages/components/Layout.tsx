@@ -20,7 +20,7 @@ export default function Layout({ children, navBarRef }: any) {
         <meta property="og:site_name" content="Photo Pacer 攝影小隊" />
         <meta
           property="og:image"
-          content="https://photo-pacer-buckets.s3.ap-northeast-1.amazonaws.com/images/common/17ffc87d17d2b25f0517c6367ff2441163cbbf837178be5fe7ffae57e4427bcf-36a1511f7e9e805b6b059023852a2a68a225adbd919d6e2a0ec8aa95ff1be446-photo-pacer-high-resolution-logo%2B%284%29.png"
+          content="https://photo-pacer-buckets.s3.ap-northeast-1.amazonaws.com/images/common/182cba33f2b4387b34d881fa32e37533cc18e9669c1304f99dddfd29123b6297-S__50266122.jpg"
         />
         <meta
           name="Keywords"

@@ -88,7 +88,7 @@ const Nav = ({ navBarRef }: any) => {
 
         <div className="flex items-center gap-5">
           <Link href="/user/shoppingCart">
-            <div className="text-2xl hover:text-[#ca7c6f]">
+            <div className="text-3xl hover:text-[#ca7c6f]">
               <ShoppingCartOutlined />
             </div>
           </Link>
@@ -96,7 +96,7 @@ const Nav = ({ navBarRef }: any) => {
           {session ? (
             <div className="cursor-pointer">
               <Dropdown menu={{ items }} placement="bottom">
-                <div className=" text-2xl hover:text-[#ca7c6f]">
+                <div className=" text-3xl hover:text-[#ca7c6f]">
                   <UserOutlined />
                 </div>
               </Dropdown>
