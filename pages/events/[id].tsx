@@ -120,12 +120,21 @@ export default function EventSearchPage({
             className="cursor-pointer"
           >
             <ShoppingCartOutlined
-              className={`text-[32px] ${
+              className={`text-[24px] ${
                 isExistInCart(image.id)
                   ? "text-[color:var(--main-color)]"
                   : "text-white"
               }`}
             />
+            <p
+              className={`text-xs ${
+                isExistInCart(image.id)
+                  ? "text-[color:var(--main-color)]"
+                  : "text-white"
+              }`}
+            >
+              {isExistInCart(image.id) ? "已加入購物車" : "加入購物車"}
+            </p>
           </button>
           <div>
             <p className="line-through text-xs text-[#8f8f8f]">TWD: 169</p>
@@ -159,6 +168,25 @@ export default function EventSearchPage({
         height={400}
         quality={20}
       />
+      <div
+        className="bg-[#5f5b50] opacity-70 absolute bottom-0 w-full sm:h-[10%] h-[18%] min-h-[28px] max-h-[34px] group hover:opacity-90 transition-all duration-300"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleClickCart(id);
+          console.log("");
+        }}
+      >
+        <div
+          className={`z-20 text-xl absolute bottom-[20%] justify-center flex items-center w-full hover:cursor-pointer group-hover:text-[color:var(--main-color)] ${
+            isExistInCart(id) ? "text-[color:var(--main-color)]" : "text-white"
+          }`}
+        >
+          <ShoppingCartOutlined />
+          <p className="sm:text-sm  md:block hidden ml-1 h-fit">
+            {isExistInCart(id) ? "已加入購物車" : "加入購物車"}
+          </p>
+        </div>
+      </div>
     </div>
   );
   return (
