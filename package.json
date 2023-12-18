@@ -13,8 +13,11 @@
   },
   "dependencies": {
     "antd": "^5.10.3",
+    "cookies-next": "^4.1.0",
     "dayjs": "^1.11.10",
     "jsonwebtoken": "^9.0.2",
+    "jszip": "^3.10.1",
+    "jszip-utils": "^0.1.0",
     "next": "14.0.0",
     "next-auth": "4.23.1",
     "next-sitemap": "^4.2.3",
@@ -22,7 +25,8 @@
     "react": "^18",
     "react-dom": "^18",
     "react-images-viewer": "^1.7.1",
-    "sharp": "^0.33.0"
+    "sharp": "^0.33.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.4",

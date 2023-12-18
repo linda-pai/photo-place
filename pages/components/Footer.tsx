@@ -40,6 +40,7 @@ const Footer = () => {
                   href="https://www.facebook.com/profile.php?id=61554260632079"
                   className="hover:text-teal-600 transition duration-150 ease-in-out"
                   target="_blank"
+                  title="Facebook"
                 >
                   Facebook
                 </a>
@@ -49,6 +50,7 @@ const Footer = () => {
                   href="https://www.instagram.com/photopacer/"
                   className="hover:text-teal-600 transition duration-150 ease-in-out"
                   target="_blank"
+                  title="Instagram"
                 >
                   Instagram
                 </a>
@@ -58,6 +60,7 @@ const Footer = () => {
                   href="https://lin.ee/n4xOm2O"
                   className="hover:text-teal-600 transition duration-150 ease-in-out"
                   target="_blank"
+                  title="Line"
                 >
                   Line
                 </a>

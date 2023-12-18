@@ -1,17 +1,20 @@
 import { Inter } from "next/font/google";
 import dynamic from "next/dynamic";
+import { Spin } from "antd";
 
 const EventCard = dynamic(() => import("@/pages/components/EventCard"), {
-  ssr: false,
+  loading: () => <Spin />,
 });
 
 const inter = Inter({ subsets: ["latin"] });
 
 interface Event {
-  eventId: number;
-  date: string;
+  data: string;
   eventName: string;
   coverImg: string;
+  userId: string;
+  isShow: boolean;
+  eventId: string;
 }
 
 export default function Home({ events }: { events: Event[] }) {
@@ -19,13 +22,13 @@ export default function Home({ events }: { events: Event[] }) {
     <div
       className={`flex flex-col items-center justify-between my-24 container mx-auto ${inter.className}`}
     >
-      <h3 className="my-6 border-b text-2xl text-[color:var(--main-color-dark)]">
-        各大賽事
-      </h3>
+      <h1 className="my-6 border-b text-2xl text-[color:var(--main-color-dark)]">
+        運動賽事照片
+      </h1>
       <div className="flex flex-wrap justify-center">
-        {events.map((event, key) => (
-          <EventCard key={key} event={event} />
-        ))}
+        {events.map(
+          (event, key) => event.isShow && <EventCard key={key} event={event} />
+        )}
       </div>
     </div>
   );

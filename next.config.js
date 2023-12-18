@@ -2,8 +2,13 @@
 const nextConfig = {
   reactStrictMode: false,
   images: {
-    domains: ["photo-pacer-buckets.s3.ap-northeast-1.amazonaws.com"],
+    remotePatterns: [
+      {
+        hostname: "photo-pacer-buckets.s3.ap-northeast-1.amazonaws.com",
+      },
+    ],
   },
+  output: "standalone",
 };
 
 module.exports = nextConfig;

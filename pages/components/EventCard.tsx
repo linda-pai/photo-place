@@ -10,12 +10,12 @@ const EventCard = ({ event }: any) => {
         <div className="relative w-full aspect-[5/6]">
           <img
             src={coverImg}
-            alt={eventName}
+            alt={`${eventName}封面照片`}
             className="object-cover w-full h-full opacity-70 hover:opacity-100 duration-300 transition-opacity"
           />
         </div>
         <div className=" items-center text-[color:var(--main-color-dark)]">
-          <div className="m-2 sm:text-xl text-sm text-center">{eventName}</div>
+          <h2 className="m-2 sm:text-xl text-sm text-center">{eventName}</h2>
           <div className="m-2 rounded-md mx-auto py-1 px-2 w-fit bg-[color:var(--main-color)] text-[color:var(--main-color-dark)] opacity-90 text-center sm:text-xs text-[11px]">
             <div>{dayjs(date).format("YYYY-MM-DD")}</div>
           </div>

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import type { UploadProps } from "antd";
 import { message, Spin } from "antd";
-import userPermission from "@/hooks/userPermission";
+import userPermission from "@/hooks/usePermission";
 
 import dynamic from "next/dynamic";
 
 const Uploader = dynamic(() => import("@/pages/components/Uploader"), {
-  ssr: false,
+  loading: () => <Spin />,
 });
 const UploadImagePage: React.FC = () => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;

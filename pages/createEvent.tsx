@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import type { UploadProps, DatePickerProps } from "antd";
 import { message, DatePicker, Input, Button, Spin } from "antd";
 import { useRouter } from "next/router";
-import userPermission from "@/hooks/userPermission";
-import Image from "next/image";
+import userPermission from "@/hooks/usePermission";
+// import Image from "next/image";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 
 const Uploader = dynamic(() => import("@/pages/components/Uploader"), {
-  ssr: false,
+  loading: () => <Spin />,
 });
 
 const CreateEventPage: React.FC = () => {

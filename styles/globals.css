@@ -45,9 +45,28 @@ th,
 td {
   color: var(--main-color-dark) !important;
 }
+@media only screen and (max-width: 768px) {
+  ._e296pg,
+  .content_e296pg {
+    width: 80%;
+  }
 
-.ant-table-wrapper {
+  :where(.css-6j9yrn).ant-modal .ant-modal-content {
+    padding: 20px 16px !important;
+  }
+}
+.ant-table {
   overflow-x: scroll;
+}
+.ant-modal-content {
+  max-width: 450px;
+}
+:where(.css-6j9yrn).ant-modal .ant-modal-content {
+  padding: 24px 36px;
+}
+.ant-modal-footer {
+  display: flex;
+  justify-content: center;
 }
 .ant-message-notice-content {
   z-index: 100;
@@ -58,25 +77,32 @@ td {
 .ant-btn-primary {
   background-color: var(--main-color-light);
 }
-.ant-btn-default {
-  color: var(--main-color-dark);
-}
+
 .ant-modal-title {
   color: var(--main-color-dark) !important;
 }
-:where(.css-dev-only-do-not-override-2i2tap).ant-pagination
-  .ant-pagination-item
-  a {
+:where(.css-2i2tap).ant-pagination .ant-pagination-item a {
   color: var(--main-color-dark) !important;
 }
-:where(.css-dev-only-do-not-override-2i2tap).ant-pagination
-  .ant-pagination-item-active
-  a {
+:where(.css-2i2tap).ant-pagination .ant-pagination-item-active a {
   color: var(--main-color-light) !important;
 }
-:where(.css-dev-only-do-not-override-2i2tap).ant-pagination
-  .ant-pagination-item-active {
+:where(.css-2i2tap).ant-pagination .ant-pagination-item-active {
   border-color: var(--main-color-light) !important;
+}
+
+:where(.css-6j9yrn).ant-table-wrapper
+  .ant-table-tbody
+  .ant-table-row.ant-table-row-selected
+  > .ant-table-cell {
+  background-color: var(--main-color-lighter) !important;
+}
+:where(.css-6j9yrn).ant-checkbox-checked .ant-checkbox-inner {
+  background-color: var(--main-color-light) !important;
+  border-color: var(--main-color-light) !important;
+}
+:where(.css-6j9yrn).ant-checkbox-indeterminate .ant-checkbox-inner:after {
+  background-color: var(--main-color-light) !important;
 }
 
 .masonry {

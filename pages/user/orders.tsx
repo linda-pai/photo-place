@@ -13,13 +13,14 @@ import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import dayjs from "dayjs";
 import copyToClipboard from "@/utils/copyToClipboard";
 import paymentOptions from "@/utils/paymentOptions";
+import downloadImage from "@/utils/downloadImage";
 import useAuth from "@/hooks/useAuth";
 import dynamic from "next/dynamic";
 
 const PaymentInfo = dynamic(
   () => import("@/pages/components/PaymentInfoModal"),
   {
-    ssr: false,
+    loading: () => <Spin />,
   }
 );
 
@@ -42,33 +43,26 @@ const orders = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modal, contextHolder] = Modal.useModal();
+  const [currentOrder, setCurrentOrder] = useState({} as Order);
 
-  const handleOnDownload = (orderId: any, item: any) => {
-    fetch(`${domain}/api/images/download/${orderId}/${item.eventId}/${item.id}`)
-      .then((res) => res.json())
-      .then((result) => {
-        if (result.error) return message.error(result.error);
-        const link = document.createElement("a");
-        const fileName = "phohopacer_img_" + new Date() + ".jpg";
+  const handleOnDownload = async (record: any, key: number) => {
+    setLoading(true);
+    const imageList = await getImageDownloadInfo(record);
 
-        link.href = result.url;
-        link.download = fileName;
-        link.setAttribute("download", "");
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-
-        message.success("下載成功");
-      })
-      .catch((err) => {
-        message.error("下載失敗");
-      });
+    try {
+      const url = imageList[key].url;
+      downloadImage(url);
+      setLoading(false);
+      message.success("下載成功");
+    } catch {
+      setLoading(false);
+      message.error("下載失敗");
+    }
   };
 
-  const handleConfirm = (record: Order, item: CartDataProps) => {
-    const { paidAt, orderId } = record;
-
-    if (paidAt) return handleOnDownload(orderId, item);
+  const handleClickImage = (record: Order, key: number) => {
+    const { paidAt } = record;
+    if (paidAt) return handleOnDownload(record, key);
     modal.confirm({
       title: "照片下載失敗",
       icon: <ExclamationCircleOutlined />,
@@ -78,11 +72,38 @@ const orders = () => {
     });
   };
 
-  const handleOnDownloadAll = (record: Order) => {
-    const { items } = record;
-    items.forEach((item: any) => {
-      handleConfirm(record, item);
-    });
+  const getImageDownloadInfo = async (record: Order) => {
+    const { items, orderId } = record;
+
+    const imageIdList = items.map((item: any) => item.id);
+    const eventId = items[0].eventId;
+
+    return await fetch(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/images/getByEventIdAndImageIds/${orderId}/${eventId}/${imageIdList}`
+    )
+      .then((res) => res.json())
+      .then((result) => result)
+      .catch((err) => {
+        message.error("下載失敗");
+      });
+  };
+
+  const getImagesZip = async (record: any) => {
+    setLoading(true);
+
+    try {
+      const imageList = await getImageDownloadInfo(record);
+
+      const url = `${
+        process.env.NEXT_PUBLIC_APP_URL
+      }/api/imageZip?imageList=${JSON.stringify(imageList)}`;
+
+      downloadImage(url);
+      setLoading(false);
+    } catch {
+      message.error("下載失敗");
+      setLoading(false);
+    }
   };
 
   const columns: ColumnsType<Order> = [
@@ -97,6 +118,7 @@ const orders = () => {
           onClick={() => copyToClipboard(text)}
           className="cursor-pointer"
           key={key}
+          title="複製訂單編號"
         >
           <CopyOutlined className="mr-2" />
           {text}
@@ -107,7 +129,7 @@ const orders = () => {
       title: "訂單成立時間",
       dataIndex: "createAt",
       key: "createAt",
-      width: 120,
+      width: 140,
       sorter: (a: Order, b: Order) => {
         const dateA = new Date(a.createAt);
         const dateB = new Date(b.createAt);
@@ -126,16 +148,17 @@ const orders = () => {
       render: (_, record, index) => (
         <div key={index}>
           <div className="flex gap-2 overflow-scroll">
-            {record.items.map((item) => (
+            {record.items.map((item, key) => (
               <div
                 className="relative group cursor-pointer"
                 key={item.id}
-                onClick={() => handleConfirm(record, item)}
+                onClick={() => handleClickImage(record, key)}
               >
                 <div className="w-24">
                   <img
                     src={item.watermarkedUrl}
                     className="w-full object-contain"
+                    alt={item.id}
                   />
                 </div>
                 <div className="group-hover:visible invisible">
@@ -166,12 +189,18 @@ const orders = () => {
       dataIndex: "paidAt",
       key: "paidAt",
       width: 120,
-      render: (text, _, key) => (
+      render: (text, orderInfo, key) => (
         <div key={key}>
           {text ? (
             <Tag color="#B0B97A">已付款</Tag>
           ) : (
-            <div onClick={showModal} className="hover:cursor-pointer">
+            <div
+              onClick={() => {
+                showModal();
+                setCurrentOrder(orderInfo);
+              }}
+              className="hover:cursor-pointer"
+            >
               <Tag color="#f0cf02">未付款</Tag>
               <InfoCircleOutlined style={{ color: "#f0cf02" }} />
             </div>
@@ -195,18 +224,20 @@ const orders = () => {
       key: "action",
       width: 120,
       render: (_, record, key) => (
-        <Space size="small" key={key}>
-          <Button
-            onClick={() => handleOnDownloadAll(record)}
-            className="flex items-center"
-            disabled={!record.paidAt}
-          >
-            <div className="sm:block hidden">
-              <DownloadOutlined />
-            </div>
-            下載全部
-          </Button>
-        </Space>
+        <>
+          <Space size="small" key={key}>
+            <Button
+              onClick={() => getImagesZip(record)}
+              className="flex items-center"
+              disabled={!record.paidAt}
+            >
+              <div className="sm:block hidden">
+                <DownloadOutlined />
+              </div>
+              下載全部
+            </Button>
+          </Space>
+        </>
       ),
     },
   ];
@@ -241,12 +272,13 @@ const orders = () => {
     <div className="container mx-auto text-slate-600 my-24 overflow-hidden">
       <h1 className="text-center text-2xl mb-8">訂單查詢</h1>
       {!loading ? (
-        <div className="text-slate-600 w-full sm:mx-0 mx-4">
+        <div className="text-slate-600 sm:mx-0 mx-4">
           <Table
             dataSource={orders}
             columns={columns}
             pagination={{
-              pageSize: 20,
+              pageSize: 10,
+              position: ["bottomCenter"],
             }}
           />
           {contextHolder}
@@ -254,6 +286,8 @@ const orders = () => {
             handleOk={handleOk}
             handleCancel={handleCancel}
             isModalOpen={isModalOpen}
+            orderId={currentOrder.orderId}
+            confirmBtnText="確認"
           />
         </div>
       ) : (

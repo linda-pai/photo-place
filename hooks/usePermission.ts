@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { message } from "antd";
 
-function userPermission(): boolean {
+function usePermission(): boolean {
   const [isAllowed, setIsAllowed] = useState(false);
   const router = useRouter();
   const { data: session }: any = useSession();
@@ -19,13 +19,14 @@ function userPermission(): boolean {
     const userId = session?.id;
     const allowedRoles = permissionByPage[router.pathname];
 
+    console.log("userId", userId);
     if (session !== undefined) {
       if (allowedRoles.includes(userId)) {
         setIsAllowed(true);
       } else {
         setIsAllowed(false);
         message.error("You are not allowed to access this page");
-        router.back();
+        // router.back();
       }
     }
   }, [session]);
@@ -33,4 +34,4 @@ function userPermission(): boolean {
   return isAllowed;
 }
 
-export default userPermission;
+export default usePermission;

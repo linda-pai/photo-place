@@ -70,15 +70,25 @@ const Nav = ({ navBarRef }: any) => {
       >
         <Link href="/" className="w-[12%] min-w-[100px]">
           {showLightColor ? (
-            <img src="/photo-pacer-white.png" />
+            <img
+              src="/photo-pacer-white.svg"
+              alt="photopacer-logo"
+              width="100%"
+              height="100%"
+            />
           ) : (
-            <img src="/photo-pacer.png" />
+            <img
+              src="/photo-pacer.svg"
+              alt="photopacer-logo"
+              width="100%"
+              height="100%"
+            />
           )}
         </Link>
 
         <div className="flex items-center gap-5">
           <Link href="/user/shoppingCart">
-            <div className="text-2xl hover:text-[#ca7c6f]">
+            <div className="text-3xl hover:text-[#ca7c6f]">
               <ShoppingCartOutlined />
             </div>
           </Link>
@@ -86,7 +96,7 @@ const Nav = ({ navBarRef }: any) => {
           {session ? (
             <div className="cursor-pointer">
               <Dropdown menu={{ items }} placement="bottom">
-                <div className=" text-2xl hover:text-[#ca7c6f]">
+                <div className=" text-3xl hover:text-[#ca7c6f]">
                   <UserOutlined />
                 </div>
               </Dropdown>

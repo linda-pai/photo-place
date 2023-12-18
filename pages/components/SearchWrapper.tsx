@@ -1,19 +1,35 @@
 interface Props {
   handleOnChange: (e: any) => void;
   onSearch: () => void;
+  eventName?: string;
 }
 
-const SearchWrapper = ({ handleOnChange, onSearch }: Props) => {
+const SearchWrapper = ({ handleOnChange, onSearch, eventName }: Props) => {
   return (
     <div className="mb-10">
       <div className="relative w-full h-screen bg-cover bg-[url('/banner.png')]">
-        <div className=" rounded-tl-3xl rounded-br-3xl bg-[#ffffff5e] w-[90%] outline outline-2 outline-white outline-offset-[-10px] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-          <div className="w-full max-w-[800px] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+        <div className="rounded-tl-3xl rounded-br-3xl bg-[#ffffff5e] w-[90%] outline outline-2 outline-white outline-offset-[-10px] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <div className="w-full max-w-[800px] absolute mt-4 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+            <h1 className="sm:hidden block text-white sm:text-3xl text-xl font-bold text-center w-[90%] mx-auto my-3 pl-4 drop-shadow-lg ">
+              {eventName}
+            </h1>
+
             <div className="relative w-[90%] mx-auto">
               <input
                 type="search"
-                className="w-full rounded-full h-[60px] py-3 px-16 border border-white bg-white bg-opacity-30 text-white sm:text-lg text-sm backdrop-blur-[2px]"
-                placeholder="請輸入號碼布"
+                className="sm:block hidden w-full rounded-full h-[60px] py-3 sm:px-16 pl-16 pr-0 border border-white bg-[#5f5b50] bg-opacity-70 text-white sm:text-lg text-sm backdrop-blur-[2px]"
+                placeholder={`${eventName}  - 請輸入號碼布`}
+                onChange={handleOnChange}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    onSearch();
+                  }
+                }}
+              />
+              <input
+                type="search"
+                className="sm:hidden block w-full rounded-full h-[60px] py-3 sm:px-16 pl-16 pr-0 border border-white bg-[#5f5b50] bg-opacity-70 text-white sm:text-lg text-sm backdrop-blur-[2px]"
+                placeholder={`請輸入號碼布`}
                 onChange={handleOnChange}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -26,13 +42,16 @@ const SearchWrapper = ({ handleOnChange, onSearch }: Props) => {
                   src="/searchIcon.svg"
                   height={32}
                   width={32}
-                  alt="Follow us on Twitter"
+                  alt="search-icon"
                 />
               </div>
-              <button onClick={onSearch} className="absolute right-1 h-[60px]">
-                <div className="h-[80%] bg-white text-[color:var(--main-color-dark)] sm:text-lg text-sm px-6 mx-1 rounded-full flex items-center justify-center">
+              <button
+                onClick={onSearch}
+                className="absolute right-1 top-0 h-[60px]"
+              >
+                <h3 className="h-[80%] bg-white text-[color:var(--main-color-dark)] sm:text-lg text-sm px-6 mx-1 rounded-full flex items-center justify-center">
                   搜尋號碼布
-                </div>
+                </h3>
               </button>
             </div>
           </div>
