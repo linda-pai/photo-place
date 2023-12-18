@@ -232,7 +232,7 @@ export default function EventSearchPage({
             <div className="my-2 mx-3 text-[color:var(--main-color-dark)] text-sm">
               <Tag color="#B0B97A">已完成辨識號碼布</Tag>
             </div>
-            <div className="masonry min-h-[50vh]">
+            <div className="masonry">
               {images.map((item: any) => ImageItems(item))}
               <ImgsViewer
                 imgs={flatted}
@@ -253,7 +253,7 @@ export default function EventSearchPage({
             <div className="my-2 mt-16 mb-4 text-[color:var(--main-color-dark)] text-sm">
               <Tag>未成功辨識號碼布</Tag>
             </div>
-            <div className="masonry min-h-[50vh]">
+            <div className="masonry">
               {commonImages.map((item: any) => ImageItems(item))}
               <ImgsViewer
                 imgs={flatted}

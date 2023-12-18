@@ -37,8 +37,11 @@ export default function Layout({ children, navBarRef }: any) {
           sizes="96x96"
         />
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1"
+        />
       </Head>
       <Navbar navBarRef={navBarRef} />
       <main className="flex-1">{children}</main>
