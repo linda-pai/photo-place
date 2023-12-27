@@ -65,6 +65,7 @@ export default function EventSearchPage({
       undefined,
       { shallow: true }
     );
+    if (search === "") return setImages(imageList);
     fetch(`${domain}/api/images/getByBidAndEventId/${eventId}/${search}`)
       .then((res) => res.json())
       .then((data) => {
@@ -216,9 +217,9 @@ export default function EventSearchPage({
         <div className="text-center m-10 text-[color:var(--main-color-dark)]">
           <p>試營運期間，只有一位攝影師🥲</p>
           {
-            <p className={showModal ? "visible" : "invisible h-0"}>{`找到 ${
-              images.length
-            } 張照片，${
+            <p
+              className={showModal && search ? "visible" : "invisible h-0"}
+            >{`找到 ${images.length} 張照片，${
               images.length == 0
                 ? "我們未來會努力的增加攝影師的💪"
                 : "太有緣份了！"

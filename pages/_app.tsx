@@ -3,9 +3,15 @@ import type { ReactElement, ReactNode } from "react";
 import type { NextPage } from "next";
 import type { AppProps } from "next/app";
 import { SessionProvider } from "next-auth/react";
-import Layout from "@/pages/components/Layout";
+import { Spin } from "antd";
+
+import dynamic from "next/dynamic";
 
 import "../styles/globals.css";
+
+const Layout = dynamic(() => import("@/pages/components/Layout"), {
+  loading: () => <Spin />,
+});
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;

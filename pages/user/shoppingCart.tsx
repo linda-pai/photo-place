@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Button, Table, Space, Spin, Checkbox } from "antd";
-import { DeleteOutlined, CopyOutlined } from "@ant-design/icons";
+import { Button, Table, Space, Spin } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import Link from "next/link";
 import ImgsViewer from "react-images-viewer";
