@@ -48,33 +48,36 @@ export default function EventSearchPage({
   }, []);
 
   useEffect(() => {
-    search && setTotal(images.length);
+    const dataLength = search ? images.length : imageListTotal;
+    setTotal(dataLength);
   }, [images]);
 
   useEffect(() => {
-    onSearch();
+    if (curPage !== page) onSearch();
   }, [curPage]);
 
   const handleOnChange = (e: any) => {
     setSearch(e.target.value.trim());
+    setCurPage(1);
   };
 
   const onSearch = () => {
     if (search !== "" && search.match(/^[0-9]+$/) == null)
       return message.error("請輸入正確的號碼布");
 
+    const searchPage = search ? 1 : curPage;
     // //set url query
     router.push(
       {
         pathname: `/events/${eventId}`,
-        query: { bib: search, page: curPage },
+        query: { bib: search, page: searchPage },
       },
       undefined,
       { shallow: true }
     );
-    const searchValue = search === "" ? "all" : search;
+    const searchValue = search || "all";
     fetch(
-      `${domain}/api/images/getByPathAndEventId/${eventId}/${searchValue}?page=${curPage}`
+      `${domain}/api/images/getByPathAndEventId/${eventId}/${searchValue}?page=${searchPage}`
     )
       .then((res) => res.json())
       .then((data) => {
@@ -117,6 +120,8 @@ export default function EventSearchPage({
       message.success("已從購物車移除");
     }
   };
+
+  const handleOnPageChange = (page: number) => setCurPage(page);
 
   // const handleAddToFavorite = (id: string) => {};
 
@@ -259,10 +264,11 @@ export default function EventSearchPage({
             <div className="text-center my-10">
               <Pagination
                 defaultCurrent={curPage}
-                onChange={(page) => setCurPage(page)}
+                onChange={handleOnPageChange}
                 total={total}
                 pageSize={100}
                 showSizeChanger={false}
+                current={curPage}
               />
             </div>
           </>
