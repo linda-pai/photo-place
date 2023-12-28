@@ -1,4 +1,5 @@
 const scrollIntoViewWithOffset = (selector: any, offset: number) => {
+  if (!selector) return;
   window.scrollTo({
     behavior: "smooth",
     top:
