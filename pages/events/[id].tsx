@@ -1,6 +1,5 @@
-import type { InferGetServerSidePropsType, GetServerSideProps } from "next";
-import { useEffect, useState, useRef } from "react";
-import { message, Button, Tag, Spin } from "antd";
+import { useEffect, useState } from "react";
+import { message, Button, Tag, Spin, Pagination } from "antd";
 import { ShoppingCartOutlined } from "@ant-design/icons";
 import ImgsViewer from "react-images-viewer";
 import { setCookie, getCookie } from "cookies-next";
@@ -25,6 +24,8 @@ export default function EventSearchPage({
   commonImages,
   navBarRef,
   bib,
+  page,
+  imageListTotal,
 }: any) {
   const router = useRouter();
 
@@ -35,6 +36,8 @@ export default function EventSearchPage({
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [currImg, setCurrImg] = useState(0); // [0, images.length - 1
   const [cartData, setCartData] = useState({} as any);
+  const [curPage, setCurPage] = useState(page || 1);
+  const [total, setTotal] = useState(imageListTotal);
 
   //id as evetId
   const { eventId, eventName, coverImg } = eventInfo;
@@ -45,8 +48,12 @@ export default function EventSearchPage({
   }, []);
 
   useEffect(() => {
+    search && setTotal(images.length);
+  }, [images]);
+
+  useEffect(() => {
     onSearch();
-  }, []);
+  }, [curPage]);
 
   const handleOnChange = (e: any) => {
     setSearch(e.target.value.trim());
@@ -60,18 +67,21 @@ export default function EventSearchPage({
     router.push(
       {
         pathname: `/events/${eventId}`,
-        query: { bib: search },
+        query: { bib: search, page: curPage },
       },
       undefined,
       { shallow: true }
     );
-    fetch(`${domain}/api/images/getByBidAndEventId/${eventId}/${search}`)
+    const searchValue = search === "" ? "all" : search;
+    fetch(
+      `${domain}/api/images/getByPathAndEventId/${eventId}/${searchValue}?page=${curPage}`
+    )
       .then((res) => res.json())
       .then((data) => {
         setImages(data);
         setShowModal(true);
 
-        scrollIntoViewWithOffset(".masonry", 180);
+        scrollIntoViewWithOffset("#result-container", 100);
       });
   };
 
@@ -149,6 +159,7 @@ export default function EventSearchPage({
 
   const pushToCart = (id: string) => {
     const currentCart = JSON.parse(getCookie("cart") || "{}");
+    if (currentCart[eventId]?.includes(id)) return;
     const newCart = currentCart[eventId] ? [...currentCart[eventId], id] : [id];
     currentCart[eventId] = newCart;
     updateCart(currentCart);
@@ -173,7 +184,6 @@ export default function EventSearchPage({
         onClick={(e) => {
           e.stopPropagation();
           handleClickCart(id);
-          console.log("");
         }}
       >
         <div
@@ -212,13 +222,13 @@ export default function EventSearchPage({
           eventName={eventName}
         />
       </div>
-      <div className="container mx-auto my-10">
+      <div className="container mx-auto my-10" id="result-container">
         <div className="text-center m-10 text-[color:var(--main-color-dark)]">
           <p>試營運期間，只有一位攝影師🥲</p>
           {
-            <p className={showModal ? "visible" : "invisible h-0"}>{`找到 ${
-              images.length
-            } 張照片，${
+            <p
+              className={showModal && search ? "visible" : "invisible h-0"}
+            >{`找到 ${images.length} 張照片，${
               images.length == 0
                 ? "我們未來會努力的增加攝影師的💪"
                 : "太有緣份了！"
@@ -243,6 +253,16 @@ export default function EventSearchPage({
                 onClose={() => setShowImageViewer(false)}
                 onClickThumbnail={(index: number) => setCurrImg(index)}
                 showThumbnails={true}
+              />
+            </div>
+
+            <div className="text-center my-10">
+              <Pagination
+                defaultCurrent={curPage}
+                onChange={(page) => setCurPage(page)}
+                total={total}
+                pageSize={100}
+                showSizeChanger={false}
               />
             </div>
           </>
@@ -272,7 +292,7 @@ export default function EventSearchPage({
           {images.length > 0 && search && (
             <Button
               onClick={() => {
-                pushToCart(images.map((item: any) => item.id));
+                images.map((item: any) => pushToCart(item.id));
                 message.success(`已將 ${images.length} 張照片加入購物車`);
               }}
               className="mx-auto block my-10"
@@ -290,10 +310,15 @@ export async function getServerSideProps(context: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const eventId = context.params.id;
   const bib = context.query.bib || "";
+  const page = context.query.page || 1;
 
   const imageList = await fetch(
-    `${domain}/api/images/getByEventId/${eventId}`
+    `${domain}/api/images/getByPathAndEventId/${eventId}/all`
   ).then((res) => res.json());
+
+  const imageListTotal = await fetch(`${domain}/api/images/getCount/${eventId}`)
+    .then((res) => res.json())
+    .then((data) => data.count);
 
   const eventInfo = await fetch(`${domain}/api/events/getBy/${eventId}`).then(
     (res) => res.json()
@@ -303,5 +328,7 @@ export async function getServerSideProps(context: any) {
     `${domain}/api/images/getByPathAndEventId/${eventId}/common`
   ).then((res) => res.json());
 
-  return { props: { imageList, commonImages, eventInfo, bib } };
+  return {
+    props: { imageList, commonImages, eventInfo, bib, page, imageListTotal },
+  };
 }
