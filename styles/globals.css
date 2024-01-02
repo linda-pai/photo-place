@@ -55,18 +55,13 @@ td {
     padding: 20px 16px !important;
   }
 }
-:where(.css-dev-only-do-not-override-2rgkd4).ant-pagination
-  .ant-pagination-item
-  a {
+:where(.css-2rgkd4).ant-pagination .ant-pagination-item a {
   color: var(--main-color-light) !important;
 }
-:where(.css-dev-only-do-not-override-2rgkd4).ant-pagination
-  .ant-pagination-item-active
-  a {
+:where(.css-2rgkd4).ant-pagination .ant-pagination-item-active a {
   color: var(--main-color) !important;
 }
-:where(.css-dev-only-do-not-override-2rgkd4).ant-pagination
-  .ant-pagination-item-active {
+:where(.css-2rgkd4).ant-pagination .ant-pagination-item-active {
   border-color: var(--main-color) !important;
 }
 .ant-table {

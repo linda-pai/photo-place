@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{}"
+self.__REACT_LOADABLE_MANIFEST="{\"_app.tsx -> @/pages/components/Layout\":{\"id\":\"_app.tsx -> @/pages/components/Layout\",\"files\":[\"static/chunks/pages_components_Layout_tsx.js\"]},\"events/[id].tsx -> @/pages/components/SearchWrapper\":{\"id\":\"events/[id].tsx -> @/pages/components/SearchWrapper\",\"files\":[\"static/chunks/pages_components_SearchWrapper_tsx.js\"]},\"index.tsx -> @/pages/components/EventCard\":{\"id\":\"index.tsx -> @/pages/components/EventCard\",\"files\":[\"static/chunks/pages_components_EventCard_tsx.js\"]}}"

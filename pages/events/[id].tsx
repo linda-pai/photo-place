@@ -9,6 +9,7 @@ import dynamic from "next/dynamic";
 import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import { clickAddToCart, removeAddToCart, searchTracking } from "@/lib/gtag";
 
 const SearchWrapper = dynamic(
   () => import("@/pages/components/SearchWrapper"),
@@ -85,6 +86,14 @@ export default function EventSearchPage({
         setShowModal(true);
 
         scrollIntoViewWithOffset("#result-container", 100);
+
+        searchTracking({
+          event_category: "event",
+          event_label: eventName,
+          search_term: search,
+          number_of_results: data.length,
+          user_id: getCookie("token"),
+        });
       });
   };
 
@@ -110,6 +119,14 @@ export default function EventSearchPage({
       //存入cookie
       pushToCart(id);
       message.success("已加入購物車");
+
+      clickAddToCart({
+        event_category: "event",
+        event_label: eventName,
+        image_id: id,
+        current_search: search,
+        user_id: getCookie("token"),
+      });
     } else {
       //從cookie移除
       const newCart = currentCart[eventId].filter(
@@ -118,6 +135,13 @@ export default function EventSearchPage({
       currentCart[eventId] = newCart;
       updateCart(currentCart);
       message.success("已從購物車移除");
+
+      removeAddToCart({
+        event_category: "event",
+        event_label: eventName,
+        image_id: id,
+        user_id: getCookie("token"),
+      });
     }
   };
 
