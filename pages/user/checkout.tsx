@@ -10,6 +10,7 @@ import {
   Spin,
   Table,
   Tag,
+  Modal,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dynamic from "next/dynamic";
@@ -21,13 +22,14 @@ import ImgsViewer from "react-images-viewer";
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import paymentOptions from "@/utils/paymentOptions";
 import useAuth from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
-const PaymentInfo = dynamic(
-  () => import("@/pages/components/PaymentInfoModal"),
-  {
-    loading: () => <Spin />,
-  }
-);
+// const PaymentInfo = dynamic(
+//   () => import("@/pages/components/PaymentInfoModal"),
+//   {
+//     loading: () => <Spin />,
+//   }
+// );
 
 interface CardDataProps {
   eventId: number;
@@ -38,6 +40,7 @@ interface CardDataProps {
 
 const checkout = () => {
   const isLogin = useAuth();
+  const isMobile = useIsMobile();
   const { data: session }: any = useSession();
 
   const orderId = "ord-" + uuidv4().substring(0, 12);
@@ -48,9 +51,9 @@ const checkout = () => {
   const [checkoutData, setCheckoutData] = useState([] as any);
   const [paymentValue, setPaymentValue] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [currImg, setCurrImg] = useState(0); // [0, images.length - 1
+  const [modal, contextHolder] = Modal.useModal();
 
   const columns: ColumnsType<CardDataProps> = [
     {
@@ -99,6 +102,26 @@ const checkout = () => {
     setPaymentValue(e.target.value);
   };
 
+  const removeFromCookieData = async () => {
+    const currentCart = JSON.parse(getCookie("cart") || "{}");
+    setCookie(
+      "cart",
+      JSON.stringify({
+        ...currentCart,
+        [checkoutData[0]?.eventId]: Object.values(currentCart)
+          .flat()
+          .filter(
+            (item: any) =>
+              !checkoutData.map((item: any) => item.id).includes(item)
+          ),
+      }),
+      {
+        expires: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+      }
+    );
+    deleteCookie("checkoutData");
+  };
+
   const createOrder = async () => {
     setLoading(true);
     //成立訂單
@@ -116,31 +139,13 @@ const checkout = () => {
           "Content-Type": "application/json",
         },
       })
-        .then((res) => {
+        .then(async (res) => {
           if (res.status === 200) {
             message.success("訂單建立成功");
-
-            const currentCart = JSON.parse(getCookie("cart") || "{}");
-            setCookie(
-              "cart",
-              JSON.stringify({
-                ...currentCart,
-                [checkoutData[0]?.eventId]: Object.values(currentCart)
-                  .flat()
-                  .filter(
-                    (item: any) =>
-                      !checkoutData.map((item: any) => item.id).includes(item)
-                  ),
-              }),
-              {
-                expires: new Date(
-                  new Date().setFullYear(new Date().getFullYear() + 1)
-                ),
-              }
-            );
-            deleteCookie("checkoutData");
-            router.push("/user/orders");
-            setLoading(false);
+            await removeFromCookieData();
+            await gotoPayment();
+            // router.push("/user/orders");
+            // setLoading(false);
           }
         })
         .catch((err) => {
@@ -150,16 +155,87 @@ const checkout = () => {
   };
 
   const showModal = () => {
-    setIsModalOpen(true);
+    modal.confirm({
+      title: "確認結帳",
+      icon: <></>,
+      content: (
+        <div className="text-[color:var(--main-color-dark)]">
+          <div className=" text-[color:var(--main-color-light)]">
+            訂購內容：電子檔共 {checkoutData.length} 張
+          </div>
+          <div>
+            付款方式：
+            {
+              paymentOptions.find((option) => option.value === paymentValue)
+                ?.label
+            }
+          </div>
+          <b>總金額：TWD {total + fee} 元</b>
+        </div>
+      ),
+      okText: "確認",
+      cancelText: "取消",
+      onOk: () => {
+        createOrder();
+      },
+    });
   };
 
-  const handleOk = () => {
-    setIsModalOpen(false);
-    createOrder();
-  };
+  const gotoPayment = async () => {
+    switch (paymentValue) {
+      case 0:
+        // 轉帳
+        break;
+      case 1:
+        // 信用卡
+        const res = await fetch(`${domain}/api/orders/checkout`, {
+          method: "POST",
+          body: JSON.stringify({
+            orderId,
+            paymentMethod: paymentValue,
+            totalAmount: total + fee,
+            items: checkoutData,
+            orderBy: session.id,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await res.json();
+        if (data.status === "success") {
+          window.location.href = data.url;
+        } else {
+          message.error("訂單建立失敗, 請稍後再試");
+        }
+        break;
+      case 2:
+        const linePayRes = await fetch(`${domain}/api/linepay/request`, {
+          method: "POST",
+          body: JSON.stringify({
+            orderId,
+            totalAmount: total + fee,
+            items: checkoutData,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const data2 = await linePayRes.json();
+        if (data2.status === "success") {
+          try {
+            const redirectUrl = isMobile
+              ? data2.result?.app
+              : data2.result?.web;
 
-  const handleCancel = () => {
-    setIsModalOpen(false);
+            router.push(redirectUrl);
+          } catch (err) {
+            message.error("LinePay扣款失敗, 請稍後再試");
+          }
+        } else {
+          message.error("LinePay扣款失敗, 請稍後再試");
+        }
+        break;
+    }
   };
 
   const handleClickImg = (id: string) => {
@@ -226,13 +302,14 @@ const checkout = () => {
                 確認結帳
               </Button>
             </div>
-            <PaymentInfo
+            {/* <PaymentInfo
               handleOk={handleOk}
               handleCancel={handleCancel}
               isModalOpen={isModalOpen}
               orderId={orderId}
               confirmBtnText="建立訂單"
-            />
+            /> */}
+            {contextHolder}
             <ImgsViewer
               imgs={checkoutData.map((item: any) => ({
                 src: item.watermarkedUrl,
