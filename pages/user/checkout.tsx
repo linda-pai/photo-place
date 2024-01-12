@@ -235,6 +235,46 @@ const checkout = () => {
           message.error("LinePay扣款失敗, 請稍後再試");
         }
         break;
+      case 3:
+        // 藍新金流
+        const newebpayRes = await fetch(`${domain}/api/newebpay/request`, {
+          method: "POST",
+          body: JSON.stringify({
+            orderId,
+            totalAmount: total + fee,
+            items: checkoutData,
+            Email: session?.user.email,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const newebpayData = await newebpayRes.json();
+
+        if (newebpayData.status === "success") {
+          try {
+            //藍新金流要用form submit
+            const form = document.createElement("form");
+            form.action = newebpayData.url;
+            form.method = "POST";
+
+            Object.keys(newebpayData.result).forEach((key) => {
+              const input = document.createElement("input");
+              input.type = "hidden";
+              input.name = key;
+              input.value = newebpayData.result[key];
+              form.appendChild(input);
+            });
+
+            document.body.appendChild(form);
+            form.submit();
+          } catch (err) {
+            message.error("藍新金流扣款失敗, 請稍後再試");
+          }
+        } else {
+          message.error("藍新金流扣款失敗, 請稍後再試");
+        }
+        break;
     }
   };
 

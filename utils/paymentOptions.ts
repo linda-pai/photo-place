@@ -7,6 +7,12 @@ const paymentOptions = [
   },
   { label: "信用卡 ( 預計2024上線 )", value: 1, fee: 0, disabled: true },
   { label: "Line Pay ( 預計2024上線 )", value: 2, fee: 0, disabled: false },
+  {
+    label: "藍新金流",
+    value: 3,
+    fee: 0,
+    disabled: false,
+  },
 ];
 
 export default paymentOptions;
