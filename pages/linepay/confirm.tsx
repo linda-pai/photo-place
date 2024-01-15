@@ -12,6 +12,14 @@ export async function getServerSideProps(context: any) {
   const orderId = context.query.orderId || "";
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
+  if (!orderId)
+    return {
+      redirect: {
+        destination: "/user/orders",
+        permanent: false,
+      },
+    };
+
   const res = await fetch(`${domain}/api/orders/update/${orderId}`, {
     method: "PUT",
     body: JSON.stringify({
