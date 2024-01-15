@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  node-express:
+    image: photopacer2023/photopacer-backend:latest
+    restart: always
+    build:
+      context: .
+    command: yarn start
+    environment:
+      - NODE_ENV=development
+    ports:
+      - 3001:3001
+    networks:
+      - photopacer-network  
+  nextjs-app:
+    image: photopacer2023/photopacer-frontend:latest
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    environment:
+      - NODE_ENV=development
+      - NEXTAUTH_URL=http://ec2-54-249-129-146.ap-northeast-1.compute.amazonaws.com:3000
+    ports:
+      - 3000:3000
+    networks:
+      - photopacer-network
+
+
+networks:
+  photopacer-network:
+    driver: bridge
