@@ -3,7 +3,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY package.json ./
-COPY package-lock.json ./
+# COPY package-lock.json ./
 COPY yarn.lock ./
 
 RUN yarn --frozen-lockfile
