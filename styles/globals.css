@@ -64,6 +64,9 @@ td {
 :where(.css-2rgkd4).ant-pagination .ant-pagination-item-active {
   border-color: var(--main-color) !important;
 }
+:where(.css-2rgkd4).ant-progress-line {
+  margin-bottom: 0px !important;
+}
 .ant-table {
   overflow-x: scroll;
 }

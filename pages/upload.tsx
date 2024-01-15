@@ -26,23 +26,52 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const isAllowed = userPermission();
 
+  const [loading, setLoading] = useState(false);
   const [eventId, setEventId] = useState({} as SelectOption);
   const [fileOptionsList, setFileOptinsList] = useState([] as any);
   const [modal, contextHolder] = Modal.useModal();
 
+  const msgKey = Math.random().toString();
+
+  const loadingMsgConfig = {
+    key: msgKey,
+    content: "上傳中...",
+    duration: 0,
+  };
+
   const handleSelected = (obj: SelectOption) =>
     setEventId({ value: obj.value, label: obj.label });
 
-  const customRequest = async (option: any) => {
-    setFileOptinsList((prev: any[]) => [...prev, option]);
+  const customRequest = async (imageFile: File[]) => {
+    //remove dulicate file
+    const updateImageList = imageFile.filter(
+      (imageFile) =>
+        !fileOptionsList.find((item: File) => {
+          if (item.name === imageFile.name) {
+            message.error(`${imageFile.name}已經存在`);
+            return true;
+          }
+        })
+    );
+
+    setFileOptinsList((prev: any[]) => [...prev, ...updateImageList]);
+  };
+
+  //update progresss
+  const onSuccess = (imageFile: any, index: number) => {
+    setFileOptinsList((prev: any[]) => {
+      const updateImage = [...prev];
+      updateImage[index] = imageFile;
+      return updateImage;
+    });
   };
 
   const uploadSinglePhoto = async (index: number) => {
-    const option = fileOptionsList[index];
-    const file = option.file as File;
+    const imageFile = fileOptionsList[index];
+
     const userId = session.id;
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", imageFile);
     formData.append("eventId", eventId.value);
     formData.append("eventName", eventId.label);
     formData.append("author", userId);
@@ -52,10 +81,33 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
       body: formData,
     }).then((res) => res.json());
 
-    option.onSuccess(response.url);
+    if (response.error) {
+      message.error(response.error);
+      return;
+    } else {
+      imageFile.progress = response.progress;
+    }
+
+    onSuccess(imageFile, index);
 
     if (index === fileOptionsList.length - 1) {
+      setLoading(false);
       message.success("全部上傳完成🎉🎉");
+      message.destroy(msgKey);
+
+      modal.confirm({
+        title: `已上傳完成${fileOptionsList.length}張照片`,
+        icon: <ExclamationCircleOutlined />,
+        content: `是否要前往活動頁面？`,
+        okText: "確認",
+        cancelText: "取消",
+        onOk: () => {
+          window.location.href = `/events/${eventId.value}`;
+        },
+        onCancel: () => {
+          setFileOptinsList([]);
+        },
+      });
     }
   };
 
@@ -70,35 +122,20 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
       okText: "確認",
       cancelText: "取消",
       onOk: () => {
-        //setTimeout + for loop 1秒上傳一張
+        setLoading(true);
+        message.open({ ...loadingMsgConfig, type: "loading" });
+        //setTimeout + for loop 每600毫秒上傳一張
         for (var x = 0, ln = fileOptionsList.length; x < ln; x++) {
           setTimeout(
             function (y) {
               uploadSinglePhoto(y);
             },
-            x * 1000,
+            x * 600,
             x
           );
         }
       },
     });
-  };
-
-  const props: UploadProps = {
-    name: "file",
-    multiple: true,
-    customRequest,
-    onChange(info) {
-      const { status } = info.file;
-      if (status !== "uploading") {
-      }
-      if (status === "done") {
-        message.success(`${info.file.name} file uploaded successfully.`);
-      } else if (status === "error") {
-        message.error(`${info.file.name} file upload failed.`);
-      }
-    },
-    onDrop(e) {},
   };
 
   return isAllowed ? (
@@ -113,13 +150,20 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
             label: event.eventName,
             value: event.eventId,
           }))}
+          disabled={loading}
         />
       </div>
       <div className="text-center w-full my-10" onClick={handleUpload}>
-        <Button disabled={fileOptionsList.length === 0}>確定上傳</Button>
+        <Button disabled={fileOptionsList.length === 0 || loading}>
+          確定上傳
+        </Button>
       </div>
       <div className="mx-auto max-w-[800px] min-h-[30vh]">
-        <Uploader {...props} />
+        <Uploader
+          onChange={customRequest}
+          fileOptionsList={fileOptionsList}
+          loading={loading}
+        />
       </div>
       {contextHolder}
     </>
