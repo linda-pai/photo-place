@@ -1,3 +1,5 @@
+//檢查是否登入，若未登入則導向登入頁面
+
 import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
