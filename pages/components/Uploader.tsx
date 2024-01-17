@@ -29,8 +29,11 @@ const Uploader = ({ onChange, fileOptionsList, loading }: UploaderProps) => {
         <p>上傳照片 - 從檔案選擇或拖曳</p>
       </div>
       <ul>
-        {fileOptionsList.map((file: any) => (
-          <div className="flex items-center text-[color:var(--main-color-dark)]">
+        {fileOptionsList.map((file: any, key: number) => (
+          <div
+            className="flex items-center text-[color:var(--main-color-dark)]"
+            key={key}
+          >
             <FileImageOutlined />
             <li className="mx-4" key={file.name}>
               {file.name}
