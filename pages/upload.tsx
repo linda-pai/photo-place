@@ -43,7 +43,7 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
 
   useEffect(() => {
     setAuthorName(session?.user?.name || "");
-  }, []);
+  }, [session]);
 
   const handleSelected = (obj: SelectOption) =>
     setEventId({ value: obj.value, label: obj.label });
@@ -153,7 +153,12 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
       okText: "確認",
       cancelText: "取消",
       onOk: () => {
-        const uploadId = eventId.value + "_" + dayjs().format("YYYYMMDDHHmmss");
+        const uploadId =
+          eventId.value +
+          "_" +
+          dayjs().format("YYYYMMDDHHmmss") +
+          "_" +
+          session.id;
         setLoading(true);
         message.open({ ...loadingMsgConfig, type: "loading" });
         writeUploadInfo(fileOptionsList, uploadId);
