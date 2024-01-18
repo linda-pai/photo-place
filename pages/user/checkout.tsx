@@ -205,8 +205,12 @@ const checkout = () => {
               <div className="flex justify-center">
                 <Radio.Group onChange={onChange} value={paymentValue}>
                   <Space direction="vertical">
-                    {paymentOptions.map((option: any) => (
-                      <Radio value={option.value} disabled={option.disabled}>
+                    {paymentOptions.map((option: any, key: number) => (
+                      <Radio
+                        value={option.value}
+                        disabled={option.disabled}
+                        key={key}
+                      >
                         {option.label}
                         {option?.extension && paymentValue === option.value
                           ? option?.extension
