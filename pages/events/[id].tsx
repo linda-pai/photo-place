@@ -8,7 +8,16 @@ import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { clickAddToCart, removeAddToCart, searchTracking } from "@/lib/gtag";
-import customImgViewerUI from "../components/image/CustomImgViewerUI";
+import customImgViewerUI from "@/pages/components/image/CustomImgViewerUI";
+
+interface ImageItemProps {
+  eventId: string;
+  eventName: string;
+  fileName: string;
+  id: string;
+  url: string;
+  watermarkedUrl: string;
+}
 
 const SearchWrapper = dynamic(
   () => import("@/pages/components/SearchWrapper"),
@@ -17,7 +26,7 @@ const SearchWrapper = dynamic(
   }
 );
 
-const ImageItems = dynamic(() => import("../components/image/ImageItems"));
+const ImageItems = dynamic(() => import("@/pages/components/image/ImageItems"));
 
 // Post component
 export default function EventSearchPage({
@@ -33,7 +42,7 @@ export default function EventSearchPage({
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const [search, setSearch] = useState(bib || "");
-  const [images, setImages] = useState([] as any);
+  const [images, setImages] = useState([] as ImageItemProps[]);
   const [showModal, setShowModal] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [currImg, setCurrImg] = useState(0); // [0, images.length - 1
@@ -153,7 +162,7 @@ export default function EventSearchPage({
 
   const handleClickImg = (id: string) => {
     setShowImageViewer(true);
-    setCurrImg(images.findIndex((item: any) => item.id === id));
+    setCurrImg(images.findIndex((item: ImageItemProps) => item.id === id));
   };
 
   const flatted = customImgViewerUI({
@@ -206,7 +215,7 @@ export default function EventSearchPage({
               <Tag color="#B0B97A">已完成辨識號碼布</Tag>
             </div>
             <div className="masonry">
-              {images.map((item: any, key: number) => (
+              {images.map((item: ImageItemProps, key: number) => (
                 <ImageItems
                   key={key}
                   item={item}
@@ -245,7 +254,7 @@ export default function EventSearchPage({
               <Tag>未成功辨識號碼布</Tag>
             </div>
             <div className="masonry">
-              {commonImages.map((item: any, key: number) => (
+              {commonImages.map((item: ImageItemProps, key: number) => (
                 <ImageItems
                   key={key}
                   item={item}
@@ -271,7 +280,7 @@ export default function EventSearchPage({
           {images.length > 0 && search && (
             <Button
               onClick={() => {
-                images.map((item: any) => pushToCart(item.id));
+                images.map((item: ImageItemProps) => pushToCart(item.id));
                 message.success(`已將 ${images.length} 張照片加入購物車`);
               }}
               className="mx-auto block my-10"
