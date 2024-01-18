@@ -87,7 +87,22 @@ td {
   z-index: 99;
 }
 .ant-btn-primary {
-  background-color: var(--main-color-light);
+  color: #faad14;
+  border-color: #faad14;
+  box-shadow: none;
+}
+:where(.css-2rgkd4).ant-btn-primary:not(:disabled):not(
+    .ant-btn-disabled
+  ):hover {
+  background-color: #faad14;
+}
+
+:where(.css-2rgkd4).ant-btn-default.ant-btn-dangerous:not(:disabled):not(
+    .ant-btn-disabled
+  ):hover {
+  color: #fff;
+  background-color: #ff7875;
+  border-color: #ff7875;
 }
 
 .ant-modal-title {

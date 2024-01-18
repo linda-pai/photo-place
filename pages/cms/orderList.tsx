@@ -87,6 +87,37 @@ const orderList = ({ orders }: OrderListProps) => {
     });
   };
 
+  const handleOnDelete = (record: Order) => {
+    setLoading(true);
+    fetch(`${domain}/api/orders/delete/${record.orderId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then(() => {
+        getOrderData();
+        setLoading(false);
+        return message.success("訂單已刪除");
+      })
+      .catch((err) => {
+        setLoading(false);
+        return message.error("訂單刪除失敗");
+      });
+  };
+
+  const deleteOrder = (record: Order) => {
+    modal.confirm({
+      title: record.orderId + " 即將刪除訂單 ",
+      icon: <ExclamationCircleOutlined />,
+      content: "刪除後將無法復原",
+      okText: "確認",
+      cancelText: "取消",
+      onOk: () => handleOnDelete(record),
+    });
+  };
+
   const columns: ColumnsType<Order> = [
     {
       title: "訂單編號",
@@ -218,11 +249,18 @@ const orderList = ({ orders }: OrderListProps) => {
       key: "action",
       width: 100,
       render: (_, record) => (
-        <Space size="middle">
-          <Button danger onClick={() => confirm(record)}>
-            確認收款
-          </Button>
-        </Space>
+        <>
+          <Space size="middle">
+            <Button type="primary" onClick={() => confirm(record)}>
+              確認收款
+            </Button>
+          </Space>
+          <Space size="middle" className="my-2">
+            <Button danger onClick={() => deleteOrder(record)}>
+              刪除訂單
+            </Button>
+          </Space>
+        </>
       ),
     },
   ];
