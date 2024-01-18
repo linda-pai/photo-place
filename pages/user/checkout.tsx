@@ -138,8 +138,8 @@ const checkout = () => {
                 ),
               }
             );
-            deleteCookie("checkoutData");
             router.push("/user/orders");
+            deleteCookie("checkoutData");
             setLoading(false);
           }
         })

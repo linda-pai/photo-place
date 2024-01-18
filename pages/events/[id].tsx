@@ -17,9 +17,7 @@ const SearchWrapper = dynamic(
   }
 );
 
-const ImageItems = dynamic(() => import("../components/image/ImageItems"), {
-  loading: () => <Spin />,
-});
+const ImageItems = dynamic(() => import("../components/image/ImageItems"));
 
 // Post component
 export default function EventSearchPage({
@@ -208,8 +206,9 @@ export default function EventSearchPage({
               <Tag color="#B0B97A">已完成辨識號碼布</Tag>
             </div>
             <div className="masonry">
-              {images.map((item: any) => (
+              {images.map((item: any, key: number) => (
                 <ImageItems
+                  key={key}
                   item={item}
                   isExistInCart={isExistInCart}
                   handleClickCart={handleClickCart}
@@ -246,8 +245,9 @@ export default function EventSearchPage({
               <Tag>未成功辨識號碼布</Tag>
             </div>
             <div className="masonry">
-              {commonImages.map((item: any) => (
+              {commonImages.map((item: any, key: number) => (
                 <ImageItems
+                  key={key}
                   item={item}
                   isExistInCart={isExistInCart}
                   handleClickCart={handleClickCart}
