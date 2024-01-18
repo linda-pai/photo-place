@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
 import { message, Button, Tag, Spin, Pagination } from "antd";
-import { ShoppingCartOutlined } from "@ant-design/icons";
 import ImgsViewer from "react-images-viewer";
 import { setCookie, getCookie } from "cookies-next";
 import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
 // https://guonanci.github.io/react-images-viewer/
 import dynamic from "next/dynamic";
 import Head from "next/head";
-import Image from "next/image";
 import { useRouter } from "next/router";
 import { clickAddToCart, removeAddToCart, searchTracking } from "@/lib/gtag";
+import customImgViewerUI from "../components/image/CustomImgViewerUI";
 
 const SearchWrapper = dynamic(
   () => import("@/pages/components/SearchWrapper"),
@@ -17,6 +16,10 @@ const SearchWrapper = dynamic(
     loading: () => <Spin />,
   }
 );
+
+const ImageItems = dynamic(() => import("../components/image/ImageItems"), {
+  loading: () => <Spin />,
+});
 
 // Post component
 export default function EventSearchPage({
@@ -67,7 +70,6 @@ export default function EventSearchPage({
       return message.error("請輸入正確的號碼布");
 
     const searchPage = search ? 1 : curPage;
-    // //set url query
     router.push(
       {
         pathname: `/events/${eventId}`,
@@ -87,6 +89,7 @@ export default function EventSearchPage({
 
         scrollIntoViewWithOffset("#result-container", 100);
 
+        //埋點
         searchTracking({
           event_category: "event",
           event_label: eventName,
@@ -97,9 +100,14 @@ export default function EventSearchPage({
       });
   };
 
-  const handleClickImg = (id: string) => {
-    setShowImageViewer(true);
-    setCurrImg(images.findIndex((item: any) => item.id === id));
+  const isExistInCart = (id: string) => cartData[eventId]?.includes(id);
+
+  const pushToCart = (id: string) => {
+    const currentCart = JSON.parse(getCookie("cart") || "{}");
+    if (currentCart[eventId]?.includes(id)) return;
+    const newCart = currentCart[eventId] ? [...currentCart[eventId], id] : [id];
+    currentCart[eventId] = newCart;
+    updateCart(currentCart);
   };
 
   const updateCart = (data: any) => {
@@ -110,8 +118,6 @@ export default function EventSearchPage({
     setCartData(data);
   };
 
-  const isExistInCart = (id: string) => cartData[eventId]?.includes(id);
-
   const handleClickCart = (id: string) => {
     const currentCart = JSON.parse(getCookie("cart") || "{}");
     //check if cart exist
@@ -120,6 +126,7 @@ export default function EventSearchPage({
       pushToCart(id);
       message.success("已加入購物車");
 
+      //埋點
       clickAddToCart({
         event_category: "event",
         event_label: eventName,
@@ -136,6 +143,7 @@ export default function EventSearchPage({
       updateCart(currentCart);
       message.success("已從購物車移除");
 
+      //埋點
       removeAddToCart({
         event_category: "event",
         event_label: eventName,
@@ -145,89 +153,17 @@ export default function EventSearchPage({
     }
   };
 
-  const handleOnPageChange = (page: number) => setCurPage(page);
-
-  // const handleAddToFavorite = (id: string) => {};
-
-  const viewerImgArray = images.map((image: any, key: number) => {
-    return {
-      src: image.watermarkedUrl,
-      caption: (
-        <div className="flex gap-4">
-          <button
-            onClick={() => handleClickCart(image.id)}
-            className="cursor-pointer"
-          >
-            <ShoppingCartOutlined
-              className={`text-[24px] ${
-                isExistInCart(image.id)
-                  ? "text-[color:var(--main-color)]"
-                  : "text-white"
-              }`}
-            />
-            <p
-              className={`text-xs ${
-                isExistInCart(image.id)
-                  ? "text-[color:var(--main-color)]"
-                  : "text-white"
-              }`}
-            >
-              {isExistInCart(image.id) ? "已加入購物車" : "加入購物車"}
-            </p>
-          </button>
-          <div>
-            <p className="line-through text-xs text-[#8f8f8f]">TWD: 169</p>
-            <p className="text-red-500 ">TWD: 109 </p>
-          </div>
-        </div>
-      ),
-    };
-  });
-
-  const flatted = viewerImgArray.flat();
-
-  const pushToCart = (id: string) => {
-    const currentCart = JSON.parse(getCookie("cart") || "{}");
-    if (currentCart[eventId]?.includes(id)) return;
-    const newCart = currentCart[eventId] ? [...currentCart[eventId], id] : [id];
-    currentCart[eventId] = newCart;
-    updateCart(currentCart);
+  const handleClickImg = (id: string) => {
+    setShowImageViewer(true);
+    setCurrImg(images.findIndex((item: any) => item.id === id));
   };
 
-  const ImageItems = ({ watermarkedUrl, id }: any) => (
-    <div
-      className="sm:basis-[calc(20%_-_16px)] basis-[calc(33%_-_16px)] cursor-pointer scale-100 hover:scale-105 transition-all duration-300"
-      key={id}
-      onClick={() => handleClickImg(id)}
-    >
-      <Image
-        className="item__content"
-        src={watermarkedUrl}
-        alt={watermarkedUrl}
-        width={300}
-        height={400}
-        quality={20}
-      />
-      <div
-        className="bg-[#5f5b50] opacity-70 absolute bottom-0 w-full sm:h-[10%] h-[18%] min-h-[28px] max-h-[34px] group hover:opacity-90 transition-all duration-300"
-        onClick={(e) => {
-          e.stopPropagation();
-          handleClickCart(id);
-        }}
-      >
-        <div
-          className={`z-20 text-xl absolute bottom-[20%] justify-center flex items-center w-full hover:cursor-pointer group-hover:text-[color:var(--main-color)] ${
-            isExistInCart(id) ? "text-[color:var(--main-color)]" : "text-white"
-          }`}
-        >
-          <ShoppingCartOutlined />
-          <p className="sm:text-sm  md:block hidden ml-1 h-fit">
-            {isExistInCart(id) ? "已加入購物車" : "加入購物車"}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
+  const flatted = customImgViewerUI({
+    images,
+    isExistInCart,
+    handleClickCart,
+  });
+
   return (
     <>
       <Head>
@@ -272,7 +208,14 @@ export default function EventSearchPage({
               <Tag color="#B0B97A">已完成辨識號碼布</Tag>
             </div>
             <div className="masonry">
-              {images.map((item: any) => ImageItems(item))}
+              {images.map((item: any) => (
+                <ImageItems
+                  item={item}
+                  isExistInCart={isExistInCart}
+                  handleClickCart={handleClickCart}
+                  handleClickImg={handleClickImg}
+                />
+              ))}
               <ImgsViewer
                 imgs={flatted}
                 isOpen={showImageViewer}
@@ -288,7 +231,7 @@ export default function EventSearchPage({
             <div className="text-center my-10">
               <Pagination
                 defaultCurrent={curPage}
-                onChange={handleOnPageChange}
+                onChange={setCurPage}
                 total={total}
                 pageSize={100}
                 showSizeChanger={false}
@@ -297,14 +240,20 @@ export default function EventSearchPage({
             </div>
           </>
         )}
-
-        {commonImages && commonImages.length > 0 && !search && (
+        {commonImages.length > 0 && !search && (
           <>
             <div className="my-2 mt-16 mb-4 text-[color:var(--main-color-dark)] text-sm">
               <Tag>未成功辨識號碼布</Tag>
             </div>
             <div className="masonry">
-              {commonImages.map((item: any) => ImageItems(item))}
+              {commonImages.map((item: any) => (
+                <ImageItems
+                  item={item}
+                  isExistInCart={isExistInCart}
+                  handleClickCart={handleClickCart}
+                  handleClickImg={handleClickImg}
+                />
+              ))}
               <ImgsViewer
                 imgs={flatted}
                 isOpen={showImageViewer}
@@ -346,17 +295,17 @@ export async function getServerSideProps(context: any) {
     `${domain}/api/images/getByPathAndEventId/${eventId}/all`
   ).then((res) => res.json());
 
+  const commonImages = await fetch(
+    `${domain}/api/images/getByPathAndEventId/${eventId}/common`
+  ).then((res) => res.json());
+
   const imageListTotal = await fetch(`${domain}/api/images/getCount/${eventId}`)
     .then((res) => res.json())
-    .then((data) => data.count);
+    .then((data) => data.count - commonImages.length);
 
   const eventInfo = await fetch(`${domain}/api/events/getBy/${eventId}`).then(
     (res) => res.json()
   );
-
-  const commonImages = await fetch(
-    `${domain}/api/images/getByPathAndEventId/${eventId}/common`
-  ).then((res) => res.json());
 
   return {
     props: { imageList, commonImages, eventInfo, bib, page, imageListTotal },

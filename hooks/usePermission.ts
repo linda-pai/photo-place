@@ -1,3 +1,5 @@
+//檢查是否有admin權限
+
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
@@ -21,12 +23,12 @@ function usePermission(): boolean {
 
     console.log("userId", userId);
     if (session !== undefined) {
-      if (allowedRoles.includes(userId)) {
+      if (allowedRoles?.includes(userId)) {
         setIsAllowed(true);
       } else {
         setIsAllowed(false);
         message.error("You are not allowed to access this page");
-        // router.back();
+        router.back();
       }
     }
   }, [session]);
