@@ -7,7 +7,7 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 
-const Uploader = dynamic(() => import("@/pages/components/Uploader"), {
+const Uploader = dynamic(() => import("@/components/Uploader"), {
   loading: () => <Spin />,
 });
 

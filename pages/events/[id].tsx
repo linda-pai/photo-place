@@ -8,7 +8,7 @@ import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { clickAddToCart, removeAddToCart, searchTracking } from "@/lib/gtag";
-import customImgViewerUI from "@/pages/components/image/CustomImgViewerUI";
+import customImgViewerUI from "@/components/image/CustomImgViewerUI";
 
 interface ImageItemProps {
   eventId: string;
@@ -19,14 +19,11 @@ interface ImageItemProps {
   watermarkedUrl: string;
 }
 
-const SearchWrapper = dynamic(
-  () => import("@/pages/components/SearchWrapper"),
-  {
-    loading: () => <Spin />,
-  }
-);
+const SearchWrapper = dynamic(() => import("@/components/SearchWrapper"), {
+  loading: () => <Spin />,
+});
 
-const ImageItems = dynamic(() => import("@/pages/components/image/ImageItems"));
+const ImageItems = dynamic(() => import("@/components/image/ImageItems"));
 
 // Post component
 export default function EventSearchPage({

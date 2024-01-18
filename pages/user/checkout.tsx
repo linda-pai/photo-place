@@ -22,12 +22,9 @@ import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import paymentOptions from "@/utils/paymentOptions";
 import useAuth from "@/hooks/useAuth";
 
-const PaymentInfo = dynamic(
-  () => import("@/pages/components/PaymentInfoModal"),
-  {
-    loading: () => <Spin />,
-  }
-);
+const PaymentInfo = dynamic(() => import("@/components/PaymentInfoModal"), {
+  loading: () => <Spin />,
+});
 
 interface CardDataProps {
   eventId: number;

@@ -5,7 +5,7 @@ import userPermission from "@/hooks/usePermission";
 
 import dynamic from "next/dynamic";
 
-const Uploader = dynamic(() => import("@/pages/components/Uploader"), {
+const Uploader = dynamic(() => import("@/components/Uploader"), {
   loading: () => <Spin />,
 });
 const UploadImagePage: React.FC = () => {

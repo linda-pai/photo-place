@@ -1,22 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
-<url><loc>https://photopacer.com,https://www.photopacer.com</loc><lastmod>2023-12-28T08:02:15.833Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://photopacer.com,https://www.photopacer.com/auth/signIn</loc><lastmod>2023-12-28T08:02:15.833Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://photopacer.com,https://www.photopacer.com/cms/orderList</loc><lastmod>2023-12-28T08:02:15.833Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://photopacer.com,https://www.photopacer.com/components/EventCard</loc><lastmod>2023-12-28T08:02:15.833Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://photopacer.com,https://www.photopacer.com/components/Footer</loc><lastmod>2023-12-28T08:02:15.833Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://photopacer.com,https://www.photopacer.com/components/Layout</loc><lastmod>2023-12-28T08:02:15.833Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://photopacer.com,https://www.photopacer.com/components/Navbar</loc><lastmod>2023-12-28T08:02:15.833Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://photopacer.com,https://www.photopacer.com/components/PaymentInfoModal</loc><lastmod>2023-12-28T08:02:15.833Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://photopacer.com,https://www.photopacer.com/components/SearchWrapper</loc><lastmod>2023-12-28T08:02:15.833Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://photopacer.com,https://www.photopacer.com/components/Uploader</loc><lastmod>2023-12-28T08:02:15.833Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://photopacer.com,https://www.photopacer.com/createEvent</loc><lastmod>2023-12-28T08:02:15.833Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://photopacer.com,https://www.photopacer.com/login</loc><lastmod>2023-12-28T08:02:15.833Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://photopacer.com,https://www.photopacer.com/policies/privacy-policy</loc><lastmod>2023-12-28T08:02:15.833Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://photopacer.com,https://www.photopacer.com/policies/terms-of-use</loc><lastmod>2023-12-28T08:02:15.833Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://photopacer.com,https://www.photopacer.com/upload</loc><lastmod>2023-12-28T08:02:15.833Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://photopacer.com,https://www.photopacer.com/uploadImagePage</loc><lastmod>2023-12-28T08:02:15.833Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://photopacer.com,https://www.photopacer.com/user/checkout</loc><lastmod>2023-12-28T08:02:15.833Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://photopacer.com,https://www.photopacer.com/user/orders</loc><lastmod>2023-12-28T08:02:15.833Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://photopacer.com,https://www.photopacer.com/user/shoppingCart</loc><lastmod>2023-12-28T08:02:15.833Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://photopacer.com,https://www.photopacer.com</loc><lastmod>2024-01-18T08:54:25.470Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://photopacer.com,https://www.photopacer.com/auth/signIn</loc><lastmod>2024-01-18T08:54:25.470Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://photopacer.com,https://www.photopacer.com/cms/orderList</loc><lastmod>2024-01-18T08:54:25.470Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://photopacer.com,https://www.photopacer.com/createEvent</loc><lastmod>2024-01-18T08:54:25.470Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://photopacer.com,https://www.photopacer.com/login</loc><lastmod>2024-01-18T08:54:25.470Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://photopacer.com,https://www.photopacer.com/policies/privacy-policy</loc><lastmod>2024-01-18T08:54:25.470Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://photopacer.com,https://www.photopacer.com/policies/terms-of-use</loc><lastmod>2024-01-18T08:54:25.470Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://photopacer.com,https://www.photopacer.com/upload</loc><lastmod>2024-01-18T08:54:25.470Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://photopacer.com,https://www.photopacer.com/uploadImagePage</loc><lastmod>2024-01-18T08:54:25.470Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://photopacer.com,https://www.photopacer.com/user/checkout</loc><lastmod>2024-01-18T08:54:25.470Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://photopacer.com,https://www.photopacer.com/user/orders</loc><lastmod>2024-01-18T08:54:25.471Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://photopacer.com,https://www.photopacer.com/user/shoppingCart</loc><lastmod>2024-01-18T08:54:25.471Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
 </urlset>

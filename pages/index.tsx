@@ -2,7 +2,7 @@ import { Inter } from "next/font/google";
 import dynamic from "next/dynamic";
 import { Spin } from "antd";
 
-const EventCard = dynamic(() => import("@/pages/components/EventCard"), {
+const EventCard = dynamic(() => import("@/components/EventCard"), {
   loading: () => <Spin />,
 });
 

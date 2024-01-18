@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import dayjs from "dayjs";
 
-const Uploader = dynamic(() => import("@/pages/components/Uploader"), {
+const Uploader = dynamic(() => import("@/components/Uploader"), {
   loading: () => <Spin />,
 });
 

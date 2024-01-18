@@ -9,7 +9,7 @@ import dynamic from "next/dynamic";
 
 import "../styles/globals.css";
 
-const Layout = dynamic(() => import("@/pages/components/Layout"), {
+const Layout = dynamic(() => import("@/components/Layout"), {
   loading: () => <Spin />,
 });
 

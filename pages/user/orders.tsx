@@ -17,12 +17,9 @@ import downloadImage from "@/utils/downloadImage";
 import useAuth from "@/hooks/useAuth";
 import dynamic from "next/dynamic";
 
-const PaymentInfo = dynamic(
-  () => import("@/pages/components/PaymentInfoModal"),
-  {
-    loading: () => <Spin />,
-  }
-);
+const PaymentInfo = dynamic(() => import("@/components/PaymentInfoModal"), {
+  loading: () => <Spin />,
+});
 
 interface Order {
   orderId: string;
