@@ -7,12 +7,9 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { clickAddToCart, removeAddToCart, searchTracking } from "@/lib/gtag";
 
-const SearchWrapper = dynamic(
-  () => import("@/pages/components/SearchWrapper"),
-  {
-    loading: () => <Spin />,
-  }
-);
+const SearchWrapper = dynamic(() => import("@/components/SearchWrapper"), {
+  loading: () => <Spin />,
+});
 
 const ImageItems = dynamic(() => import("@/components/image/ImageItems"));
 const ImageLightBox = dynamic(() => import("@/components/image/ImageLightBox"));
@@ -37,7 +34,7 @@ export default function EventSearchPage({
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const [search, setSearch] = useState(bib || "");
-  const [images, setImages] = useState([] as any);
+  const [images, setImages] = useState([] as ImageItemProps[]);
   const [showModal, setShowModal] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [showImageViewerCommon, setShowImageViewerCommon] = useState(false);
@@ -289,7 +286,7 @@ export default function EventSearchPage({
           {images.length > 0 && search && (
             <Button
               onClick={() => {
-                images.map((item: any) => pushToCart(item.id));
+                images.map((item: ImageItemProps) => pushToCart(item.id));
                 message.success(`已將 ${images.length} 張照片加入購物車`);
               }}
               className="mx-auto block my-10"
