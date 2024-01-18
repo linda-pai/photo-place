@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import type { UploadProps, DatePickerProps } from "antd";
+import type { DatePickerProps } from "antd";
 import { message, DatePicker, Input, Button, Spin } from "antd";
 import { useRouter } from "next/router";
 import userPermission from "@/hooks/usePermission";
-// import Image from "next/image";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 
@@ -20,11 +20,13 @@ const CreateEventPage: React.FC = () => {
   const [date, setDate] = useState("");
   const [eventName, setEventName] = useState("");
   const [coverImg, setCoverImg] = useState("");
+  const [imageFile, setImageFile] = useState([] as any[]);
 
   const router = useRouter();
 
   const handleUpload = async (option: any) => {
-    const file = option.file as File;
+    const file = option?.[0] as any;
+    setImageFile([file]);
 
     const formData = new FormData();
     formData.append("file", file);
@@ -34,16 +36,16 @@ const CreateEventPage: React.FC = () => {
       const response = await fetch(`${domain}/api/singleImgS3Upload`, {
         method: "POST",
         body: formData,
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setCoverImg(data.Location);
-          return data.Location;
-        });
-
-      option.onSuccess(response.Location);
+      }).then((res) => res.json());
+      if (response.error) {
+        message.error(response.error);
+        return;
+      } else {
+        setCoverImg(response.Location);
+      }
     } catch (error) {
-      option.onError(error);
+      console.log("error", error);
+      message.error("上傳失敗");
     }
   };
 
@@ -59,7 +61,7 @@ const CreateEventPage: React.FC = () => {
       userId,
     };
 
-    const response = await fetch(`${domain}/api/events/add`, {
+    await fetch(`${domain}/api/events/add`, {
       method: "POST",
       body: JSON.stringify(eventData),
       headers: {
@@ -70,30 +72,10 @@ const CreateEventPage: React.FC = () => {
       .then(() => {
         message.success("活動新增成功");
         router.push("/");
+      })
+      .catch((err) => {
+        message.error("活動新增失敗");
       });
-
-    setCoverImg("");
-  };
-
-  const props: UploadProps = {
-    name: "file",
-    multiple: true,
-    maxCount: 1,
-    customRequest: handleUpload,
-    onChange(info) {
-      const { status } = info.file;
-      if (status !== "uploading") {
-      }
-      if (status === "done") {
-        message.success(`${info.file.name} file uploaded successfully.`);
-      } else if (status === "error") {
-        message.error(`${info.file.name} file upload failed.`);
-      }
-    },
-    onDrop(e) {},
-    onRemove() {
-      setCoverImg("");
-    },
   };
 
   const onDateChange: DatePickerProps["onChange"] = (date, dateString) => {
@@ -115,22 +97,22 @@ const CreateEventPage: React.FC = () => {
         />
       </div>
       <div className="mx-auto">
-        <Uploader {...props} />
+        <Uploader onChange={handleUpload} filesList={imageFile} />
       </div>
-      {coverImg && (
-        <img
-          src={coverImg}
-          // width="300"
-          // height="300"
+      {imageFile.length > 0 && (
+        <Image
+          src={URL.createObjectURL(imageFile[0])}
+          width="120"
+          height="160"
           className="mx-auto my-5"
-          alt="封面圖片"
+          alt="預覽封面圖片"
         />
       )}
       <div className="text-center my-5">
         <Button
           onClick={handleUploadEvent}
           disabled={!Boolean(coverImg && eventName && date)}
-          className="bg-white text-white"
+          className="bg-white text-[color:var(--main-color-dark)]"
         >
           上傳活動
         </Button>

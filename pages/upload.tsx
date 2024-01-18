@@ -285,7 +285,7 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
       <div className="mx-auto max-w-[800px] min-h-[30vh]">
         <Uploader
           onChange={customRequest}
-          fileOptionsList={fileOptionsList}
+          filesList={fileOptionsList}
           loading={loading}
         />
       </div>

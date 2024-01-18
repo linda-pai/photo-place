@@ -5,10 +5,10 @@ import { UploadOutlined, FileImageOutlined } from "@ant-design/icons";
 
 interface UploaderProps {
   onChange: (files: File[]) => void;
-  fileOptionsList: File[];
-  loading: boolean;
+  filesList?: File[];
+  loading?: boolean;
 }
-const Uploader = ({ onChange, fileOptionsList, loading }: UploaderProps) => {
+const Uploader = ({ onChange, filesList, loading }: UploaderProps) => {
   const { getRootProps, getInputProps } = useDropzone({
     onDrop: (acceptedFiles: any) => onChange(acceptedFiles),
     disabled: loading,
@@ -29,7 +29,7 @@ const Uploader = ({ onChange, fileOptionsList, loading }: UploaderProps) => {
         <p>上傳照片 - 從檔案選擇或拖曳</p>
       </div>
       <ul>
-        {fileOptionsList.map((file: any, key: number) => (
+        {filesList?.map((file: any, key: number) => (
           <div
             className="flex items-center text-[color:var(--main-color-dark)]"
             key={key}
