@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import type { UploadProps } from "antd";
-import { message, Select, Spin, Button, Modal } from "antd";
+import React, { useState, useEffect } from "react";
+import { message, Select, Spin, Button, Modal, Input } from "antd";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import userPermission from "@/hooks/usePermission";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
+import dayjs from "dayjs";
 
 const Uploader = dynamic(() => import("@/pages/components/Uploader"), {
   loading: () => <Spin />,
@@ -30,6 +30,8 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
   const [eventId, setEventId] = useState({} as SelectOption);
   const [fileOptionsList, setFileOptinsList] = useState([] as any);
   const [modal, contextHolder] = Modal.useModal();
+  const [completeCount, setCompleteCount] = useState(0);
+  const [authorName, setAuthorName] = useState(session?.user?.name || "");
 
   const msgKey = Math.random().toString();
 
@@ -38,6 +40,10 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
     content: "上傳中...",
     duration: 0,
   };
+
+  useEffect(() => {
+    setAuthorName(session?.user?.name || "");
+  }, []);
 
   const handleSelected = (obj: SelectOption) =>
     setEventId({ value: obj.value, label: obj.label });
@@ -66,7 +72,30 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
     });
   };
 
-  const uploadSinglePhoto = async (index: number) => {
+  const writeUploadInfo = async (fileOptionsList: any, uploadId: string) => {
+    const response = await fetch(`${domain}/api/images/writeUploadInfo`, {
+      method: "POST",
+      body: JSON.stringify({
+        uploadId,
+        eventId: eventId.value,
+        eventName: eventId.label,
+        author: session.id,
+        name: authorName || session.user.name,
+        imagesCount: fileOptionsList.length,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }).then((res) => res.json());
+
+    if (response.error) {
+      message.error(response.error);
+      return;
+    } else {
+    }
+  };
+
+  const uploadSinglePhoto = async (index: number, uploadId: string) => {
     const imageFile = fileOptionsList[index];
 
     const userId = session.id;
@@ -75,6 +104,7 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
     formData.append("eventId", eventId.value);
     formData.append("eventName", eventId.label);
     formData.append("author", userId);
+    formData.append("uploadId", uploadId);
 
     const response = await fetch(`${domain}/api/images/uploadAndDetectText`, {
       method: "POST",
@@ -86,6 +116,7 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
       return;
     } else {
       imageFile.progress = response.progress;
+      setCompleteCount((prev) => prev + 1);
     }
 
     onSuccess(imageFile, index);
@@ -122,13 +153,15 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
       okText: "確認",
       cancelText: "取消",
       onOk: () => {
+        const uploadId = eventId.value + "_" + dayjs().format("YYYYMMDDHHmmss");
         setLoading(true);
         message.open({ ...loadingMsgConfig, type: "loading" });
+        writeUploadInfo(fileOptionsList, uploadId);
         //setTimeout + for loop 每600毫秒上傳一張
         for (var x = 0, ln = fileOptionsList.length; x < ln; x++) {
           setTimeout(
             function (y) {
-              uploadSinglePhoto(y);
+              uploadSinglePhoto(y, uploadId);
             },
             x * 600,
             x
@@ -138,26 +171,47 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
     });
   };
 
+  const handleChangeAuthorName = (e: any) => {
+    setAuthorName(e.target.value);
+  };
+
   return isAllowed ? (
     <>
-      <div className="my-24 flex justify-center">
-        <Select
-          labelInValue
-          placeholder="請選擇活動"
-          className="w-1/3 "
-          onChange={handleSelected}
-          options={eventOption.map((event: any) => ({
-            label: event.eventName,
-            value: event.eventId,
-          }))}
-          disabled={loading}
-        />
+      <div className="my-24 text-center">
+        <div className="my-4">
+          <Select
+            labelInValue
+            placeholder="請選擇活動"
+            className="w-1/3 "
+            onChange={handleSelected}
+            options={eventOption.map((event: any) => ({
+              label: event.eventName,
+              value: event.eventId,
+            }))}
+            disabled={loading}
+          />
+        </div>
+        <div>
+          <Input
+            placeholder="攝影師名稱"
+            className="w-1/3"
+            onChange={handleChangeAuthorName}
+            value={authorName}
+            defaultValue={authorName || ""}
+            addonBefore="攝影師名稱"
+          />
+        </div>
       </div>
       <div className="text-center w-full my-10" onClick={handleUpload}>
         <Button disabled={fileOptionsList.length === 0 || loading}>
           確定上傳
         </Button>
       </div>
+      {loading && (
+        <div className="text-center text-[color:var(--main-color-dark)]">
+          上傳進度: {completeCount}/{fileOptionsList.length}
+        </div>
+      )}
       <div className="mx-auto max-w-[800px] min-h-[30vh]">
         <Uploader
           onChange={customRequest}
