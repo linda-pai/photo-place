@@ -13,9 +13,7 @@ import customImgViewerUI from "@/components/image/CustomImgViewerUI";
 interface ImageItemProps {
   eventId: string;
   eventName: string;
-  fileName: string;
   id: string;
-  url: string;
   watermarkedUrl: string;
 }
 
@@ -162,8 +160,21 @@ export default function EventSearchPage({
     setCurrImg(images.findIndex((item: ImageItemProps) => item.id === id));
   };
 
+  const handleClickImgCommon = (id: string) => {
+    setShowImageViewer(true);
+    setCurrImg(
+      commonImages.findIndex((item: ImageItemProps) => item.id === id)
+    );
+  };
+
   const flatted = customImgViewerUI({
     images,
+    isExistInCart,
+    handleClickCart,
+  });
+
+  const flattedCommon = customImgViewerUI({
+    images: commonImages,
     isExistInCart,
     handleClickCart,
   });
@@ -257,11 +268,11 @@ export default function EventSearchPage({
                   item={item}
                   isExistInCart={isExistInCart}
                   handleClickCart={handleClickCart}
-                  handleClickImg={handleClickImg}
+                  handleClickImg={handleClickImgCommon}
                 />
               ))}
               <ImgsViewer
-                imgs={flatted}
+                imgs={flattedCommon}
                 isOpen={showImageViewer}
                 currImg={currImg}
                 onClickPrev={() => setCurrImg((prev) => prev - 1)}
