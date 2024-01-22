@@ -28,7 +28,7 @@ export default async function handler(
   downloadPromises.forEach(async (download) => {
     const { fileName, buffer, type } = download;
     const displayName = fileName?.split("-IMG_")?.pop()?.split(".")[0];
-    zip.file(`photopacer-IMG-${displayName}.${type}`, buffer);
+    zip.file(`photopacer-${displayName}.${type}`, buffer);
   });
 
   const content = await zip.generateAsync({ type: "nodebuffer" });
