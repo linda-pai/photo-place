@@ -269,7 +269,7 @@ export default function EventSearchPage({
                   item={item}
                   isExistInCart={isExistInCart}
                   handleClickCart={handleClickCart}
-                  handleClickImg={handleClickImg}
+                  handleClickImg={handleClickImgCommon}
                 />
               ))}
               <ImageLightBox
