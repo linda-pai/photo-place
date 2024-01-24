@@ -40,6 +40,7 @@ export default function EventSearchPage({
   const [images, setImages] = useState([] as ImageItemProps[]);
   const [showModal, setShowModal] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
+  const [showImageViewerCommon, setShowImageViewerCommon] = useState(false);
   const [currImg, setCurrImg] = useState(0); // [0, images.length - 1
   const [cartData, setCartData] = useState({} as any);
   const [curPage, setCurPage] = useState(page || 1);
@@ -161,7 +162,7 @@ export default function EventSearchPage({
   };
 
   const handleClickImgCommon = (id: string) => {
-    setShowImageViewer(true);
+    setShowImageViewerCommon(true);
     setCurrImg(
       commonImages.findIndex((item: ImageItemProps) => item.id === id)
     );
@@ -249,7 +250,7 @@ export default function EventSearchPage({
                 defaultCurrent={curPage}
                 onChange={setCurPage}
                 total={total}
-                pageSize={100}
+                pageSize={40}
                 showSizeChanger={false}
                 current={curPage}
               />
@@ -273,11 +274,11 @@ export default function EventSearchPage({
               ))}
               <ImgsViewer
                 imgs={flattedCommon}
-                isOpen={showImageViewer}
+                isOpen={showImageViewerCommon}
                 currImg={currImg}
                 onClickPrev={() => setCurrImg((prev) => prev - 1)}
                 onClickNext={() => setCurrImg((prev) => prev + 1)}
-                onClose={() => setShowImageViewer(false)}
+                onClose={() => setShowImageViewerCommon(false)}
                 onClickThumbnail={(index: number) => setCurrImg(index)}
                 showThumbnails={true}
               />
