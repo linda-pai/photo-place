@@ -251,7 +251,7 @@ export default function EventSearchPage({
                 defaultCurrent={curPage}
                 onChange={setCurPage}
                 total={total}
-                pageSize={100}
+                pageSize={40}
                 showSizeChanger={false}
                 current={curPage}
               />
