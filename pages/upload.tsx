@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { message, Select, Spin, Button, Modal, Input } from "antd";
+import { message, Select, Spin, Button, Modal, Input, Progress } from "antd";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import userPermission from "@/hooks/usePermission";
 import { useSession } from "next-auth/react";
@@ -31,15 +31,10 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
   const [fileOptionsList, setFileOptinsList] = useState([] as any);
   const [modal, contextHolder] = Modal.useModal();
   const [completeCount, setCompleteCount] = useState(0);
+  const [detectCount, setDetectCount] = useState(0);
   const [authorName, setAuthorName] = useState(session?.user?.name || "");
 
   const msgKey = Math.random().toString();
-
-  const loadingMsgConfig = {
-    key: msgKey,
-    content: "上傳中...",
-    duration: 0,
-  };
 
   useEffect(() => {
     setAuthorName(session?.user?.name || "");
@@ -59,17 +54,7 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
           }
         })
     );
-
     setFileOptinsList((prev: any[]) => [...prev, ...updateImageList]);
-  };
-
-  //update progresss
-  const onSuccess = (imageFile: any, index: number) => {
-    setFileOptinsList((prev: any[]) => {
-      const updateImage = [...prev];
-      updateImage[index] = imageFile;
-      return updateImage;
-    });
   };
 
   const writeUploadInfo = async (fileOptionsList: any, uploadId: string) => {
@@ -95,50 +80,96 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
     }
   };
 
-  const uploadSinglePhoto = async (index: number, uploadId: string) => {
-    const imageFile = fileOptionsList[index];
+  const handleOnFinishAll = async () => {
+    setLoading(false);
+    message.success("全部上傳完成🎉🎉");
+    message.destroy(msgKey);
 
-    const userId = session.id;
-    const formData = new FormData();
-    formData.append("file", imageFile);
-    formData.append("eventId", eventId.value);
-    formData.append("eventName", eventId.label);
-    formData.append("author", userId);
-    formData.append("uploadId", uploadId);
+    modal.confirm({
+      title: `已上傳完成${fileOptionsList.length}張照片`,
+      icon: <ExclamationCircleOutlined />,
+      content: `是否要前往活動頁面？`,
+      okText: "確認",
+      cancelText: "取消",
+      onOk: () => {
+        window.location.href = `/events/${eventId.value}`;
+      },
+      onCancel: () => {
+        setFileOptinsList([]);
+      },
+    });
+  };
 
-    const response = await fetch(`${domain}/api/images/uploadAndDetectText`, {
+  //add watermark and upload after detect text
+  const addWatermarkandUpload = async (
+    key: string,
+    index: number,
+    uploadId: string
+  ) => {
+    await fetch(`${domain}/api/images/addWatermark`, {
       method: "POST",
-      body: formData,
+      body: JSON.stringify({
+        key,
+        eventId: eventId.value,
+        fileName: fileOptionsList[index].name,
+        author: session.id,
+        uploadId,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.error) {
+          message.error(res.error);
+          return;
+        } else {
+          console.log("res", res);
+          setDetectCount((prev) => prev + 1);
+        }
+      });
+  };
+
+  const uploadSinglePhoto = async (index: any, uploadId: string) => {
+    const response = await fetch(`${domain}/api/images/getSignedUploadURL`, {
+      method: "POST",
+      body: JSON.stringify({
+        eventId: eventId.value,
+        fileName: fileOptionsList[index].name,
+        uploadId,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
     }).then((res) => res.json());
 
     if (response.error) {
       message.error(response.error);
       return;
     } else {
-      imageFile.progress = response.progress;
-      setCompleteCount((prev) => prev + 1);
-    }
+      const { signedUrl, key } = response;
+      const imageFile = fileOptionsList[index];
 
-    onSuccess(imageFile, index);
-
-    if (index === fileOptionsList.length - 1) {
-      setLoading(false);
-      message.success("全部上傳完成🎉🎉");
-      message.destroy(msgKey);
-
-      modal.confirm({
-        title: `已上傳完成${fileOptionsList.length}張照片`,
-        icon: <ExclamationCircleOutlined />,
-        content: `是否要前往活動頁面？`,
-        okText: "確認",
-        cancelText: "取消",
-        onOk: () => {
-          window.location.href = `/events/${eventId.value}`;
+      await fetch(signedUrl, {
+        method: "PUT",
+        body: imageFile,
+        headers: {
+          "Content-Type": "image/*",
         },
-        onCancel: () => {
-          setFileOptinsList([]);
-        },
-      });
+      })
+        .then((res) => {
+          if (res.status === 200) {
+            setCompleteCount((prev) => prev + 1);
+            addWatermarkandUpload(key, index, uploadId);
+          } else {
+            return message.error("上傳失敗");
+          }
+        })
+        .catch((err) => {
+          console.log("err", err);
+          return { error: err };
+        });
     }
   };
 
@@ -155,18 +186,40 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
       onOk: () => {
         const uploadId = eventId.value + "_" + dayjs().format("YYYYMMDDHHmmss");
         setLoading(true);
+
+        const loadingMsgConfig = {
+          key: msgKey,
+          content: "上傳中...",
+          duration: 0,
+        };
         message.open({ ...loadingMsgConfig, type: "loading" });
         writeUploadInfo(fileOptionsList, uploadId);
-        //setTimeout + for loop 每600毫秒上傳一張
-        for (var x = 0, ln = fileOptionsList.length; x < ln; x++) {
-          setTimeout(
-            function (y) {
-              uploadSinglePhoto(y, uploadId);
-            },
-            x * 600,
-            x
-          );
-        }
+
+        const asyncOperation = async (i: number, item: any) => {
+          return new Promise((resolve) => {
+            setTimeout(async () => {
+              await uploadSinglePhoto(i, uploadId);
+              resolve(`Result for ${item}`);
+            }, 100); // Simulating a 100ms delay
+          });
+        };
+
+        //一張完成後再上傳下一張
+        const processAsyncOperations = async () => {
+          try {
+            const processedResults = [];
+            for (let i = 0; i < fileOptionsList.length; i++) {
+              const result = await asyncOperation(i, fileOptionsList[i]);
+              processedResults.push(result);
+            }
+            if (processedResults.length === fileOptionsList.length)
+              handleOnFinishAll();
+          } catch (error) {
+            console.error(error);
+          }
+        };
+
+        processAsyncOperations();
       },
     });
   };
@@ -202,15 +255,32 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
           />
         </div>
       </div>
-      <div className="text-center w-full my-10" onClick={handleUpload}>
+      <div className="text-center w-fit mx-auto my-10" onClick={handleUpload}>
         <Button disabled={fileOptionsList.length === 0 || loading}>
           確定上傳
         </Button>
       </div>
-      {loading && (
-        <div className="text-center text-[color:var(--main-color-dark)]">
-          上傳進度: {completeCount}/{fileOptionsList.length}
-        </div>
+      {fileOptionsList.length > 0 && (
+        <>
+          <div className="text-center text-[color:var(--main-color-dark)]">
+            照片上傳進度: {completeCount}/{fileOptionsList.length}
+          </div>
+          <div className="w-1/3 mx-auto">
+            <Progress
+              percent={Math.ceil(
+                (completeCount / fileOptionsList.length) * 100
+              )}
+            />
+          </div>
+          <div className="text-center text-[color:var(--main-color-dark)]">
+            號碼布偵測進度: {detectCount}/{fileOptionsList.length}
+          </div>
+          <div className="w-1/3 mx-auto">
+            <Progress
+              percent={Math.ceil((detectCount / fileOptionsList.length) * 100)}
+            />
+          </div>
+        </>
       )}
       <div className="mx-auto max-w-[800px] min-h-[30vh]">
         <Uploader
@@ -228,11 +298,9 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
 
 export async function getServerSideProps(context: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-  // Fetch data from external API
   const res = await fetch(`${domain}/api/events/getEventOptions`);
   const eventOption = await res.json();
 
-  // Pass data to the page via props
   return { props: { eventOption } };
 }
 
