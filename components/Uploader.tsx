@@ -1,7 +1,6 @@
 import React from "react";
 import { useDropzone } from "react-dropzone";
-import { Progress } from "antd";
-import { UploadOutlined, FileImageOutlined } from "@ant-design/icons";
+import { UploadOutlined } from "@ant-design/icons";
 
 interface UploaderProps {
   onChange: (files: File[]) => void;
@@ -28,20 +27,6 @@ const Uploader = ({ onChange, filesList, loading }: UploaderProps) => {
         <UploadOutlined className="text-3xl mb-4" />
         <p>上傳照片 - 從檔案選擇或拖曳</p>
       </div>
-      <ul>
-        {filesList?.map((file: any, key: number) => (
-          <div
-            className="flex items-center text-[color:var(--main-color-dark)]"
-            key={key}
-          >
-            <FileImageOutlined />
-            <li className="mx-4" key={file.name}>
-              {file.name}
-            </li>
-            <Progress percent={file.progress} />
-          </div>
-        ))}
-      </ul>
     </div>
   );
 };
