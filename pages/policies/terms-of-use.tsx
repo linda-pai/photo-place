@@ -62,13 +62,50 @@ const TermOfUse = () => {
             </ul>
           </li>
           <li className="my-4">
-            <b className="text-xl"> 五、免責聲明</b>
+            <b className="text-xl">五、退換貨須知</b>
+            <ul className="pl-8">
+              <li className="before:content-['•'] before:mr-4 flex">
+                因產品為特定內容的性質，付費後系統立即提供下載，故我們無法提供退款、退換貨。請在確認付款前確保您已經仔細檢查所選擇的照片。
+              </li>
+              <li className="before:content-['•'] before:mr-4 flex">
+                本網站保有最終退換貨與否之決定權及規則更改權利。
+              </li>
+            </ul>
+          </li>
+          <li className="my-4">
+            <b className="text-xl">六、購買流程</b>
+            <ul className="pl-8">
+              <li className="before:content-['•'] before:mr-4 flex">
+                本網站提供相片原始電子檔下載，買家得以支付一定費用的方式，取得所選照片的電子檔。
+              </li>
+              <li className="before:content-['•'] before:mr-4 flex">
+                使用本服務購買照片時，本網站將列明相關的付費項目和金額，在您確認訂單內容無誤後，您將被引導至第三方支付頁面。完成付款後，即可至您的訂單查詢頁面，點擊照片以獲取所選照片的原始電子檔。
+              </li>
+              <li className="before:content-['•'] before:mr-4 flex">
+                如在下載過程中遇到任何技術問題，請聯繫我們的
+                <a href="mailto:photopacer@gmail" className="text-[#4285f4]">
+                  客服信箱
+                </a>
+                及
+                <a
+                  href="https://lin.ee/n4xOm2O"
+                  target="_blank"
+                  className="text-[#4285f4]"
+                >
+                  官方Line帳號
+                </a>
+                以獲得協助。
+              </li>
+            </ul>
+          </li>
+          <li className="my-4">
+            <b className="text-xl">七、免責聲明</b>
             <p className="pl-8">
               本網站不對因使用本網站而導致的任何損失或損害負責，包括但不限於直接或間接損失、收入損失、商譽損失等。
             </p>
           </li>
           <li className="my-4">
-            <b className="text-xl">六、隱私權政策</b>
+            <b className="text-xl">八、隱私權政策</b>
             <p className="pl-8">
               請參閱我們的
               <Link href="/policies/privacy-policy" className="text-[#4285f4]">
@@ -78,7 +115,7 @@ const TermOfUse = () => {
             </p>
           </li>
           <li className="my-4">
-            <b className="text-xl">七、修改和終止</b>
+            <b className="text-xl">九、修改和終止</b>
             <p className="pl-8">
               我們保留隨時修改或終止本使用者條款的權利，修改將通過在本網站上發佈更新的條款生效。您繼續使用本網站將被視為接受修改後的條款。
             </p>
