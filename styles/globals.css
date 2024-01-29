@@ -83,9 +83,7 @@ td {
 .ant-message-notice-content {
   z-index: 100;
 }
-#viewerBackdrop {
-  z-index: 99;
-}
+
 .ant-btn-primary {
   background-color: var(--main-color-light);
 }

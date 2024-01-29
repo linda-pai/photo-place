@@ -1,14 +1,11 @@
 import { useEffect, useState } from "react";
 import { message, Button, Tag, Spin, Pagination } from "antd";
-import ImgsViewer from "react-images-viewer";
 import { setCookie, getCookie } from "cookies-next";
 import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
-// https://guonanci.github.io/react-images-viewer/
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { clickAddToCart, removeAddToCart, searchTracking } from "@/lib/gtag";
-import customImgViewerUI from "../components/image/CustomImgViewerUI";
 
 const SearchWrapper = dynamic(
   () => import("@/pages/components/SearchWrapper"),
@@ -17,10 +14,15 @@ const SearchWrapper = dynamic(
   }
 );
 
-const ImageItems = dynamic(() => import("../components/image/ImageItems"), {
-  loading: () => <Spin />,
-});
+const ImageItems = dynamic(() => import("@/components/image/ImageItems"));
+const ImageLightBox = dynamic(() => import("@/components/image/ImageLightBox"));
 
+interface ImageItemProps {
+  eventId: string;
+  eventName: string;
+  id: string;
+  watermarkedUrl: string;
+}
 // Post component
 export default function EventSearchPage({
   eventInfo,
@@ -38,7 +40,9 @@ export default function EventSearchPage({
   const [images, setImages] = useState([] as any);
   const [showModal, setShowModal] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
-  const [currImg, setCurrImg] = useState(0); // [0, images.length - 1
+  const [showImageViewerCommon, setShowImageViewerCommon] = useState(false);
+  const [currImgIndex, setCurrImgIndex] = useState(0); // [0, images.length - 1
+  const [currCommonImgIndex, setCurrCommonImgIndex] = useState(0); // [0, images.length - 1
   const [cartData, setCartData] = useState({} as any);
   const [curPage, setCurPage] = useState(page || 1);
   const [total, setTotal] = useState(imageListTotal);
@@ -155,14 +159,28 @@ export default function EventSearchPage({
 
   const handleClickImg = (id: string) => {
     setShowImageViewer(true);
-    setCurrImg(images.findIndex((item: any) => item.id === id));
+    setCurrImgIndex(images.findIndex((item: ImageItemProps) => item.id === id));
   };
 
-  const flatted = customImgViewerUI({
-    images,
-    isExistInCart,
-    handleClickCart,
-  });
+  const handleClickImgCommon = (id: string) => {
+    setShowImageViewerCommon(true);
+    setCurrCommonImgIndex(
+      commonImages.findIndex((item: ImageItemProps) => item.id === id)
+    );
+  };
+
+  const gotoPreviousCommon = () =>
+    currCommonImgIndex > 0 && setCurrCommonImgIndex(currCommonImgIndex - 1);
+
+  const gotoNextCommon = () =>
+    currCommonImgIndex + 1 < commonImages.length &&
+    setCurrCommonImgIndex(currCommonImgIndex + 1);
+
+  const gotoPrevious = () =>
+    currImgIndex > 0 && setCurrImgIndex(currImgIndex - 1);
+
+  const gotoNext = () =>
+    currImgIndex + 1 < images.length && setCurrImgIndex(currImgIndex + 1);
 
   return (
     <>
@@ -216,15 +234,15 @@ export default function EventSearchPage({
                   handleClickImg={handleClickImg}
                 />
               ))}
-              <ImgsViewer
-                imgs={flatted}
+              <ImageLightBox
+                images={images}
                 isOpen={showImageViewer}
-                currImg={currImg}
-                onClickPrev={() => setCurrImg((prev) => prev - 1)}
-                onClickNext={() => setCurrImg((prev) => prev + 1)}
+                curIndex={currImgIndex}
                 onClose={() => setShowImageViewer(false)}
-                onClickThumbnail={(index: number) => setCurrImg(index)}
-                showThumbnails={true}
+                onPrev={gotoPrevious}
+                onNext={gotoNext}
+                isExistInCart={isExistInCart}
+                handleClickCart={handleClickCart}
               />
             </div>
 
@@ -254,15 +272,15 @@ export default function EventSearchPage({
                   handleClickImg={handleClickImg}
                 />
               ))}
-              <ImgsViewer
-                imgs={flatted}
-                isOpen={showImageViewer}
-                currImg={currImg}
-                onClickPrev={() => setCurrImg((prev) => prev - 1)}
-                onClickNext={() => setCurrImg((prev) => prev + 1)}
-                onClose={() => setShowImageViewer(false)}
-                onClickThumbnail={(index: number) => setCurrImg(index)}
-                showThumbnails={true}
+              <ImageLightBox
+                images={commonImages}
+                isOpen={showImageViewerCommon}
+                curIndex={currCommonImgIndex}
+                onClose={() => setShowImageViewerCommon(false)}
+                onPrev={gotoPreviousCommon}
+                onNext={gotoNextCommon}
+                isExistInCart={isExistInCart}
+                handleClickCart={handleClickCart}
               />
             </div>
           </>
