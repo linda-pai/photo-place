@@ -55,16 +55,6 @@ const Footer = () => {
                   Instagram
                 </a>
               </li>
-              <li>
-                <a
-                  href="https://lin.ee/n4xOm2O"
-                  className="hover:text-teal-600 transition duration-150 ease-in-out"
-                  target="_blank"
-                  title="Line"
-                >
-                  Line
-                </a>
-              </li>
             </ul>
           </div>
           <div className="w-full lg:w-1/4">
@@ -72,6 +62,16 @@ const Footer = () => {
               客服資訊
             </h6>
             <ul className="text-[color:var(--main-color-light)]">
+              <li>
+                <a
+                  href="https://lin.ee/n4xOm2O"
+                  className="hover:text-teal-600 transition duration-150 ease-in-out"
+                  target="_blank"
+                  title="Line"
+                >
+                  加入官方 Line 帳號
+                </a>
+              </li>
               <li>客服信箱：photopacer@gmail.com</li>
               <li>服務時間：週一至週日 8:30 - 21:00</li>
             </ul>
