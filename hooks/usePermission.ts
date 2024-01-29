@@ -21,7 +21,6 @@ function usePermission(): boolean {
     const userId = session?.id;
     const allowedRoles = permissionByPage[router.pathname];
 
-    console.log("userId", userId);
     if (session !== undefined) {
       if (allowedRoles?.includes(userId)) {
         setIsAllowed(true);
