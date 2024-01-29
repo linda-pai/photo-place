@@ -16,7 +16,6 @@ import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import { setCookie, getCookie, deleteCookie } from "cookies-next";
 import { v4 as uuidv4 } from "uuid";
-import ImgsViewer from "react-images-viewer";
 
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import paymentOptions from "@/utils/paymentOptions";
@@ -25,6 +24,7 @@ import useAuth from "@/hooks/useAuth";
 const PaymentInfo = dynamic(() => import("@/components/PaymentInfoModal"), {
   loading: () => <Spin />,
 });
+const ImageLightBox = dynamic(() => import("@/components/image/ImageLightBox"));
 
 interface CardDataProps {
   eventId: number;
@@ -164,6 +164,13 @@ const checkout = () => {
     setCurrImg(checkoutData.findIndex((item: any) => item.id === id));
   };
 
+  const gotoPrevious = () => {
+    setCurrImg(currImg - 1);
+  };
+  const gotoNext = () => {
+    currImg + 1 < checkoutData.length && setCurrImg(currImg + 1);
+  };
+
   return isLogin ? (
     <>
       <div className="container sm:px-4 px-0 mx-auto my-24 text-[color:var(--main-color-dark)] sm:w-[70%] w-[90%]">
@@ -234,17 +241,13 @@ const checkout = () => {
               orderId={orderId}
               confirmBtnText="建立訂單"
             />
-            <ImgsViewer
-              imgs={checkoutData.map((item: any) => ({
-                src: item.watermarkedUrl,
-              }))}
+            <ImageLightBox
+              images={checkoutData}
               isOpen={showImageViewer}
-              currImg={currImg}
-              onClickPrev={() => setCurrImg((prev) => prev - 1)}
-              onClickNext={() => setCurrImg((prev) => prev + 1)}
+              curIndex={currImg}
               onClose={() => setShowImageViewer(false)}
-              onClickThumbnail={(index: number) => setCurrImg(index)}
-              showThumbnails={true}
+              onPrev={gotoPrevious}
+              onNext={gotoNext}
             />
           </>
         ) : (

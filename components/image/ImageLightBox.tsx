@@ -17,8 +17,8 @@ const ImageLightBox = ({
   onNext,
 }: {
   images: any[];
-  isExistInCart: any;
-  handleClickCart: any;
+  isExistInCart?: any;
+  handleClickCart?: any;
   isOpen: boolean;
   curIndex: number;
   onClose: any;
@@ -62,13 +62,15 @@ const ImageLightBox = ({
           <ArrowRightOutlined />
         </div>
       )}
-      renderFooter={() => (
-        <CustomImgViewerUI
-          image={images[curIndex]}
-          isExistInCart={isExistInCart}
-          handleClickCart={handleClickCart}
-        />
-      )}
+      renderFooter={() =>
+        isExistInCart && (
+          <CustomImgViewerUI
+            image={images[curIndex]}
+            isExistInCart={isExistInCart}
+            handleClickCart={handleClickCart}
+          />
+        )
+      }
       className="bg-opacity-80 bg-black"
     />
   );

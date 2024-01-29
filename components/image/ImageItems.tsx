@@ -21,7 +21,7 @@ const ImageItems = ({
         alt={watermarkedUrl}
         width={300}
         height={400}
-        quality={20}
+        quality={30}
       />
       <div className="bg-[#fff] bg-opacity-70 absolute bottom-12 sm:p-2 p-1 leading-4 hidden group-hover:block">
         <p></p>
