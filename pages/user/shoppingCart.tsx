@@ -3,7 +3,7 @@ import { Button, Table, Space, Spin } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import Link from "next/link";
-import ImgsViewer from "react-images-viewer";
+import dynamic from "next/dynamic";
 import { setCookie, getCookie } from "cookies-next";
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import useAuth from "@/hooks/useAuth";
@@ -14,6 +14,8 @@ interface CardDataProps {
   id: string;
   price: number;
 }
+
+const ImageLightBox = dynamic(() => import("@/components/image/ImageLightBox"));
 
 const shoppingCart = () => {
   const isLogin = useAuth();
@@ -129,6 +131,13 @@ const shoppingCart = () => {
     selectedRowKeys: selectedRows.map((item: CardDataProps) => item.id),
   };
 
+  const gotoPrevious = () => {
+    setCurrImg(currImg - 1);
+  };
+  const gotoNext = () => {
+    currImg + 1 < cartData.length && setCurrImg(currImg + 1);
+  };
+
   return isLogin ? (
     <div className="container sm:px-4 px-0 mx-auto my-24 text-[color:var(--main-color-dark)]">
       <h1 className="text-center text-2xl mb-4">購物車</h1>
@@ -153,17 +162,13 @@ const shoppingCart = () => {
         </Button>
       </div>
 
-      <ImgsViewer
-        imgs={cartData.map((item: any) => ({
-          src: item.watermarkedUrl,
-        }))}
+      <ImageLightBox
+        images={cartData}
         isOpen={showImageViewer}
-        currImg={currImg}
-        onClickPrev={() => setCurrImg((prev) => prev - 1)}
-        onClickNext={() => setCurrImg((prev) => prev + 1)}
         onClose={() => setShowImageViewer(false)}
-        onClickThumbnail={(index: number) => setCurrImg(index)}
-        showThumbnails={true}
+        curIndex={currImg}
+        onPrev={gotoPrevious}
+        onNext={gotoNext}
       />
     </div>
   ) : (
