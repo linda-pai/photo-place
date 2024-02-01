@@ -5,7 +5,7 @@ const TermOfUse = () => {
     <div className="container mx-auto mt-24 text-[color:var(--main-color-dark)] sm:w-[65%] w-[90%]">
       <h1 className="text-center text-2xl my-6">使用者條款</h1>
       <div className="leading-9">
-        非常歡迎您使用「 Photo Pacer 網站
+        非常歡迎您使用「 Photo Pacer 攝影小隊 網站
         」（以下簡稱本網站），為了讓您能夠安心的使用本網站的各項服務與資訊，特此向您說明本網站的使用者條款，以保障您的權益，請您詳閱下列內容：
         <ol>
           <li className="my-4">
@@ -65,7 +65,7 @@ const TermOfUse = () => {
             <b className="text-xl">五、退換貨須知</b>
             <ul className="pl-8">
               <li className="before:content-['•'] before:mr-4 flex">
-                因產品為特定內容的性質，付費後系統立即提供下載，故我們無法提供退款、退換貨。請在確認付款前確保您已經仔細檢查所選擇的照片。
+                因產品為特定內容的性質，付費後系統立即提供下載，故無法提供退款、退換貨。請在確認付款前確保仔細檢查所選擇的照片。
               </li>
               <li className="before:content-['•'] before:mr-4 flex">
                 本網站保有最終退換貨與否之決定權及規則更改權利。

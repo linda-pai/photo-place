@@ -3,7 +3,7 @@ const PrivacyPolicy = () => {
     <div className="container mx-auto mt-24 text-[color:var(--main-color-dark)] sm:w-[65%] w-[90%]">
       <h1 className="text-center text-2xl my-6">隱私權政策</h1>
       <div className="leading-9">
-        非常歡迎您使用「 Photo Pacer 網站
+        非常歡迎您使用「 Photo Pacer 攝影小隊 網站
         」（以下簡稱本網站），為了讓您能夠安心的使用本網站的各項服務與資訊，特此向您說明本網站的隱私權保護政策，以保障您的權益，請您詳閱下列內容：
         <ol>
           <li className="my-4">
