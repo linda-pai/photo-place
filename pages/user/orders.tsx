@@ -1,5 +1,6 @@
 import { Spin, message, Button } from "antd";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { Table, Modal, Tag, Space } from "antd";
 import {
@@ -15,6 +16,9 @@ import copyToClipboard from "@/utils/copyToClipboard";
 import paymentOptions from "@/utils/paymentOptions";
 import downloadImage from "@/utils/downloadImage";
 import useAuth from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import handleNewebPay from "@/lib/payment/handleNewebPay";
+import handleLinePay from "@/lib/payment/handleLinePay";
 import dynamic from "next/dynamic";
 
 const PaymentInfo = dynamic(() => import("@/components/PaymentInfoModal"), {
@@ -26,16 +30,19 @@ interface Order {
   totalAmount: number;
   createAt: string;
   paidAt: string;
-  paymentMethod: string;
+  paymentMethod: number;
   orderBy: string;
   items: CartDataProps[];
 }
 
 const orders = () => {
   const isLogin = useAuth();
+  const isMobile = useIsMobile();
+
   const { data: session }: any = useSession();
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
+  const router = useRouter();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -175,9 +182,11 @@ const orders = () => {
       dataIndex: "paymentMethod",
       key: "paymentMethod",
       width: 130,
-      render: (text, _, key) => (
+      render: (text, orderInfo, key) => (
         <p key={key}>
-          {paymentOptions.find((option) => option.value === text)?.label}
+          {orderInfo.paidAt
+            ? paymentOptions.find((option) => option.value === text)?.label
+            : "-"}
         </p>
       ),
     },
@@ -257,8 +266,53 @@ const orders = () => {
     setIsModalOpen(true);
   };
 
-  const handleOk = () => {
+  const handleOk = async (paymentValue: number) => {
     setIsModalOpen(false);
+    setCurrentOrder((prev) => ({ ...prev, paymentMethod: paymentValue }));
+
+    const { orderId, totalAmount, items } = currentOrder;
+    switch (paymentValue) {
+      case 2:
+        //  LinePay
+        const LineData = {
+          orderId,
+          totalAmount,
+          items,
+          isMobile,
+        };
+        const LineRes = await handleLinePay(LineData);
+        if (LineRes.status === "success") {
+          try {
+            if (isMobile) {
+              router.push(LineRes.result?.app);
+              setTimeout(() => {
+                router.push("/user/orders");
+              }, 1000);
+            } else {
+              router.push(LineRes.result?.web);
+            }
+          } catch (err) {
+            message.error("LinePay扣款失敗, 請稍後再試");
+          }
+        } else {
+          message.error("LinePay扣款失敗, 請稍後再試");
+        }
+        break;
+      case 3:
+        // 藍新金流
+        const orderData = {
+          orderId,
+          totalAmount,
+          items,
+          email: session.user.email,
+        };
+        try {
+          await handleNewebPay(orderData);
+        } catch (err) {
+          message.error("藍新金流扣款失敗, 請稍後再試");
+        }
+        break;
+    }
   };
 
   const handleCancel = () => {
@@ -283,8 +337,8 @@ const orders = () => {
             handleOk={handleOk}
             handleCancel={handleCancel}
             isModalOpen={isModalOpen}
-            orderId={currentOrder.orderId}
             confirmBtnText="確認"
+            paymentMethod={currentOrder.paymentMethod}
           />
         </div>
       ) : (

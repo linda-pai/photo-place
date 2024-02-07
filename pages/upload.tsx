@@ -38,7 +38,7 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
 
   useEffect(() => {
     setAuthorName(session?.user?.name || "");
-  }, [session]);
+  }, []);
 
   const handleSelected = (obj: SelectOption) =>
     setEventId({ value: obj.value, label: obj.label });
@@ -114,6 +114,7 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
         fileName: fileOptionsList[index].name,
         author: session.id,
         uploadId,
+        price: 159,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -183,12 +184,7 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
       okText: "確認",
       cancelText: "取消",
       onOk: () => {
-        const uploadId =
-          eventId.value +
-          "_" +
-          dayjs().format("YYYYMMDDHHmmss") +
-          "_" +
-          session.id;
+        const uploadId = eventId.value + "_" + dayjs().format("YYYYMMDDHHmmss");
         setLoading(true);
 
         const loadingMsgConfig = {

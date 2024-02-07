@@ -10,6 +10,7 @@ import {
   Spin,
   Table,
   Tag,
+  Modal,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dynamic from "next/dynamic";
@@ -20,10 +21,10 @@ import { v4 as uuidv4 } from "uuid";
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import paymentOptions from "@/utils/paymentOptions";
 import useAuth from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import handleNewebPay from "@/lib/payment/handleNewebPay";
+import handleLinePay from "@/lib/payment/handleLinePay";
 
-const PaymentInfo = dynamic(() => import("@/components/PaymentInfoModal"), {
-  loading: () => <Spin />,
-});
 const ImageLightBox = dynamic(() => import("@/components/image/ImageLightBox"));
 
 interface CardDataProps {
@@ -35,9 +36,8 @@ interface CardDataProps {
 
 const checkout = () => {
   const isLogin = useAuth();
+  const isMobile = useIsMobile();
   const { data: session }: any = useSession();
-
-  const orderId = "ord-" + uuidv4().substring(0, 12);
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const router = useRouter();
@@ -45,9 +45,9 @@ const checkout = () => {
   const [checkoutData, setCheckoutData] = useState([] as any);
   const [paymentValue, setPaymentValue] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [currImg, setCurrImg] = useState(0); // [0, images.length - 1
+  const [modal, contextHolder] = Modal.useModal();
 
   const columns: ColumnsType<CardDataProps> = [
     {
@@ -96,7 +96,29 @@ const checkout = () => {
     setPaymentValue(e.target.value);
   };
 
+  const removeFromCookieData = async () => {
+    const currentCart = JSON.parse(getCookie("cart") || "{}");
+    setCookie(
+      "cart",
+      JSON.stringify({
+        ...currentCart,
+        [checkoutData[0]?.eventId]: Object.values(currentCart)
+          .flat()
+          .filter(
+            (item: any) =>
+              !checkoutData.map((item: any) => item.id).includes(item)
+          ),
+      }),
+      {
+        expires: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+      }
+    );
+    deleteCookie("checkoutData");
+  };
+
   const createOrder = async () => {
+    const orderId = "ord-" + uuidv4().substring(0, 12);
+
     setLoading(true);
     //成立訂單
     if (session)
@@ -113,31 +135,11 @@ const checkout = () => {
           "Content-Type": "application/json",
         },
       })
-        .then((res) => {
+        .then(async (res) => {
           if (res.status === 200) {
             message.success("訂單建立成功");
-
-            const currentCart = JSON.parse(getCookie("cart") || "{}");
-            setCookie(
-              "cart",
-              JSON.stringify({
-                ...currentCart,
-                [checkoutData[0]?.eventId]: Object.values(currentCart)
-                  .flat()
-                  .filter(
-                    (item: any) =>
-                      !checkoutData.map((item: any) => item.id).includes(item)
-                  ),
-              }),
-              {
-                expires: new Date(
-                  new Date().setFullYear(new Date().getFullYear() + 1)
-                ),
-              }
-            );
-            router.push("/user/orders");
-            deleteCookie("checkoutData");
-            setLoading(false);
+            await removeFromCookieData();
+            await gotoPayment(orderId);
           }
         })
         .catch((err) => {
@@ -147,16 +149,76 @@ const checkout = () => {
   };
 
   const showModal = () => {
-    setIsModalOpen(true);
+    modal.confirm({
+      title: "確認結帳",
+      icon: <></>,
+      content: (
+        <div className="text-[color:var(--main-color-dark)]">
+          <div className=" text-[color:var(--main-color-light)]">
+            訂購內容：電子檔共 {checkoutData.length} 張
+          </div>
+          <div>
+            付款方式：
+            {
+              paymentOptions.find((option) => option.value === paymentValue)
+                ?.label
+            }
+          </div>
+          <b>總金額：TWD {total + fee} 元</b>
+        </div>
+      ),
+      okText: "確認",
+      cancelText: "取消",
+      onOk: () => {
+        createOrder();
+      },
+    });
   };
 
-  const handleOk = () => {
-    setIsModalOpen(false);
-    createOrder();
-  };
-
-  const handleCancel = () => {
-    setIsModalOpen(false);
+  const gotoPayment = async (orderId: string) => {
+    switch (paymentValue) {
+      case 2:
+        //  LinePay
+        const LineData = {
+          orderId,
+          totalAmount: total + fee,
+          items: checkoutData,
+          isMobile,
+        };
+        const LineRes = await handleLinePay(LineData);
+        if (LineRes.status === "success") {
+          try {
+            if (isMobile) {
+              router.push(LineRes.result?.app);
+              // 手機版付款完成後回不來，所以1秒後導向訂單頁面
+              setTimeout(() => {
+                router.push("/user/orders");
+              }, 1000);
+            } else {
+              router.push(LineRes.result?.web);
+            }
+          } catch (err) {
+            message.error("LinePay扣款失敗, 請稍後再試");
+          }
+        } else {
+          message.error("LinePay扣款失敗, 請稍後再試");
+        }
+        break;
+      case 3:
+        // 藍新金流
+        const orderData = {
+          orderId,
+          totalAmount: total + fee,
+          items: checkoutData,
+          email: session?.user.email,
+        };
+        try {
+          await handleNewebPay(orderData);
+        } catch (err) {
+          message.error("藍新金流扣款失敗, 請稍後再試");
+        }
+        break;
+    }
   };
 
   const handleClickImg = (id: string) => {
@@ -207,22 +269,39 @@ const checkout = () => {
               <Divider />
 
               <div className="flex justify-center">
-                <Radio.Group onChange={onChange} value={paymentValue}>
-                  <Space direction="vertical">
-                    {paymentOptions.map((option: any, key: number) => (
-                      <Radio
-                        value={option.value}
-                        disabled={option.disabled}
-                        key={key}
-                      >
-                        {option.label}
-                        {option?.extension && paymentValue === option.value
-                          ? option?.extension
-                          : null}
-                      </Radio>
-                    ))}
-                  </Space>
-                </Radio.Group>
+                <div className="">
+                  <div className="my-8">
+                    <h3 className="text-xl">付款方式</h3>
+                    <p className="text-sm">
+                      請選擇您的付款方式，點擊確認結帳後，將會導向付款頁面
+                    </p>
+                  </div>
+
+                  <Radio.Group onChange={onChange} value={paymentValue}>
+                    <Space direction="vertical">
+                      {paymentOptions.map((option: any, key: number) => (
+                        <Radio
+                          value={option.value}
+                          disabled={
+                            checkoutData.length === 0 || option.disabled
+                          }
+                          key={key}
+                        >
+                          <div className="flex items-center gap-2 text-[color:var(--main-color-dark)]">
+                            <img
+                              width={80}
+                              height={80}
+                              src={option.icon}
+                              alt={option.label}
+                            />
+                            <p className="font-medium">{option.label}</p>
+                            <p className="">{option?.desc}</p>
+                          </div>
+                        </Radio>
+                      ))}
+                    </Space>
+                  </Radio.Group>
+                </div>
               </div>
             </div>
 
@@ -230,17 +309,12 @@ const checkout = () => {
               <Button
                 onClick={showModal}
                 className="text-[color:var(--main-color-dark)]"
+                disabled={paymentValue === 0}
               >
                 確認結帳
               </Button>
             </div>
-            <PaymentInfo
-              handleOk={handleOk}
-              handleCancel={handleCancel}
-              isModalOpen={isModalOpen}
-              orderId={orderId}
-              confirmBtnText="建立訂單"
-            />
+            {contextHolder}
             <ImageLightBox
               images={checkoutData}
               isOpen={showImageViewer}

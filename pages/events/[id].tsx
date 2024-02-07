@@ -7,13 +7,6 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { clickAddToCart, removeAddToCart, searchTracking } from "@/lib/gtag";
 
-interface ImageItemProps {
-  eventId: string;
-  eventName: string;
-  id: string;
-  watermarkedUrl: string;
-}
-
 const SearchWrapper = dynamic(() => import("@/components/SearchWrapper"), {
   loading: () => <Spin />,
 });
@@ -21,6 +14,12 @@ const SearchWrapper = dynamic(() => import("@/components/SearchWrapper"), {
 const ImageItems = dynamic(() => import("@/components/image/ImageItems"));
 const ImageLightBox = dynamic(() => import("@/components/image/ImageLightBox"));
 
+interface ImageItemProps {
+  eventId: string;
+  eventName: string;
+  id: string;
+  watermarkedUrl: string;
+}
 // Post component
 export default function EventSearchPage({
   eventInfo,
@@ -205,17 +204,17 @@ export default function EventSearchPage({
       </div>
       <div className="container mx-auto my-10" id="result-container">
         <div className="text-center m-10 text-[color:var(--main-color-dark)]">
-          <p>試營運期間，只有一位攝影師🥲</p>
+          {/* <p>試營運期間，只有一位攝影師🥲</p> */}
           {
             <p
               className={showModal && search ? "visible" : "invisible h-0"}
             >{`找到 ${images.length} 張照片，${
               images.length == 0
-                ? "我們未來會努力的增加攝影師的💪"
+                ? "我們未來會努力增加攝影師的💪"
                 : "太有緣份了！"
             }`}</p>
           }
-          <p>不囉唆⚡全面 65 折優惠</p>
+          {/* <p>不囉唆⚡全面 65 折優惠</p> */}
         </div>
 
         {images.length > 0 && (
@@ -224,9 +223,8 @@ export default function EventSearchPage({
               <Tag color="#B0B97A">已完成辨識號碼布</Tag>
             </div>
             <div className="masonry">
-              {images.map((item: ImageItemProps, key: number) => (
+              {images.map((item: any) => (
                 <ImageItems
-                  key={key}
                   item={item}
                   isExistInCart={isExistInCart}
                   handleClickCart={handleClickCart}
@@ -263,9 +261,8 @@ export default function EventSearchPage({
               <Tag>未成功辨識號碼布</Tag>
             </div>
             <div className="masonry">
-              {commonImages.map((item: ImageItemProps, key: number) => (
+              {commonImages.map((item: any) => (
                 <ImageItems
-                  key={key}
                   item={item}
                   isExistInCart={isExistInCart}
                   handleClickCart={handleClickCart}

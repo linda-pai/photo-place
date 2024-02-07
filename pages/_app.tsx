@@ -4,6 +4,7 @@ import type { NextPage } from "next";
 import type { AppProps } from "next/app";
 import { SessionProvider } from "next-auth/react";
 import { Spin } from "antd";
+import { IsSsrMobileContext } from "@/hooks/useIsMobile";
 
 import dynamic from "next/dynamic";
 
@@ -28,10 +29,12 @@ export default function App({
   const navBarRef = useRef();
   const getLayout = Component.getLayout ?? ((page) => page);
   return getLayout(
-    <SessionProvider session={session}>
-      <Layout navBarRef={navBarRef}>
-        <Component {...pageProps} navBarRef={navBarRef} />
-      </Layout>
-    </SessionProvider>
+    <IsSsrMobileContext.Provider value={pageProps.isSsrMobile}>
+      <SessionProvider session={session}>
+        <Layout navBarRef={navBarRef}>
+          <Component {...pageProps} navBarRef={navBarRef} />
+        </Layout>
+      </SessionProvider>
+    </IsSsrMobileContext.Provider>
   );
 }
