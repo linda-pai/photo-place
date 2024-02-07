@@ -22,10 +22,9 @@ import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import paymentOptions from "@/utils/paymentOptions";
 import useAuth from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import handleNewebPay from "@/lib/payment/handleNewebPay";
+import handleLinePay from "@/lib/payment/handleLinePay";
 
-const PaymentInfo = dynamic(() => import("@/components/PaymentInfoModal"), {
-  loading: () => <Spin />,
-});
 const ImageLightBox = dynamic(() => import("@/components/image/ImageLightBox"));
 
 interface CardDataProps {
@@ -39,8 +38,6 @@ const checkout = () => {
   const isLogin = useAuth();
   const isMobile = useIsMobile();
   const { data: session }: any = useSession();
-
-  const orderId = "ord-" + uuidv4().substring(0, 12);
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const router = useRouter();
@@ -120,6 +117,8 @@ const checkout = () => {
   };
 
   const createOrder = async () => {
+    const orderId = "ord-" + uuidv4().substring(0, 12);
+
     setLoading(true);
     //成立訂單
     if (session)
@@ -140,9 +139,7 @@ const checkout = () => {
           if (res.status === 200) {
             message.success("訂單建立成功");
             await removeFromCookieData();
-            await gotoPayment();
-            // router.push("/user/orders");
-            // setLoading(false);
+            await gotoPayment(orderId);
           }
         })
         .catch((err) => {
@@ -178,53 +175,28 @@ const checkout = () => {
     });
   };
 
-  const gotoPayment = async () => {
+  const gotoPayment = async (orderId: string) => {
     switch (paymentValue) {
-      case 0:
-        // 轉帳
-        break;
-      case 1:
-        // 信用卡
-        const res = await fetch(`${domain}/api/orders/checkout`, {
-          method: "POST",
-          body: JSON.stringify({
-            orderId,
-            paymentMethod: paymentValue,
-            totalAmount: total + fee,
-            items: checkoutData,
-            orderBy: session.id,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        const data = await res.json();
-        if (data.status === "success") {
-          window.location.href = data.url;
-        } else {
-          message.error("訂單建立失敗, 請稍後再試");
-        }
-        break;
       case 2:
-        const linePayRes = await fetch(`${domain}/api/linepay/request`, {
-          method: "POST",
-          body: JSON.stringify({
-            orderId,
-            totalAmount: total + fee,
-            items: checkoutData,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        const data2 = await linePayRes.json();
-        if (data2.status === "success") {
+        //  LinePay
+        const LineData = {
+          orderId,
+          totalAmount: total + fee,
+          items: checkoutData,
+          isMobile,
+        };
+        const LineRes = await handleLinePay(LineData);
+        if (LineRes.status === "success") {
           try {
-            const redirectUrl = isMobile
-              ? data2.result?.app
-              : data2.result?.web;
-
-            router.push(redirectUrl);
+            if (isMobile) {
+              router.push(LineRes.result?.app);
+              // 手機版付款完成後回不來，所以1秒後導向訂單頁面
+              setTimeout(() => {
+                router.push("/user/orders");
+              }, 1000);
+            } else {
+              router.push(LineRes.result?.web);
+            }
           } catch (err) {
             message.error("LinePay扣款失敗, 請稍後再試");
           }
@@ -234,41 +206,15 @@ const checkout = () => {
         break;
       case 3:
         // 藍新金流
-        const newebpayRes = await fetch(`${domain}/api/newebpay/request`, {
-          method: "POST",
-          body: JSON.stringify({
-            orderId,
-            totalAmount: total + fee,
-            items: checkoutData,
-            Email: session?.user.email,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        const newebpayData = await newebpayRes.json();
-
-        if (newebpayData.status === "success") {
-          try {
-            //藍新金流要用form submit
-            const form = document.createElement("form");
-            form.action = newebpayData.url;
-            form.method = "POST";
-
-            Object.keys(newebpayData.result).forEach((key) => {
-              const input = document.createElement("input");
-              input.type = "hidden";
-              input.name = key;
-              input.value = newebpayData.result[key];
-              form.appendChild(input);
-            });
-
-            document.body.appendChild(form);
-            form.submit();
-          } catch (err) {
-            message.error("藍新金流扣款失敗, 請稍後再試");
-          }
-        } else {
+        const orderData = {
+          orderId,
+          totalAmount: total + fee,
+          items: checkoutData,
+          email: session?.user.email,
+        };
+        try {
+          await handleNewebPay(orderData);
+        } catch (err) {
           message.error("藍新金流扣款失敗, 請稍後再試");
         }
         break;
@@ -323,18 +269,39 @@ const checkout = () => {
               <Divider />
 
               <div className="flex justify-center">
-                <Radio.Group onChange={onChange} value={paymentValue}>
-                  <Space direction="vertical">
-                    {paymentOptions.map((option: any) => (
-                      <Radio value={option.value} disabled={option.disabled}>
-                        {option.label}
-                        {option?.extension && paymentValue === option.value
-                          ? option?.extension
-                          : null}
-                      </Radio>
-                    ))}
-                  </Space>
-                </Radio.Group>
+                <div className="">
+                  <div className="my-8">
+                    <h3 className="text-xl">付款方式</h3>
+                    <p className="text-sm">
+                      請選擇您的付款方式，點擊確認結帳後，將會導向付款頁面
+                    </p>
+                  </div>
+
+                  <Radio.Group onChange={onChange} value={paymentValue}>
+                    <Space direction="vertical">
+                      {paymentOptions.map((option: any, key: number) => (
+                        <Radio
+                          value={option.value}
+                          disabled={
+                            checkoutData.length === 0 || option.disabled
+                          }
+                          key={key}
+                        >
+                          <div className="flex items-center gap-2 text-[color:var(--main-color-dark)]">
+                            <img
+                              width={80}
+                              height={80}
+                              src={option.icon}
+                              alt={option.label}
+                            />
+                            <p className="font-medium">{option.label}</p>
+                            <p className="">{option?.desc}</p>
+                          </div>
+                        </Radio>
+                      ))}
+                    </Space>
+                  </Radio.Group>
+                </div>
               </div>
             </div>
 
@@ -342,17 +309,12 @@ const checkout = () => {
               <Button
                 onClick={showModal}
                 className="text-[color:var(--main-color-dark)]"
+                disabled={paymentValue === 0}
               >
                 確認結帳
               </Button>
             </div>
-            {/* <PaymentInfo
-              handleOk={handleOk}
-              handleCancel={handleCancel}
-              isModalOpen={isModalOpen}
-              orderId={orderId}
-              confirmBtnText="建立訂單"
-            />} */}
+            {contextHolder}
             <ImageLightBox
               images={checkoutData}
               isOpen={showImageViewer}

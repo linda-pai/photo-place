@@ -24,7 +24,8 @@
     "react-dropzone": "^14.2.3",
     "react-images-viewer": "^1.7.1",
     "react-spring-lightbox": "^1.8.0",
-    "sharp": "^0.33.1"
+    "sharp": "^0.33.1",
+    "styled-components": "^6.1.8"
   },
   "devDependencies": {
     "@types/node": "^20",

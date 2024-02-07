@@ -114,6 +114,7 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
         fileName: fileOptionsList[index].name,
         author: session.id,
         uploadId,
+        price: 159,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -125,7 +126,6 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
           message.error(res.error);
           return;
         } else {
-          console.log("res", res);
           setDetectCount((prev) => prev + 1);
         }
       });

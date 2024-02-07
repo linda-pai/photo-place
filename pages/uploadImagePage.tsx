@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { message, Spin } from "antd";
 import userPermission from "@/hooks/usePermission";
+import copyToClipboard from "@/utils/copyToClipboard";
 
 import dynamic from "next/dynamic";
 
@@ -16,7 +17,7 @@ const UploadImagePage: React.FC = () => {
   const [imageFile, setImageFile] = useState([] as any[]);
 
   const handleUpload = async (option: any) => {
-    const file = option.file as File;
+    const file = option[0] as File;
     setImageFile([file]);
 
     const formData = new FormData();
@@ -32,6 +33,7 @@ const UploadImagePage: React.FC = () => {
         message.error(response.error);
         return;
       } else {
+        message.success("上傳成功");
         setCoverImg(response.Location);
       }
     } catch (error) {}
@@ -43,13 +45,21 @@ const UploadImagePage: React.FC = () => {
         <Uploader onChange={handleUpload} filesList={imageFile} />
       </div>
       {coverImg && (
-        <Image
-          src={URL.createObjectURL(imageFile[0])}
-          width="120"
-          height="160"
-          className="mx-auto my-5"
-          alt="預覽圖片"
-        />
+        <>
+          <Image
+            src={URL.createObjectURL(imageFile[0])}
+            width="120"
+            height="160"
+            className="mx-auto my-5"
+            alt="預覽圖片"
+          />
+          <p
+            className="underline text-[#4285f4]"
+            onClick={() => copyToClipboard(coverImg)}
+          >
+            {coverImg}
+          </p>
+        </>
       )}
     </div>
   ) : (

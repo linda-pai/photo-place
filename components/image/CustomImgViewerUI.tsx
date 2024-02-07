@@ -5,7 +5,7 @@ const customImgViewerUI = ({ image, isExistInCart, handleClickCart }: any) => {
     <div className="flex items-center gap-4 mx-auto m-4">
       <div>
         <p className="line-through text-xs text-[#8f8f8f]">TWD: 169</p>
-        <p className="text-red-500 ">TWD: 109 </p>
+        <p className="text-red-500 ">TWD: {image.price} </p>
       </div>
       <button
         onClick={() => handleClickCart(image?.id)}

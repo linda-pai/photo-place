@@ -13,7 +13,9 @@ export default async function confirm(
     }
   ).then((res) => res.json());
 
-  res.redirect(
-    `/newebpay/confirm?status=${decryptData.Status}&orderId=${decryptData.Result.ItemDesc}&transactionId=${decryptData.Result.TradeNo}&merchantOrderNo=${decryptData.Result.MerchantOrderNo}`
-  );
+  if (decryptData.Status === "SUCCESS") {
+    res.redirect(302, `/user/orders?orderStatus=SUCCESS`);
+  } else {
+    res.redirect(`/user/orders?orderStatus=FAIL`);
+  }
 }
