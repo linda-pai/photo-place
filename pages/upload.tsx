@@ -112,6 +112,7 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
         key,
         eventId: eventId.value,
         fileName: fileOptionsList[index].name,
+        lastModified: fileOptionsList[index].lastModified,
         author: session.id,
         uploadId,
         price: 159,
