@@ -29,9 +29,11 @@ const ImageItems = ({
           TWD: 169 元
         </p>
         <p className="text-red-500 sm:text-xs text-[12px]">TWD: {price} 元</p>
-        <p className="sm:text-xs text-[12px] text-[#8f8f8f] mt-2">
-          {dayjs(lastModified).format("YYYY/MM/DD HH:mm")}
-        </p>
+        {lastModified && (
+          <p className="sm:text-xs text-[12px] text-[#8f8f8f] mt-2">
+            {dayjs(lastModified).format("YYYY/MM/DD HH:mm")}
+          </p>
+        )}
       </div>
       <div
         className="bg-[#5f5b50] bg-opacity-70 absolute bottom-0 w-full sm:h-[10%] h-[18%] min-h-[28px] max-h-[34px] group hover:bg-opacity-90 transition-all duration-300"
