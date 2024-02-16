@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 const customImgViewerUI = ({ image, isExistInCart, handleClickCart }: any) => {
   return (
     <>
-      <div className="flex items-center gap-4 mx-auto m-4">
+      <div className="flex items-center gap-4 right-[1vh] bottom-[1vh] absolute w-fit">
         <div>
           <p className="line-through text-xs text-[#8f8f8f]">TWD: 169</p>
           <p className="text-red-500 ">TWD: {image.price} </p>
@@ -32,7 +32,7 @@ const customImgViewerUI = ({ image, isExistInCart, handleClickCart }: any) => {
         </button>
       </div>
       {image.lastModified && (
-        <p className="sm:text-xs text-[12px] text-[#8f8f8f] text-end mx-2">
+        <p className="sm:text-xs text-[12px] text-[#8f8f8f] mx-2">
           {dayjs(image.lastModified).format("YYYY/MM/DD HH:mm")}
         </p>
       )}

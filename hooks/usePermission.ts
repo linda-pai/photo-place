@@ -27,7 +27,7 @@ function usePermission(): boolean {
       } else {
         setIsAllowed(false);
         message.error("You are not allowed to access this page");
-        router.back();
+        router.push("/");
       }
     }
   }, [session]);

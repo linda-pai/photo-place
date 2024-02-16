@@ -71,7 +71,7 @@ const ImageLightBox = ({
           />
         )
       }
-      className="bg-opacity-80 bg-black"
+      className="bg-opacity-80 bg-black overflow-hidden"
     />
   );
 };
