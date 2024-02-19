@@ -30,7 +30,7 @@ const LoginPage = () => {
 
           <div className="text-xs text-[#857e85] leading-5">
             <p>
-              若繼續操作，即表示你同意 Photo Pacer{" "}
+              若繼續操作，即表示你同意 Photo Pacer 攝影小隊{" "}
               <Link href="/policies/terms-of-use" className="text-[#4285f4]">
                 使用者條款
               </Link>

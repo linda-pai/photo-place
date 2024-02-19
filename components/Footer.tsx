@@ -9,7 +9,7 @@ const Footer = () => {
         <div className="flex flex-wrap justify-between sm:gap-0 gap-6">
           <div className="w-full lg:w-1/4">
             <h6 className="text-[color:var(--main-color-dark)] text-lg font-bold mb-5">
-              Photo Pacer
+              Photo Pacer 攝影小隊
             </h6>
             <ul className="text-[color:var(--main-color-light)]">
               <li>
@@ -69,7 +69,7 @@ const Footer = () => {
                   target="_blank"
                   title="Line"
                 >
-                  加入官方 Line 帳號
+                  加入攝影小隊官方 Line 帳號
                 </a>
               </li>
               <li>客服信箱：photopacer@gmail.com</li>
