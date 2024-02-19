@@ -5,6 +5,7 @@ import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useRouter } from "next/router";
+import { useSession } from "next-auth/react";
 import { clickAddToCart, removeAddToCart, searchTracking } from "@/lib/gtag";
 
 const SearchWrapper = dynamic(() => import("@/components/SearchWrapper"), {
@@ -30,6 +31,8 @@ export default function EventSearchPage({
   page,
   imageListTotal,
 }: any) {
+  const { data: session }: any = useSession();
+
   const router = useRouter();
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
@@ -96,7 +99,7 @@ export default function EventSearchPage({
           event_label: eventName,
           search_term: search,
           number_of_results: data.length,
-          user_id: getCookie("token"),
+          user_id: session.id,
         });
       });
   };
@@ -133,7 +136,7 @@ export default function EventSearchPage({
         event_label: eventName,
         image_id: id,
         current_search: search,
-        user_id: getCookie("token"),
+        user_id: session.id,
       });
     } else {
       //從cookie移除
@@ -149,7 +152,7 @@ export default function EventSearchPage({
         event_category: "event",
         event_label: eventName,
         image_id: id,
-        user_id: getCookie("token"),
+        user_id: session.id,
       });
     }
   };
