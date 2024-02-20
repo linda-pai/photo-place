@@ -226,8 +226,9 @@ export default function EventSearchPage({
               <Tag color="#B0B97A">已完成辨識號碼布</Tag>
             </div>
             <div className="masonry">
-              {images.map((item: any) => (
+              {images.map((item: any, key: number) => (
                 <ImageItems
+                  key={key}
                   item={item}
                   isExistInCart={isExistInCart}
                   handleClickCart={handleClickCart}
@@ -264,8 +265,9 @@ export default function EventSearchPage({
               <Tag>未成功辨識號碼布</Tag>
             </div>
             <div className="masonry">
-              {commonImages.map((item: any) => (
+              {commonImages.map((item: any, key: number) => (
                 <ImageItems
+                  key={key}
                   item={item}
                   isExistInCart={isExistInCart}
                   handleClickCart={handleClickCart}

@@ -1,5 +1,6 @@
 import { Inter } from "next/font/google";
 import dynamic from "next/dynamic";
+import Head from "next/head";
 import { Spin } from "antd";
 
 const EventCard = dynamic(() => import("@/components/EventCard"), {
@@ -19,18 +20,26 @@ interface Event {
 
 export default function Home({ events }: { events: Event[] }) {
   return (
-    <div
-      className={`flex flex-col items-center justify-between my-24 container mx-auto ${inter.className}`}
-    >
-      <h1 className="my-6 border-b text-2xl text-[color:var(--main-color-dark)]">
-        運動賽事照片
-      </h1>
-      <div className="flex flex-wrap justify-center">
-        {events.map(
-          (event, key) => event.isShow && <EventCard key={key} event={event} />
-        )}
+    <>
+      <Head>
+        <title>Photo Pacer 攝影小隊 - 首頁</title>
+        <meta property="og:title" content={`Photo Pacer 攝影小隊 - 首頁`} />
+        <link rel="canonical" href={`${process.env.NEXT_PUBLIC_APP_URL}`} />
+      </Head>
+      <div
+        className={`flex flex-col items-center justify-between my-24 container mx-auto ${inter.className}`}
+      >
+        <h1 className="my-6 border-b text-2xl text-[color:var(--main-color-dark)]">
+          運動賽事照片
+        </h1>
+        <div className="flex flex-wrap justify-center">
+          {events.map(
+            (event, key) =>
+              event.isShow && <EventCard key={key} event={event} />
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
