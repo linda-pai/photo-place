@@ -12,25 +12,11 @@ import {
 import { ExclamationCircleOutlined, CopyOutlined } from "@ant-design/icons";
 
 import type { ColumnsType } from "antd/es/table";
-import { CartDataProps } from "@/types/interfaces/CartDataProps";
+import { Order, OrderListProps } from "@/types/interfaces/CartDataProps";
 import dayjs from "dayjs";
 import usePermission from "@/hooks/usePermission";
 import copyToClipboard from "@/utils/copyToClipboard";
 import paymentOptions from "@/utils/paymentOptions";
-
-interface Order {
-  orderId: number;
-  totalAmount: number;
-  createAt: string;
-  paidAt: string;
-  paymentMethod: string;
-  orderBy: string;
-  items: CartDataProps[];
-}
-
-interface OrderListProps {
-  orders: Order[];
-}
 
 const orderList = ({ orders }: OrderListProps) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;

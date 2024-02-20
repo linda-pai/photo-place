@@ -6,7 +6,7 @@ import copyToClipboard from "@/utils/copyToClipboard";
 
 import dynamic from "next/dynamic";
 
-const Uploader = dynamic(() => import("@/components/Uploader"), {
+const Uploader = dynamic(() => import("@/components/upload/Uploader"), {
   loading: () => <Spin />,
 });
 const UploadImagePage: React.FC = () => {
