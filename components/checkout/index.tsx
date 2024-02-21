@@ -209,7 +209,7 @@ const Checkout = () => {
   };
 
   const gotoPrevious = () => {
-    setCurrImg(currImg - 1);
+    currImg > 0 && setCurrImg(currImg - 1);
   };
   const gotoNext = () => {
     currImg + 1 < checkoutData.length && setCurrImg(currImg + 1);
