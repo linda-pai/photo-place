@@ -145,14 +145,25 @@ export default function EventSearchPage({
   return (
     <>
       <Head>
-        <title>{`${eventName} | 搜尋照片`}</title>
-        <meta property="og:title" content={`${eventName} | 搜尋照片`} />
-        <meta name="description" content={`${eventName} | 號碼布搜尋照片`} />
+        <title>{`${eventName} | 號碼布搜尋照片 | Photo Pacer 攝影小隊`}</title>
+        <meta
+          property="og:title"
+          content={`${eventName} | 號碼布搜尋照片 | Photo Pacer 攝影小隊`}
+        />
+        <meta name="description" content={`號碼布辨識系統，快入找到賽事相片`} />
         <meta
           property="og:description"
-          content={`${eventName} | 號碼布搜尋照片`}
+          content={`號碼布辨識系統，快入找到賽事相片`}
         />
         <meta property="og:image" content={coverImg} />
+        <meta
+          property="og:url"
+          content={`${process.env.NEXT_PUBLIC_APP_URL}/events/${eventId}`}
+        />
+        <meta
+          itemProp="name"
+          content={`${eventName} | 號碼布搜尋照片 | Photo Pacer 攝影小隊`}
+        />
         <link
           rel="canonical"
           href={`${process.env.NEXT_PUBLIC_APP_URL}/events/${eventId}`}
