@@ -6,14 +6,15 @@ import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
-import { clickAddToCart, removeAddToCart, searchTracking } from "@/lib/gtag";
+import { searchTracking } from "@/lib/gtag";
 
 const SearchWrapper = dynamic(() => import("@/components/SearchWrapper"), {
   loading: () => <Spin />,
 });
 
-const ImageItems = dynamic(() => import("@/components/image/ImageItems"));
-const ImageLightBox = dynamic(() => import("@/components/image/ImageLightBox"));
+const ImageList = dynamic(() => import("@/components/image/ImageList"), {
+  loading: () => <Spin />,
+});
 
 interface ImageItemProps {
   eventId: string;
@@ -43,7 +44,6 @@ export default function EventSearchPage({
   const [showImageViewerCommon, setShowImageViewerCommon] = useState(false);
   const [currImgIndex, setCurrImgIndex] = useState(0); // [0, images.length - 1
   const [currCommonImgIndex, setCurrCommonImgIndex] = useState(0); // [0, images.length - 1
-  const [cartData, setCartData] = useState({} as any);
   const [curPage, setCurPage] = useState(page || 1);
   const [total, setTotal] = useState(imageListTotal);
 
@@ -52,7 +52,6 @@ export default function EventSearchPage({
 
   useEffect(() => {
     setImages(imageList);
-    setCartData(JSON.parse(getCookie("cart") || "{}"));
   }, []);
 
   useEffect(() => {
@@ -104,8 +103,6 @@ export default function EventSearchPage({
       });
   };
 
-  const isExistInCart = (id: string) => cartData[eventId]?.includes(id);
-
   const pushToCart = (id: string) => {
     const currentCart = JSON.parse(getCookie("cart") || "{}");
     if (currentCart[eventId]?.includes(id)) return;
@@ -118,43 +115,6 @@ export default function EventSearchPage({
     setCookie("cart", JSON.stringify(data), {
       expires: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
     });
-
-    setCartData(data);
-  };
-
-  const handleClickCart = (id: string) => {
-    const currentCart = JSON.parse(getCookie("cart") || "{}");
-    //check if cart exist
-    if (!isExistInCart(id)) {
-      //存入cookie
-      pushToCart(id);
-      message.success("已加入購物車");
-
-      //埋點
-      clickAddToCart({
-        event_category: "event",
-        event_label: eventName,
-        image_id: id,
-        current_search: search,
-        user_id: session.id,
-      });
-    } else {
-      //從cookie移除
-      const newCart = currentCart[eventId].filter(
-        (item: string) => item !== id
-      );
-      currentCart[eventId] = newCart;
-      updateCart(currentCart);
-      message.success("已從購物車移除");
-
-      //埋點
-      removeAddToCart({
-        event_category: "event",
-        event_label: eventName,
-        image_id: id,
-        user_id: session.id,
-      });
-    }
   };
 
   const handleClickImg = (id: string) => {
@@ -225,27 +185,17 @@ export default function EventSearchPage({
             <div className="my-2 mx-3 text-[color:var(--main-color-dark)] text-sm">
               <Tag color="#B0B97A">已完成辨識號碼布</Tag>
             </div>
-            <div className="masonry">
-              {images.map((item: any, key: number) => (
-                <ImageItems
-                  key={key}
-                  item={item}
-                  isExistInCart={isExistInCart}
-                  handleClickCart={handleClickCart}
-                  handleClickImg={handleClickImg}
-                />
-              ))}
-              <ImageLightBox
-                images={images}
-                isOpen={showImageViewer}
-                curIndex={currImgIndex}
-                onClose={() => setShowImageViewer(false)}
-                onPrev={gotoPrevious}
-                onNext={gotoNext}
-                isExistInCart={isExistInCart}
-                handleClickCart={handleClickCart}
-              />
-            </div>
+            <ImageList
+              images={images}
+              isOpen={showImageViewer}
+              curIndex={currImgIndex}
+              onClose={() => setShowImageViewer(false)}
+              onPrev={gotoPrevious}
+              onNext={gotoNext}
+              handleClickImg={handleClickImg}
+              eventId={eventId}
+              eventName={eventName}
+            />
 
             <div className="text-center my-10">
               <Pagination
@@ -264,27 +214,17 @@ export default function EventSearchPage({
             <div className="my-2 mt-16 mb-4 text-[color:var(--main-color-dark)] text-sm">
               <Tag>未成功辨識號碼布</Tag>
             </div>
-            <div className="masonry">
-              {commonImages.map((item: any, key: number) => (
-                <ImageItems
-                  key={key}
-                  item={item}
-                  isExistInCart={isExistInCart}
-                  handleClickCart={handleClickCart}
-                  handleClickImg={handleClickImgCommon}
-                />
-              ))}
-              <ImageLightBox
-                images={commonImages}
-                isOpen={showImageViewerCommon}
-                curIndex={currCommonImgIndex}
-                onClose={() => setShowImageViewerCommon(false)}
-                onPrev={gotoPreviousCommon}
-                onNext={gotoNextCommon}
-                isExistInCart={isExistInCart}
-                handleClickCart={handleClickCart}
-              />
-            </div>
+            <ImageList
+              images={commonImages}
+              isOpen={showImageViewerCommon}
+              curIndex={currCommonImgIndex}
+              onClose={() => setShowImageViewerCommon(false)}
+              onPrev={gotoPreviousCommon}
+              onNext={gotoNextCommon}
+              handleClickImg={handleClickImgCommon}
+              eventId={eventId}
+              eventName={eventName}
+            />
           </>
         )}
         <div>

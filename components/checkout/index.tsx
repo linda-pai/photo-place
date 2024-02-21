@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import {
   Divider,
-  Space,
-  Radio,
   RadioChangeEvent,
   Button,
   message,
@@ -12,7 +10,6 @@ import {
   Tag,
   Modal,
 } from "antd";
-import type { ColumnsType } from "antd/es/table";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import { setCookie, getCookie, deleteCookie } from "cookies-next";
@@ -22,8 +19,15 @@ import paymentOptions from "@/utils/paymentOptions";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import handleNewebPay from "@/lib/payment/handleNewebPay";
 import handleLinePay from "@/lib/payment/handleLinePay";
+import tableConfig from "./tableConfig";
 
 const ImageLightBox = dynamic(() => import("@/components/image/ImageLightBox"));
+const PaymentOption = dynamic(
+  () => import("@/components/checkout/PaymentOption"),
+  {
+    loading: () => <Spin />,
+  }
+);
 
 const Checkout = () => {
   const isMobile = useIsMobile();
@@ -39,19 +43,9 @@ const Checkout = () => {
   const [currImg, setCurrImg] = useState(0); // [0, images.length - 1
   const [modal, contextHolder] = Modal.useModal();
 
-  const columns: ColumnsType<CartDataProps> = [
-    {
-      title: "活動名稱",
-      dataIndex: "eventName",
-      key: "eventName",
-      width: 120,
-    },
-    {
-      title: "預覽",
-      dataIndex: "watermarkedUrl",
-      key: "watermarkedUrl",
-      width: 80,
-      render: (url: string, record) => (
+  const columnsRenderMap = {
+    watermarkedUrl: {
+      render: (url: string, record: CartDataProps) => (
         <img
           className="w-20 cursor-pointer"
           src={url}
@@ -60,14 +54,12 @@ const Checkout = () => {
         />
       ),
     },
-    {
-      title: "價格",
-      dataIndex: "price",
-      key: "price",
-      width: 100,
+    price: {
       render: (price: number) => <p>TWD {price} 元</p>,
     },
-  ];
+  };
+
+  const columns = tableConfig(columnsRenderMap);
 
   useEffect(() => {
     const checkoutData = JSON.parse(getCookie("checkoutData") || "[]");
@@ -256,40 +248,11 @@ const Checkout = () => {
               )}
             />
             <Divider />
-
-            <div className="flex justify-center">
-              <div className="">
-                <div className="my-8">
-                  <h3 className="text-xl">付款方式</h3>
-                  <p className="text-sm">
-                    請選擇您的付款方式，點擊確認結帳後，將會導向付款頁面
-                  </p>
-                </div>
-
-                <Radio.Group onChange={onChange} value={paymentValue}>
-                  <Space direction="vertical">
-                    {paymentOptions.map((option: any, key: number) => (
-                      <Radio
-                        value={option.value}
-                        disabled={checkoutData.length === 0 || option.disabled}
-                        key={key}
-                      >
-                        <div className="flex items-center gap-2 text-[color:var(--main-color-dark)]">
-                          <img
-                            width={80}
-                            height={80}
-                            src={option.icon}
-                            alt={option.label}
-                          />
-                          <p className="font-medium">{option.label}</p>
-                          <p className="">{option?.desc}</p>
-                        </div>
-                      </Radio>
-                    ))}
-                  </Space>
-                </Radio.Group>
-              </div>
-            </div>
+            <PaymentOption
+              paymentValue={paymentValue}
+              onChange={onChange}
+              disabled={checkoutData.length === 0}
+            />
           </div>
 
           <div className="flex justify-center my-8">

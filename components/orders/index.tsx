@@ -8,7 +8,6 @@ import {
   CopyOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
-import type { ColumnsType } from "antd/es/table";
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import dynamic from "next/dynamic";
 import dayjs from "dayjs";
@@ -18,10 +17,18 @@ import downloadImage from "@/utils/downloadImage";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import handleNewebPay from "@/lib/payment/handleNewebPay";
 import handleLinePay from "@/lib/payment/handleLinePay";
+import tableConfig from "./tableConfig";
 
 const PaymentInfo = dynamic(() => import("@/components/PaymentInfoModal"), {
   loading: () => <Spin />,
 });
+
+const ImageItemDisplay = dynamic(
+  () => import("@/components/orders/ImageItemDisplay"),
+  {
+    loading: () => <Spin />,
+  }
+);
 
 interface Order {
   orderId: string;
@@ -46,14 +53,10 @@ const Orders = () => {
   const [modal, contextHolder] = Modal.useModal();
   const [currentOrder, setCurrentOrder] = useState({} as Order);
 
-  const columns: ColumnsType<Order> = [
-    {
-      title: "訂單編號",
-      dataIndex: "orderId",
-      key: "orderId",
-      width: 140,
+  const columnsRenderMap = {
+    orderId: {
       ellipsis: true,
-      render: (text, _, key) => (
+      render: (text: string, _: any, key: number) => (
         <a
           onClick={() => copyToClipboard(text)}
           className="cursor-pointer"
@@ -65,73 +68,42 @@ const Orders = () => {
         </a>
       ),
     },
-    {
-      title: "訂單成立時間",
-      dataIndex: "createAt",
-      key: "createAt",
-      width: 140,
+    createAt: {
       sorter: (a: Order, b: Order) => {
         const dateA = new Date(a.createAt);
         const dateB = new Date(b.createAt);
         return dateA.getTime() - dateB.getTime();
       },
-      render: (text, _, key) => (
+      render: (text: string, _: any, key: number) => (
         <p key={key}>{text ? dayjs(text).format("YYYY-MM-DD HH:mm") : "-"}</p>
       ),
     },
-    {
-      title: "訂單明細",
-      dataIndex: "items",
-      key: "items",
-      width: 260,
+    items: {
       ellipsis: true,
-      render: (_, record, index) => (
+      render: (_: string, record: any, index: number) => (
         <div key={index}>
           <div className="flex gap-2 overflow-scroll">
-            {record.items.map((item, key) => (
-              <div
-                className="relative group cursor-pointer"
-                key={item.id}
+            {record.items.map((item: any, key: number) => (
+              <ImageItemDisplay
+                item={item}
                 onClick={() => handleClickImage(record, key)}
-              >
-                <div className="w-24">
-                  <img
-                    src={item.watermarkedUrl}
-                    className="w-full object-contain"
-                    alt={item.id}
-                  />
-                </div>
-                <div className="group-hover:visible invisible">
-                  <div className="bg-black opacity-50 absolute top-0 w-full h-full "></div>
-                  <div className="animate-bounce z-20 text-white text-xl absolute top-[40%] left-[40%]">
-                    <DownloadOutlined />
-                  </div>
-                </div>
-              </div>
+              />
             ))}
           </div>
         </div>
       ),
     },
-    {
-      title: "付款方式",
-      dataIndex: "paymentMethod",
-      key: "paymentMethod",
-      width: 130,
-      render: (text, orderInfo, key) => (
+    paymentMethod: {
+      render: (text: string, orderInfo: any, key: number) => (
         <p key={key}>
           {orderInfo.paidAt
-            ? paymentOptions.find((option) => option.value === text)?.label
+            ? paymentOptions.find((option: any) => option.value === text)?.label
             : "-"}
         </p>
       ),
     },
-    {
-      title: "款項狀態",
-      dataIndex: "paidAt",
-      key: "paidAt",
-      width: 120,
-      render: (text, orderInfo, key) => (
+    paidAt: {
+      render: (text: string, orderInfo: any, key: number) => (
         <div key={key}>
           {text ? (
             <Tag color="#B0B97A">已付款</Tag>
@@ -150,22 +122,15 @@ const Orders = () => {
         </div>
       ),
     },
-    {
-      title: "訂單金額",
-      dataIndex: "totalAmount",
-      key: "totalAmount",
-      width: 100,
-      render: (totalAmount: number, _, key) => (
+    totalAmount: {
+      render: (totalAmount: number, _: any, key: number) => (
         <p key={key} className="text-center">
           TWD {totalAmount} 元
         </p>
       ),
     },
-    {
-      title: "Action",
-      key: "action",
-      width: 120,
-      render: (_, record, key) => (
+    action: {
+      render: (_: any, record: any, key: number) => (
         <>
           <Space size="small" key={key}>
             <Button
@@ -182,7 +147,9 @@ const Orders = () => {
         </>
       ),
     },
-  ];
+  };
+
+  const columns = tableConfig(columnsRenderMap);
 
   useEffect(() => {
     if (session) getOrders();
