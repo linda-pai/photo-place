@@ -15,8 +15,6 @@ import copyToClipboard from "@/utils/copyToClipboard";
 import paymentOptions from "@/utils/paymentOptions";
 import downloadImage from "@/utils/downloadImage";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import handleNewebPay from "@/lib/payment/handleNewebPay";
-import handleLinePay from "@/lib/payment/handleLinePay";
 import tableConfig from "./tableConfig";
 
 const PaymentInfo = dynamic(() => import("@/components/PaymentInfoModal"), {
@@ -165,55 +163,6 @@ const Orders = () => {
       });
   };
 
-  const handleOk = async (paymentValue: number) => {
-    setIsModalOpen(false);
-    setCurrentOrder((prev) => ({ ...prev, paymentMethod: paymentValue }));
-
-    const { orderId, totalAmount, items } = currentOrder;
-    switch (paymentValue) {
-      case 2:
-        //  LinePay
-        const LineData = {
-          orderId,
-          totalAmount,
-          items,
-          isMobile,
-        };
-        const LineRes = await handleLinePay(LineData);
-        if (LineRes.status === "success") {
-          try {
-            if (isMobile) {
-              router.push(LineRes.result?.app);
-              setTimeout(() => {
-                router.push("/user/orders");
-              }, 1000);
-            } else {
-              router.push(LineRes.result?.web);
-            }
-          } catch (err) {
-            message.error("LinePay扣款失敗, 請稍後再試");
-          }
-        } else {
-          message.error("LinePay扣款失敗, 請稍後再試");
-        }
-        break;
-      case 3:
-        // 藍新金流
-        const orderData = {
-          orderId,
-          totalAmount,
-          items,
-          email: session.user.email,
-        };
-        try {
-          await handleNewebPay(orderData);
-        } catch (err) {
-          message.error("藍新金流扣款失敗, 請稍後再試");
-        }
-        break;
-    }
-  };
-
   const handleCancel = () => {
     setIsModalOpen(false);
   };
@@ -295,11 +244,12 @@ const Orders = () => {
       />
       {contextHolder}
       <PaymentInfo
-        handleOk={handleOk}
         handleCancel={handleCancel}
         isModalOpen={isModalOpen}
         confirmBtnText="確認"
         paymentMethod={currentOrder.paymentMethod}
+        currentOrder={currentOrder}
+        modelDescription="付款完成後即可下載照片，是否要前往付款?"
       />
     </div>
   ) : (
