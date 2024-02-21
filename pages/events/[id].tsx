@@ -60,7 +60,7 @@ export default function EventSearchPage({
   }, [images]);
 
   useEffect(() => {
-    if (curPage !== page) onSearch();
+    if (curPage) onSearch();
   }, [curPage]);
 
   const handleOnChange = (e: any) => {
@@ -98,7 +98,7 @@ export default function EventSearchPage({
           event_label: eventName,
           search_term: search,
           number_of_results: data.length,
-          user_id: session.id,
+          user_id: session?.id,
         });
       });
   };
@@ -260,7 +260,7 @@ export async function getServerSideProps(context: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const eventId = context.params.id;
   const bib = context.query.bib || "";
-  const page = context.query.page || 1;
+  const page = Number(context.query.page);
 
   const imageList = await fetch(
     `${domain}/api/images/getByPathAndEventId/${eventId}/all`
