@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Spin, Table, Tag, Modal } from "antd";
+import { Spin, Table, Tag } from "antd";
 import { InfoCircleOutlined } from "@ant-design/icons";
 import dynamic from "next/dynamic";
 import dayjs from "dayjs";
 import { CHARGE_PERCENTAGE } from "@/constants";
+import tableConfig from "./tableConfig";
 
 const PaymentInfo = dynamic(() => import("@/components/PaymentInfoModal"), {
   loading: () => <Spin />,
@@ -47,24 +48,13 @@ const RecordOfUpload = () => {
   const [currImg, setCurrImg] = useState(0); // [0, images.length - 1
   const [currList, setCurrList] = useState([]);
 
-  const columns = [
-    {
-      title: "活動名稱",
-      dataIndex: "eventName",
-      key: "eventName",
-    },
-    {
-      title: "上傳時間",
-      dataIndex: "createAt",
-      key: "createAt",
+  const columnsRenderMap = {
+    createAt: {
       render: (text: string, _: any, key: number) => (
         <p key={key}>{text ? dayjs(text).format("YYYY-MM-DD HH:mm") : "-"}</p>
       ),
     },
-    {
-      title: "上傳張數",
-      dataIndex: "imagesCount",
-      key: "imagesCount",
+    imagesCount: {
       render: (text: string, uploadInfo: any, key: number) => (
         <>
           <p>{text}張</p>
@@ -77,11 +67,7 @@ const RecordOfUpload = () => {
         </>
       ),
     },
-    {
-      title: "售出張數",
-      dataIndex: "sellInfo",
-      key: "sellInfo",
-      width: 200,
+    sellInfo: {
       render: (_: string, { sellInfo }: any, index: number) => (
         <div
           className="max-w-[200px]"
@@ -97,15 +83,7 @@ const RecordOfUpload = () => {
         </div>
       ),
     },
-    {
-      title: "攝影師名稱",
-      dataIndex: "name",
-      key: "name",
-    },
-    {
-      title: "付款狀態",
-      dataIndex: "chargeAt",
-      key: "chargeAt",
+    chargeAt: {
       render: (text: string, uploadInfo: any, key: number) => (
         <div key={key}>
           {text ? (
@@ -147,7 +125,9 @@ const RecordOfUpload = () => {
         </div>
       ),
     },
-  ];
+  };
+
+  const columns = tableConfig(columnsRenderMap);
 
   useEffect(() => {
     if (session) getUploadDetail();

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/router";
 import { Table, Spin, Space, Button, Tag, Modal, message } from "antd";
 import {
   DownloadOutlined,
@@ -14,7 +13,6 @@ import dayjs from "dayjs";
 import copyToClipboard from "@/utils/copyToClipboard";
 import paymentOptions from "@/utils/paymentOptions";
 import downloadImage from "@/utils/downloadImage";
-import { useIsMobile } from "@/hooks/useIsMobile";
 import tableConfig from "./tableConfig";
 
 const PaymentInfo = dynamic(() => import("@/components/PaymentInfoModal"), {
@@ -39,11 +37,9 @@ interface Order {
 }
 
 const Orders = () => {
-  const isMobile = useIsMobile();
   const { data: session }: any = useSession();
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-  const router = useRouter();
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);

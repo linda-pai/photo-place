@@ -1,0 +1,55 @@
+import type { ColumnsType } from "antd/es/table";
+
+interface RecordOfUploadProps {
+  author: string;
+  createAt: string;
+  eventId: string;
+  eventName: string;
+  imagesCount: number;
+  chargeAt: string;
+  uploadId: string;
+}
+
+const tableConfig = (columnsRenderMap: any) => {
+  const columns: ColumnsType<RecordOfUploadProps> = [
+    {
+      title: "活動名稱",
+      dataIndex: "eventName",
+      key: "eventName",
+    },
+    {
+      title: "上傳時間",
+      dataIndex: "createAt",
+      key: "createAt",
+      ...columnsRenderMap.createAt,
+    },
+    {
+      title: "上傳張數",
+      dataIndex: "imagesCount",
+      key: "imagesCount",
+      ...columnsRenderMap.imagesCount,
+    },
+    {
+      title: "售出張數",
+      dataIndex: "sellInfo",
+      key: "sellInfo",
+      width: 200,
+      ...columnsRenderMap.sellInfo,
+    },
+    {
+      title: "攝影師名稱",
+      dataIndex: "name",
+      key: "name",
+      ...columnsRenderMap.name,
+    },
+    {
+      title: "付款狀態",
+      dataIndex: "chargeAt",
+      key: "chargeAt",
+      ...columnsRenderMap.chargeAt,
+    },
+  ];
+  return columns;
+};
+
+export default tableConfig;
