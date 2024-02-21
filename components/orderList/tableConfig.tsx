@@ -47,8 +47,8 @@ const tableConfig = (columnsRenderMap: any) => {
     },
     {
       title: "款項狀態",
-      dataIndex: "paymentStatus",
-      key: "paymentStatus",
+      dataIndex: "paidAt",
+      key: "paidAt",
       width: 90,
       ...columnsRenderMap.paymentStatus,
     },
