@@ -1,7 +1,16 @@
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
-import { Select, Input, Button, Progress, Spin, message, Modal } from "antd";
+import {
+  Select,
+  Input,
+  InputNumber,
+  Button,
+  Progress,
+  Spin,
+  message,
+  Modal,
+} from "antd";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import getSignedUploadURL from "@/lib/upload/getSignedUploadURL";
@@ -35,6 +44,7 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
 
   const [modal, contextHolder] = Modal.useModal();
   const [authorName, setAuthorName] = useState(session?.user?.name || "");
+  const [price, setPrice] = useState(159);
 
   const msgKey = Math.random().toString();
   const uploadId = dayjs().format("YYYYMMDDHHmmsss");
@@ -47,6 +57,7 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
     setEventId({ value: obj.value, label: obj.label });
 
   const handleChangeAuthorName = (e: any) => setAuthorName(e.target.value);
+  const handleChangePrice = (value: any) => setPrice(value);
 
   const handleOnUploaderChange = async (imageFile: File[]) => {
     //remove dulicate file
@@ -70,6 +81,7 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
       author: session.id,
       name: authorName || session.user.name,
       imagesCount: fileOptionsList.length,
+      price,
     };
 
     const response = await writeUploadInfo(reqBody);
@@ -105,11 +117,12 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
     const reqBody = {
       key,
       eventId: eventId.value,
+      eventName: eventId.label,
       fileName: fileOptionsList[index].name,
       lastModified: fileOptionsList[index].lastModified,
       author: session.id,
       uploadId,
-      price: 159,
+      price,
     };
     const response = await addWatermark(reqBody);
 
@@ -213,6 +226,16 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
             value={authorName}
             defaultValue={authorName || ""}
             addonBefore="攝影師名稱"
+          />
+        </div>
+        <div>
+          <InputNumber
+            placeholder="照片價格"
+            className="w-1/3 my-2"
+            onChange={handleChangePrice}
+            value={price}
+            defaultValue={price || ""}
+            addonBefore="照片價格"
           />
         </div>
       </div>

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Collapse } from "antd";
 
-const ImageDetail = ({ index, items }: any) => {
+const ImageDetail = ({ index, items, handleImageClick }: any) => {
   const [toggle, setToggle] = useState<{ [key: number]: boolean }>({});
 
   const handleOnToggle = (index: number) => {
@@ -14,7 +14,7 @@ const ImageDetail = ({ index, items }: any) => {
         onClick={() => handleOnToggle(index)}
         className="flex gap-8 items-center hover:cursor-pointer"
       >
-        <p className="text-end">共 {items.length} 張</p>
+        <p className="text-end">共 {items?.length} 張</p>
         <p className="text-blue-500">{toggle[index] ? "收合" : "展開"}</p>
       </div>
 
@@ -26,7 +26,11 @@ const ImageDetail = ({ index, items }: any) => {
             children: (
               <>
                 <p>TWD {item.price} 元</p>
-                <img src={item.watermarkedUrl} alt={item.watermarkedUrl} />
+                <img
+                  onClick={handleImageClick}
+                  src={item.watermarkedUrl}
+                  alt={item.watermarkedUrl}
+                />
               </>
             ),
           }))}

@@ -1,6 +1,7 @@
 const addWatermark = async (reqBody: {
   key: string;
   eventId: string;
+  eventName: string;
   fileName: string;
   uploadId: string;
   lastModified: number;

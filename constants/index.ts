@@ -3,4 +3,6 @@ const paymentConst = {
   NEWEBPAY: 3,
 };
 
-export { paymentConst };
+const CHARGE_PERCENTAGE = 0.04;
+
+export { paymentConst, CHARGE_PERCENTAGE };
