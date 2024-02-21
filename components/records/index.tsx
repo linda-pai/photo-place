@@ -24,7 +24,7 @@ const ImageLightBox = dynamic(
   }
 );
 
-interface UploadDetailTableProps {
+interface RecordOfUploadProps {
   author: string;
   createAt: string;
   eventId: string;
@@ -34,19 +34,15 @@ interface UploadDetailTableProps {
   uploadId: string;
 }
 
-const UploadDetailTable = () => {
+const RecordOfUpload = () => {
   const { data: session }: any = useSession();
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
-  const [uploadDetail, setUploadDetail] = useState(
-    [] as UploadDetailTableProps[]
-  );
+  const [uploadDetail, setUploadDetail] = useState([] as RecordOfUploadProps[]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentOrder, setCurrentOrder] = useState(
-    {} as UploadDetailTableProps
-  );
+  const [currentOrder, setCurrentOrder] = useState({} as RecordOfUploadProps);
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [currImg, setCurrImg] = useState(0); // [0, images.length - 1
   const [currList, setCurrList] = useState([]);
@@ -208,4 +204,4 @@ const UploadDetailTable = () => {
   );
 };
 
-export default UploadDetailTable;
+export default RecordOfUpload;
