@@ -1,5 +1,5 @@
 import React from "react";
-import { Form, Input, InputNumber, Button, message } from "antd";
+import { Form, Input, InputNumber, Button, message, Modal } from "antd";
 
 const NotifyForm = ({
   eventName,
@@ -9,9 +9,11 @@ const NotifyForm = ({
   eventId: string;
 }) => {
   const [form] = Form.useForm();
+  const [modal, contextHolder] = Modal.useModal();
 
   const onSubmit = async (values: any) => {
-    const notifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${eventId}?bib=${values.bib}`;
+    const bib = values.bib || "";
+    const notifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${eventId}?bib=${bib}`;
     //fetch api
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_SERVER_URL}/api/imagesUploadComplete/notifyRecord`,
@@ -27,10 +29,15 @@ const NotifyForm = ({
           eventId,
         }),
       }
-    );
+    ).then((res) => res.json());
 
-    if (response.status === 200) {
-      message.success("登記成功");
+    const { status, msg } = response;
+
+    if (status === 200) {
+      modal.info({
+        title: msg,
+        content: "我們將在上傳完成後通知您",
+      });
       setTimeout(() => {
         form.resetFields();
       }, 1000);
@@ -105,6 +112,7 @@ const NotifyForm = ({
             </Button>
           </Form.Item>
         </Form>
+        {contextHolder}
       </div>
     </div>
   );

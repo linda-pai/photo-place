@@ -130,6 +130,10 @@ td {
   background-color: var(--main-color-light) !important;
 }
 
+:where(.css-2rgkd4).ant-modal-confirm-info .ant-modal-confirm-body > .anticon {
+  color: #faad14 !important;
+}
+
 .masonry {
   display: flex;
   flex-wrap: wrap;
