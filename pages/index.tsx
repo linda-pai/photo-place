@@ -32,7 +32,7 @@ export default function Home({ events }: { events: Event[] }) {
         <h1 className="my-6 border-b text-2xl text-[color:var(--main-color-dark)]">
           運動賽事照片
         </h1>
-        <div className="flex flex-wrap justify-center">
+        <div className="max-w-[1280px] flex flex-wrap justify-center">
           {events.map(
             (event, key) =>
               event.isShow && <EventCard key={key} event={event} />

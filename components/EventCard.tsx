@@ -15,7 +15,7 @@ const EventCard = ({ event }: any) => {
           />
         </div>
         <div className="text-[color:var(--main-color-dark)]">
-          <h2 className="m-2 sm:text-lg text-sm text-center two-line-ellipsis">
+          <h2 className="m-2 sm:text-xl text-sm text-center two-line-ellipsis">
             {eventName}
           </h2>
           <div className="m-2 rounded-md mx-auto sm:py-1 py-0 sm:px-2 px-1 w-fit bg-[color:var(--main-color)] text-[color:var(--main-color-dark)] opacity-90 text-center sm:text-xs text-[11px]">
