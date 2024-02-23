@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Form, Input, InputNumber, Button, message, Modal } from "antd";
 
 const NotifyForm = ({
@@ -10,6 +10,31 @@ const NotifyForm = ({
 }) => {
   const [form] = Form.useForm();
   const [modal, contextHolder] = Modal.useModal();
+  const [submittable, setSubmittable] = React.useState(false);
+  const values = Form.useWatch([], form);
+
+  const layout = {
+    labelCol: { span: 6 },
+    wrapperCol: { span: 16 },
+  };
+
+  const validateMessages = {
+    required: "請填寫${label}",
+    types: {
+      email: "Email格式有誤",
+    },
+  };
+
+  useEffect(() => {
+    form.validateFields({ validateOnly: true }).then(
+      () => {
+        setSubmittable(true);
+      },
+      () => {
+        setSubmittable(false);
+      }
+    );
+  }, [values]);
 
   const onSubmit = async (values: any) => {
     const bib = values.bib || "";
@@ -47,22 +72,6 @@ const NotifyForm = ({
     }
   };
 
-  const layout = {
-    labelCol: { span: 6 },
-    wrapperCol: { span: 16 },
-  };
-
-  const validateMessages = {
-    required: "請填寫${label}",
-    types: {
-      email: "Email格式有誤",
-      number: "為了快速找照片，請填寫正確${label}",
-    },
-    number: {
-      range: "${label} must be between ${min} and ${max}",
-    },
-  };
-
   return (
     <div className="text-center text-[color:var(--main-color-dark)] my-10  px-4 flex flex-col justify-center  min-h-[60vh]">
       <div className="">
@@ -88,11 +97,15 @@ const NotifyForm = ({
             rules={[
               {
                 required: false,
-                type: "number",
+                type: "string",
+              },
+              {
+                pattern: /^[0-9]{0,6}$/,
+                message: "最多6位數字",
               },
             ]}
           >
-            <InputNumber placeholder="請輸入您的號碼布" className="w-full" />
+            <Input placeholder="請輸入您的號碼布" className="w-full" />
           </Form.Item>
           <Form.Item
             name="email"
@@ -107,7 +120,12 @@ const NotifyForm = ({
             <Input placeholder="請輸入您的Email" />
           </Form.Item>
           <Form.Item className="flex justify-center">
-            <Button className="mt-8" type="primary" htmlType="submit">
+            <Button
+              className="mt-8"
+              type="primary"
+              htmlType="submit"
+              disabled={!submittable}
+            >
               確認
             </Button>
           </Form.Item>
