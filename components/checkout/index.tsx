@@ -118,9 +118,9 @@ const Checkout = () => {
           try {
             if (isMobile) {
               router.push(LineRes.result?.app);
-              // 手機版付款完成後回不來，所以1秒後導向訂單頁面
+              // 手機版付款完成後回不來，所以1秒後導向成功頁
               setTimeout(() => {
-                router.push("/user/orders");
+                router.push("/user/succeed");
               }, 1000);
             } else {
               router.push(LineRes.result?.web);

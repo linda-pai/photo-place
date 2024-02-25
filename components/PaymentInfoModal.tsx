@@ -57,7 +57,7 @@ const PaymentInfo: React.FC<Props> = ({
             if (isMobile) {
               router.push(LineRes.result?.app);
               setTimeout(() => {
-                router.push("/user/orders");
+                router.push("/user/succeed");
               }, 1000);
             } else {
               router.push(LineRes.result?.web);
@@ -65,6 +65,8 @@ const PaymentInfo: React.FC<Props> = ({
           } catch (err) {
             message.error("LinePay扣款失敗, 請稍後再試");
           }
+        } else if (LineRes.status === "paid") {
+          message.success("訂單已付款");
         } else {
           message.error("LinePay扣款失敗, 請稍後再試");
         }
@@ -78,7 +80,14 @@ const PaymentInfo: React.FC<Props> = ({
           email: session.user.email,
         };
         try {
-          await handleNewebPay(orderData);
+          const newebPayRes = await handleNewebPay(orderData);
+          if (newebPayRes.status === "success") {
+            message.success("訂單已付款");
+          } else if (newebPayRes.status === "paid") {
+            message.success("訂單已付款");
+          } else {
+            message.error("藍新金流扣款失敗, 請稍後再試");
+          }
         } catch (err) {
           message.error("藍新金流扣款失敗, 請稍後再試");
         }

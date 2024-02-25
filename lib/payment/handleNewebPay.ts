@@ -46,6 +46,9 @@ const handleNewebPay = async ({
     } catch (err) {
       console.error(err);
     }
+  } else if (newebpayData.status === "paid") {
+    //已經付款過
+    return newebpayData;
   }
 };
 
