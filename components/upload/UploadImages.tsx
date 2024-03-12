@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
+import { setCookie, getCookie } from "cookies-next";
 import {
   Select,
   Input,
@@ -10,13 +11,16 @@ import {
   Spin,
   message,
   Modal,
+  Steps,
+  Table,
 } from "antd";
-import { ExclamationCircleOutlined } from "@ant-design/icons";
-import dayjs from "dayjs";
-import getSignedUploadURL from "@/lib/upload/getSignedUploadURL";
-import processAsyncOperations from "@/utils/processAsyncOperations";
+import {
+  ExclamationCircleOutlined,
+  SmileOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
+import parallelUploadWithLimit from "@/utils/parallelUploadWithLimit";
 import addWatermark from "@/lib/upload/addWatermark";
-import writeUploadInfo from "@/lib/upload/writeUploadInfo";
 
 interface Event {
   id: number;
@@ -38,7 +42,7 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
 
   const [loading, setLoading] = useState(false);
   const [eventId, setEventId] = useState({} as SelectOption);
-  const [fileOptionsList, setFileOptinsList] = useState([] as any);
+  const [fileOptionsList, setFileOptionsList] = useState([] as any);
   const [completeCount, setCompleteCount] = useState(0);
   const [detectCount, setDetectCount] = useState(0);
 
@@ -47,10 +51,17 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
   const [price, setPrice] = useState(159);
 
   const msgKey = Math.random().toString();
-  const uploadId = dayjs().format("YYYYMMDDHHmmsss");
 
   useEffect(() => {
     setAuthorName(session?.user?.name || "");
+  }, []);
+
+  useEffect(() => {
+    const uploadData = JSON.parse(getCookie("uploadInfo") || "[]");
+    setFileOptionsList(uploadData);
+    setCompleteCount(
+      uploadData.filter((file: any) => file.uploaded).length || 0
+    );
   }, []);
 
   const handleSelected = (obj: SelectOption) =>
@@ -60,36 +71,35 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
   const handleChangePrice = (value: any) => setPrice(value);
 
   const handleOnUploaderChange = async (imageFile: File[]) => {
-    //remove dulicate file
-    const updateImageList = imageFile.filter(
-      (imageFile) =>
-        !fileOptionsList.find((item: File) => {
-          if (item.name === imageFile.name) {
-            message.error(`${imageFile.name}已經存在`);
+    //overwrite fileOptionsList with new files when has same path
+    const originList = fileOptionsList.filter(
+      (file: any) =>
+        !imageFile.find((newFile: any) => {
+          if (newFile?.name === file?.name) {
+            message.error(`${newFile.name}已存在`);
             return true;
+          }
+          if (newFile?.path === file?.path) {
+            if (file.uploaded) {
+              message.error(`${file.path}已上傳`);
+              return false;
+            } else {
+              message.error(`${newFile.name}重新選取成功`);
+              return true;
+            }
           }
         })
     );
-    setFileOptinsList((prev: any[]) => [...prev, ...updateImageList]);
-  };
 
-  const writeUploadInfoToDB = async (fileOptionsList: File[]) => {
-    const reqBody = {
-      uploadId,
-      eventId: eventId.value,
-      eventName: eventId.label,
-      author: session.id,
-      name: authorName || session.user.name,
-      imagesCount: fileOptionsList.length,
-      price,
-    };
+    const concatedList = [...originList, ...imageFile];
+    const newFileOptionsList = concatedList.filter(
+      (file: any, index: number, self: any) =>
+        index === self.findIndex((t: any) => t.path === file.path)
+    );
+    setFileOptionsList(newFileOptionsList);
 
-    const response = await writeUploadInfo(reqBody);
-
-    if (response.error) {
-      message.error(response.error);
-      return;
-    }
+    //set in cookie
+    setCookie("uploadInfo", JSON.stringify(newFileOptionsList));
   };
 
   const handleOnFinishAll = async () => {
@@ -107,21 +117,21 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
         window.location.href = `/events/${eventId.value}`;
       },
       onCancel: () => {
-        setFileOptinsList([]);
+        // setFileOptionsList([]);
       },
     });
   };
 
   //add watermark and upload after detect text
-  const addWatermarkandUpload = async (key: string, index: number) => {
+  const addWatermarkandUpload = async (key: string, file: File) => {
     const reqBody = {
       key,
       eventId: eventId.value,
       eventName: eventId.label,
-      fileName: fileOptionsList[index].name,
-      lastModified: fileOptionsList[index].lastModified,
+      fileName: file.name,
+      lastModified: file.lastModified,
       author: session.id,
-      uploadId,
+      uploadId: eventId.value + "_" + session.id,
       price,
     };
     const response = await addWatermark(reqBody);
@@ -134,50 +144,131 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
     }
   };
 
-  const uploadSinglePhoto = async (index: any) => {
-    const reqBody = {
-      fileName: fileOptionsList[index].name,
-      eventId: eventId.value,
-      uploadId,
-    };
-    const resSignedURL = await getSignedUploadURL(reqBody);
+  const chunkFileAndUpload = async (
+    file: File,
+    uploadId: string,
+    key: string
+  ) => {
+    //2. chunk image withe each 5MB and upload
+    const chunkSize = 5 * 1024 * 1024;
+    const NUM_CHUNKS = Math.floor(file.size / chunkSize) + 1;
 
-    if (resSignedURL.error) {
-      message.error(resSignedURL.error);
-      return;
-    } else {
-      const { signedUrl, key } = resSignedURL;
+    let promisesArray = [] as any;
+    let uploadPartsArray = [] as any;
 
-      await fetch(signedUrl, {
-        method: "PUT",
-        body: fileOptionsList[index],
-        headers: {
-          "Content-Type": "image/*",
-        },
-      })
-        .then((res) => {
-          if (res.status === 200) {
-            setCompleteCount((prev) => prev + 1);
-            addWatermarkandUpload(key, index);
-          } else {
-            return message.error("上傳失敗");
-          }
-        })
-        .catch((err) => {
-          console.log("err", err);
-          return { error: err };
+    //upload each chunk
+    for (let i = 1; i < NUM_CHUNKS + 1; i++) {
+      const start = (i - 1) * chunkSize;
+      const end = i * chunkSize;
+      const chunk = i < NUM_CHUNKS ? file.slice(start, end) : file.slice(start);
+
+      //get presigned url
+      await fetch(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/get-upload-url?uploadId=${uploadId}&fileName=${file.name}&partNumber=${i}&key=${key}`
+      )
+        .then((res) => res.json())
+        .then((result) => {
+          //put chunk to presigned url
+          const { preSignedURL } = result;
+          let uploadResp = fetch(preSignedURL, {
+            method: "PUT",
+            body: chunk,
+            headers: {
+              "Content-Type": "image/*",
+            },
+          }).then((data) => {
+            //retry with settimeout
+            if (data.status !== 200) {
+              setTimeout(() => {
+                fetch(preSignedURL, {
+                  method: "PUT",
+                  body: chunk,
+                  headers: {
+                    "Content-Type": "image/*",
+                  },
+                });
+              }, 2000);
+            }
+            return data;
+          });
+
+          promisesArray.push(uploadResp);
         });
     }
+
+    await Promise.all(promisesArray).then((resolvedArray: any[]) => {
+      resolvedArray.forEach((resolvedPromise, index) => {
+        uploadPartsArray.push({
+          ETag: resolvedPromise.headers.get("ETag"),
+          PartNumber: index + 1,
+        });
+      });
+    });
+
+    //complete-upload
+    await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/complete-upload`, {
+      method: "POST",
+      body: JSON.stringify({
+        key,
+        parts: uploadPartsArray,
+        uploadId,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.error) {
+          //retry with settimeout
+          return setTimeout(() => {
+            fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/complete-upload`, {
+              method: "POST",
+              body: JSON.stringify({
+                key,
+                parts: uploadPartsArray,
+                uploadId,
+              }),
+              headers: {
+                "Content-Type": "application/json",
+              },
+            });
+          }, 2000);
+        }
+
+        setFileOptionsList((prev: any) => {
+          const newFileOptionsList = prev.map((item: any) =>
+            item.name && item.name === file.name
+              ? { ...item, uploaded: true }
+              : item
+          );
+          setCookie("uploadInfo", JSON.stringify(newFileOptionsList));
+          return newFileOptionsList;
+        });
+
+        setCompleteCount((prev) => {
+          //update fileOptionsList to add uploaded status
+          if (prev + 1 === fileOptionsList.length) handleOnFinishAll();
+          return prev + 1;
+        });
+        addWatermarkandUpload(key, file);
+        return;
+      })
+      .catch((err) => {
+        console.log("err", err);
+      });
   };
 
   const handleUpload = async () => {
     if (!session.id) return message.error("請先登入");
     if (!eventId.value) return message.error("請選擇活動");
 
+    const tobeUploadedList = fileOptionsList.filter((file: any) => file.type);
+
     modal.confirm({
       title: "上傳照片",
       icon: <ExclamationCircleOutlined />,
-      content: `確定要上傳${fileOptionsList.length}張照片嗎？`,
+      content: `確定要上傳${tobeUploadedList.length}張照片嗎？`,
       okText: "確認",
       cancelText: "取消",
       onOk: () => {
@@ -190,21 +281,122 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
         };
         message.open({ ...loadingMsgConfig, type: "loading" });
         //寫入上傳資訊
-        writeUploadInfoToDB(fileOptionsList);
-
-        //一張完成後再上傳下一張
-        processAsyncOperations(
+        //50張一組，完成後再上傳下一組
+        const groupLimit = 50;
+        parallelUploadWithLimit(
           fileOptionsList,
-          uploadSinglePhoto,
-          handleOnFinishAll
+          tobeUploadedList,
+          groupLimit,
+          chunkFileAndUpload
         );
       },
     });
   };
 
+  const currentStep =
+    detectCount > 0
+      ? detectCount === fileOptionsList.length
+        ? 2
+        : 1
+      : (0 as 0 | 1 | 2 | undefined);
+
+  const steps = [
+    {
+      title: "上傳中",
+      description: "照片上傳中",
+      subTitle: `剩餘時間: ${
+        Math.ceil((fileOptionsList.length - completeCount) * 3) / 60 < 1
+          ? Math.ceil((fileOptionsList.length - completeCount) * 3) + "秒"
+          : Math.ceil((fileOptionsList.length - completeCount) * 3) / 60 + "分"
+      }
+   `,
+    },
+    {
+      title: "偵測中",
+      description: "號碼布偵測中",
+    },
+    {
+      title: "完成",
+      description: "上傳完成",
+      icon: (
+        <SmileOutlined style={currentStep === 2 ? { color: "#ffd700" } : {}} />
+      ),
+      status: currentStep === 2 ? "finish" : "wait",
+      subTitle: `${completeCount}/${fileOptionsList.length}張照片`,
+    },
+  ] as any;
+
+  const currentPercent = Math.ceil(
+    ((currentStep === 0
+      ? completeCount
+      : currentStep === 1
+      ? detectCount
+      : fileOptionsList.length) /
+      fileOptionsList.length) *
+      100
+  );
+
+  const columns = [
+    {
+      title: "檔案名稱",
+      dataIndex: "path",
+      key: "path",
+      sorter: (a: any, b: any) => a.path?.localeCompare(b.path),
+    },
+
+    {
+      title: "上傳進度",
+      dataIndex: "uploaded",
+      key: "uploaded",
+      render: (uploaded: string, record: any) => {
+        return record.type?.includes("image") ? (
+          <Progress percent={uploaded ? 100 : 0} />
+        ) : (
+          <>
+            {uploaded ? (
+              <Progress percent={100} />
+            ) : (
+              <>
+                請重新選取檔案
+                <ExclamationCircleOutlined />
+              </>
+            )}
+          </>
+        );
+      },
+      sorter: (
+        a: any,
+        b: any //boolean
+      ) => (a.uploaded ? 1 : b.uploaded ? -1 : 0),
+    },
+    {
+      title: "Action",
+      key: "action",
+      width: 100,
+      render: (text: string, record: any) => (
+        <>
+          <Button
+            onClick={() => {
+              const newFileOptionsList = fileOptionsList.filter(
+                (file: any) => file.path !== record.path
+              );
+              setFileOptionsList(newFileOptionsList);
+              setCookie("uploadInfo", JSON.stringify(newFileOptionsList));
+            }}
+            className="flex items-center"
+            disabled={record.uploaded}
+          >
+            <DeleteOutlined />
+            <p className="sm:block hidden">&nbsp;移除</p>
+          </Button>
+        </>
+      ),
+    },
+  ];
+
   return (
     <>
-      <div className="my-24 text-center">
+      <div className="mt-24 text-center">
         <div className="my-4">
           <Select
             labelInValue
@@ -239,40 +431,56 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
           />
         </div>
       </div>
-      <div className="text-center w-fit mx-auto my-10" onClick={handleUpload}>
-        <Button disabled={fileOptionsList.length === 0 || loading}>
-          確定上傳
-        </Button>
-      </div>
-      {fileOptionsList.length > 0 && (
-        <>
-          <div className="text-center text-[color:var(--main-color-dark)]">
-            照片上傳進度: {completeCount}/{fileOptionsList.length}
-          </div>
-          <div className="w-1/3 mx-auto">
-            <Progress
-              percent={Math.ceil(
-                (completeCount / fileOptionsList.length) * 100
-              )}
-            />
-          </div>
-          <div className="text-center text-[color:var(--main-color-dark)]">
-            號碼布偵測進度: {detectCount}/{fileOptionsList.length}
-          </div>
-          <div className="w-1/3 mx-auto">
-            <Progress
-              percent={Math.ceil((detectCount / fileOptionsList.length) * 100)}
-            />
-          </div>
-        </>
-      )}
-      <div className="mx-auto max-w-[800px] min-h-[30vh]">
+      <div className="text-center mx-auto my-10  max-w-[800px] min-h-[30vh]">
         <Uploader
           onChange={handleOnUploaderChange}
           filesList={fileOptionsList}
           loading={loading}
         />
+        <Button
+          disabled={fileOptionsList.length === 0 || loading}
+          onClick={handleUpload}
+        >
+          確定上傳
+        </Button>
       </div>
+
+      {fileOptionsList.length > 0 && (
+        <>
+          <div className="text-center text-[color:var(--main-color-dark)]">
+            <Steps
+              current={currentStep}
+              className="w-4/5 mx-auto"
+              percent={currentPercent}
+              items={steps}
+            />
+
+            <Table
+              dataSource={fileOptionsList
+                .map((file: any, key: number) => {
+                  return {
+                    path: file.path,
+                    key,
+                    uploaded: file.uploaded,
+                    type: file.type,
+                  };
+                })
+                // .sort((a: any, b: any) => a.uploaded?.localeCompare(b.uploaded))}
+                .sort((a: any, b: any) =>
+                  a.uploaded ? 1 : b.uploaded ? -1 : 0
+                )}
+              columns={columns}
+              pagination={{
+                defaultPageSize: 50,
+                pageSizeOptions: ["50", "100", "200", "500", "1000"],
+                position: ["bottomCenter"],
+              }}
+              className="w-2/3 mx-auto my-10 max-h-[50vh] overflow-y-auto"
+            />
+          </div>
+        </>
+      )}
+
       {contextHolder}
     </>
   );
