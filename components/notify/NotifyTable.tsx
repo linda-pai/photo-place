@@ -106,15 +106,13 @@ const NotifyTable = ({ tableData, eventId }: any) => {
   const sendEmail = async (record: NotifyProps) => {
     setLoading(true);
 
-    await fetch(
-      `${domain}/api/imagesUploadComplete/sendEmail/${record.notifyId}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    )
+    await fetch(`${domain}/api/imagesUploadComplete/sendEmail`, {
+      method: "POST",
+      body: JSON.stringify(record),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
       .then((res) => res.json())
       .then(() => {
         getNotifyData(eventId);
