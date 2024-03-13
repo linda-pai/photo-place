@@ -43,7 +43,27 @@ const Nav = ({ navBarRef }: any) => {
     router.push("/auth/signIn");
   };
 
+  const photographerItems: any = session
+    ? session.id === process.env.NEXT_PUBLIC_ADMIN_ID && [
+        {
+          key: "4",
+          label: "攝影師上傳紀錄",
+          onClick: () => {
+            router.push("/photographer/records");
+          },
+        },
+        {
+          key: "5",
+          label: "上傳照片",
+          onClick: () => {
+            router.push("/upload");
+          },
+        },
+      ]
+    : [];
+
   const items: MenuProps["items"] = [
+    ...photographerItems,
     {
       key: "2",
       label: "訂單查詢",

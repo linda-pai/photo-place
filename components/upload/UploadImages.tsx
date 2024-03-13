@@ -21,6 +21,9 @@ import {
 } from "@ant-design/icons";
 import parallelUploadWithLimit from "@/utils/parallelUploadWithLimit";
 import addWatermark from "@/lib/upload/addWatermark";
+import { writeUploadInfo } from "@/lib/upload/writeUploadInfo";
+import imagesRelease from "@/lib/upload/imagesRelease";
+import { IMAGE_STATUS } from "@/constants";
 
 interface Event {
   id: number;
@@ -110,20 +113,42 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
     modal.confirm({
       title: `已上傳完成${fileOptionsList.length}張照片`,
       icon: <ExclamationCircleOutlined />,
-      content: `是否要前往活動頁面？`,
+      content: `是否要發佈${fileOptionsList.length}張照片？`,
       okText: "確認",
-      cancelText: "取消",
-      onOk: () => {
-        window.location.href = `/events/${eventId.value}`;
-      },
+      onOk: handleRelease,
       onCancel: () => {
-        // setFileOptionsList([]);
+        //writeUploadInfo
+        const refinedList = fileOptionsList.map((file: any) => {
+          return {
+            path: file.path,
+            status: IMAGE_STATUS["UPLOADED"],
+          };
+        });
+
+        const reqBody = {
+          eventId: eventId.value,
+          eventName: eventId.label,
+          author: session.id,
+          name: authorName,
+          uploadGroupId: eventId.value + "_" + session.id,
+          images: refinedList,
+        };
+
+        writeUploadInfo(reqBody).then((response) => {
+          console.log("response", response);
+          if (response.error) {
+            message.error(response.error);
+            return;
+          }
+        });
       },
     });
   };
 
   //add watermark and upload after detect text
   const addWatermarkandUpload = async (key: string, file: File) => {
+    const uploadGroupId = eventId.value + "_" + session.id;
+
     const reqBody = {
       key,
       eventId: eventId.value,
@@ -131,7 +156,7 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
       fileName: file.name,
       lastModified: file.lastModified,
       author: session.id,
-      uploadId: eventId.value + "_" + session.id,
+      uploadGroupId,
       price,
     };
     const response = await addWatermark(reqBody);
@@ -284,12 +309,78 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
         //50張一組，完成後再上傳下一組
         const groupLimit = 50;
         parallelUploadWithLimit(
+          eventId.value,
           fileOptionsList,
           tobeUploadedList,
           groupLimit,
           chunkFileAndUpload
         );
       },
+      onCancel: () => {},
+    });
+  };
+
+  const handleRelease = async () => {
+    setLoading(true);
+
+    const loadingMsgConfig = {
+      key: msgKey,
+      content: "發佈中...",
+      duration: 0,
+    };
+    message.open({ ...loadingMsgConfig, type: "loading" });
+    // modal.confirm({
+    //   title: "發佈照片",
+    //   icon: <ExclamationCircleOutlined />,
+    //   content: `確定要發佈${fileOptionsList.length}張照片嗎？`,
+    //   okText: "確認",
+    //   cancelText: "取消",
+    //   onOk: () => {
+
+    //   },
+    // });
+
+    const refinedList = fileOptionsList.map((file: any) => {
+      return {
+        path: file.path,
+        status: IMAGE_STATUS["RELEASED"],
+      };
+    });
+
+    const reqBody = {
+      eventId: eventId.value,
+      eventName: eventId.label,
+      author: session.id,
+      name: authorName,
+      uploadGroupId: eventId.value + "_" + session.id,
+      images: refinedList,
+    };
+
+    writeUploadInfo(reqBody);
+
+    imagesRelease(eventId.value, refinedList).then((response: any) => {
+      if (response?.error) {
+        message.error(response?.error);
+        return;
+      }
+
+      message.success("發佈成功🎉🎉");
+      message.destroy(msgKey);
+      setLoading(false);
+      setFileOptionsList([]);
+      setCookie("uploadInfo", JSON.stringify([]));
+
+      modal.confirm({
+        title: `已發佈${fileOptionsList.length}張照片`,
+        icon: <ExclamationCircleOutlined />,
+        content: `是否要前往活動頁面？`,
+        okText: "確認",
+        cancelText: "取消",
+        onOk: () => {
+          window.location.href = `/events/${eventId.value}`;
+        },
+        onCancel: () => {},
+      });
     });
   };
 

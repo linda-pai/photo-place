@@ -25,9 +25,24 @@ const tableConfig = (columnsRenderMap: any) => {
     },
     {
       title: "上傳張數",
-      dataIndex: "imagesCount",
-      key: "imagesCount",
-      ...columnsRenderMap.imagesCount,
+      dataIndex: "images",
+      key: "images",
+      width: 120,
+      ...columnsRenderMap.images,
+    },
+    {
+      title: "已發布",
+      dataIndex: "images",
+      key: "images",
+      width: 120,
+      ...columnsRenderMap.released,
+    },
+    {
+      title: "未發布",
+      dataIndex: "images",
+      key: "images",
+      width: 120,
+      ...columnsRenderMap.unReleased,
     },
     {
       title: "售出張數",
@@ -42,11 +57,12 @@ const tableConfig = (columnsRenderMap: any) => {
       key: "name",
       ...columnsRenderMap.name,
     },
+
     {
-      title: "付款狀態",
-      dataIndex: "chargeAt",
-      key: "chargeAt",
-      ...columnsRenderMap.chargeAt,
+      title: "Action",
+      key: "action",
+      width: 140,
+      ...columnsRenderMap.action,
     },
   ];
   return columns;

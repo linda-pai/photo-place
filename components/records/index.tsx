@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Spin, Table, Tag } from "antd";
-import { InfoCircleOutlined } from "@ant-design/icons";
+import Link from "next/link";
+import { Spin, Table, Tag, Button } from "antd";
 import dynamic from "next/dynamic";
 import dayjs from "dayjs";
-import { CHARGE_PERCENTAGE } from "@/constants";
 import tableConfig from "./tableConfig";
-
-const PaymentInfo = dynamic(() => import("@/components/PaymentInfoModal"), {
-  loading: () => <Spin />,
-});
+import imagesRelease from "@/lib/upload/imagesRelease";
+import { uploadUploadInfo } from "@/lib/upload/writeUploadInfo";
+import { IMAGE_STATUS } from "@/constants";
 
 const ImageDetail = dynamic(
   () => import("@/components/orderList/ImageDetail"),
@@ -30,9 +28,11 @@ interface RecordOfUploadProps {
   createAt: string;
   eventId: string;
   eventName: string;
-  imagesCount: number;
+  images: any[];
   chargeAt: string;
   uploadId: string;
+  uploadGroupId: string;
+  isReleased: boolean;
 }
 
 const RecordOfUpload = () => {
@@ -42,8 +42,6 @@ const RecordOfUpload = () => {
 
   const [uploadDetail, setUploadDetail] = useState([] as RecordOfUploadProps[]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentOrder, setCurrentOrder] = useState({} as RecordOfUploadProps);
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [currImg, setCurrImg] = useState(0); // [0, images.length - 1
   const [currList, setCurrList] = useState([]);
@@ -54,17 +52,42 @@ const RecordOfUpload = () => {
         <p key={key}>{text ? dayjs(text).format("YYYY-MM-DD HH:mm") : "-"}</p>
       ),
     },
-    imagesCount: {
-      render: (text: string, uploadInfo: any, key: number) => (
+    images: {
+      render: (images: any[], uploadInfo: any, key: number) => (
         <>
-          <p>{text}張</p>
-          <a
-            href={`/events/${uploadInfo.eventId}?uploadId=${uploadInfo.uploadId}`}
-            key={key}
-          >
-            預覽
-          </a>
+          <p>{images.length}張</p>
         </>
+      ),
+    },
+    released: {
+      render: (images: any[], _: any, key: number) => (
+        <Tag color="green" key={key}>
+          {
+            images?.filter((image) => image.status === IMAGE_STATUS["RELEASED"])
+              .length
+          }
+          張
+        </Tag>
+      ),
+    },
+    unReleased: {
+      render: (images: any[], record: any, key: number) => (
+        <div className="flex items-center">
+          <div>
+            <Tag color="red" key={key}>
+              {
+                images?.filter(
+                  (image) => image.status !== IMAGE_STATUS["RELEASED"]
+                ).length
+              }
+              張
+            </Tag>
+          </div>
+          {images?.filter((image) => image.status !== IMAGE_STATUS["RELEASED"])
+            .length > 0 && (
+            <Button onClick={() => handleRelease(record)}>發佈</Button>
+          )}
+        </div>
       ),
     },
     sellInfo: {
@@ -72,7 +95,7 @@ const RecordOfUpload = () => {
         <div
           className="max-w-[200px]"
           onClick={() => {
-            setCurrList(sellInfo);
+            sellInfo && setCurrList(sellInfo);
           }}
         >
           <ImageDetail
@@ -83,45 +106,16 @@ const RecordOfUpload = () => {
         </div>
       ),
     },
-    chargeAt: {
-      render: (text: string, uploadInfo: any, key: number) => (
-        <div key={key}>
-          {text ? (
-            <Tag color="#B0B97A">已付款</Tag>
-          ) : (
-            <div
-              onClick={() => {
-                showModal();
-                const refinedUploadInfo = {
-                  ...uploadInfo,
-                  eventName: uploadInfo.eventName,
-                  orderId: uploadInfo.uploadId,
-                  totalAmount: Math.ceil(
-                    uploadInfo.imagesCount *
-                      uploadInfo.price *
-                      CHARGE_PERCENTAGE
-                  ),
-                  items: [
-                    {
-                      eventName: uploadInfo.eventName,
-                      author: uploadInfo.author,
-                      price: Math.ceil(
-                        uploadInfo.imagesCount *
-                          uploadInfo.price *
-                          CHARGE_PERCENTAGE
-                      ),
-                      id: "uploadId" + "_" + uploadInfo.uploadId,
-                    },
-                  ],
-                };
-                setCurrentOrder(refinedUploadInfo);
-              }}
-              className="hover:cursor-pointer"
-            >
-              <Tag color="#f0cf02">未付款</Tag>
-              <InfoCircleOutlined style={{ color: "#f0cf02" }} />
-            </div>
-          )}
+
+    action: {
+      render: (_: string, record: RecordOfUploadProps, key: number) => (
+        <div className="flex gap-1">
+          <Link
+            href={`/photographer/uploadPreview?eventId=${record.eventId}`}
+            key={key}
+          >
+            <Button>查看</Button>
+          </Link>
         </div>
       ),
     },
@@ -133,10 +127,6 @@ const RecordOfUpload = () => {
     if (session) getUploadDetail();
   }, [session]);
 
-  const showModal = () => {
-    setIsModalOpen(true);
-  };
-
   const getUploadDetail = async () => {
     fetch(`${domain}/api/images/getUploadInfo/${session.id}`)
       .then((res) => res.json())
@@ -146,10 +136,6 @@ const RecordOfUpload = () => {
       });
   };
 
-  const handleCancel = () => {
-    setIsModalOpen(false);
-  };
-
   const gotoPrevious = () => {
     currImg > 0 && setCurrImg(currImg - 1);
   };
@@ -157,17 +143,40 @@ const RecordOfUpload = () => {
     currImg + 1 < currList.length && setCurrImg(currImg + 1);
   };
 
+  const handleRelease = (record: RecordOfUploadProps) => {
+    const unReleasedImages = record.images.filter(
+      (file: any) => file.status !== IMAGE_STATUS["RELEASED"]
+    );
+    imagesRelease(record.eventId, unReleasedImages);
+
+    const refinedList = record.images.map((file: any) => {
+      return {
+        path: file.path,
+        status: IMAGE_STATUS["RELEASED"],
+      };
+    });
+
+    const reqBody = {
+      eventId: record.eventId,
+      author: session.id,
+      images: refinedList,
+    };
+
+    uploadUploadInfo(reqBody);
+  };
+
   return !loading ? (
     <div>
-      <Table columns={columns} dataSource={uploadDetail} />
-      <PaymentInfo
+      <Table columns={columns as any} dataSource={uploadDetail} />
+      {/* TODO:待評估是否要先付款（目前有收益才會扣服務費） */}
+      {/* <PaymentInfo
         handleCancel={handleCancel}
         isModalOpen={isModalOpen}
         confirmBtnText="確認"
         paymentMethod={0}
         currentOrder={currentOrder}
-        modelDescription="付款完成後即可發布照片，是否要前往付款?"
-      />
+        modelDescription="付款完成後即可發佈照片，是否要前往付款?"
+      /> */}
       <ImageLightBox
         images={currList}
         isOpen={showImageViewer}

@@ -1,9 +1,10 @@
-const getSignedMultipleUploadURL = async (key: string) => {
+const getSignedMultipleUploadURL = async (path: string, fileName: string) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
-  const response = await fetch(`${domain}/start-upload?key=${key}`).then(
-    (res) => res.json()
-  );
+  const response = await fetch(
+    `${domain}/start-upload?fileName=${fileName}&path=${path}`
+  ).then((res) => res.json());
+
   return response;
 };
 

@@ -1,23 +1,14 @@
-import { sha256 } from "js-sha256";
-
 import getSignedMultipleUploadURL from "@/lib/upload/getSignedMultipleUploadURL";
 
-const handleMultipleStartUpload = async (file: File) => {
-  const path = "/testtest/";
-  const key =
-    `images${path}` +
-    sha256(file.name + new Date().toString()) +
-    "-" +
-    file.name;
-
+const handleMultipleStartUpload = async (file: File, eventId: string) => {
+  const fileName = file.name;
+  const path = `/${eventId}/`;
   //1. start-upload
-  return await getSignedMultipleUploadURL(key).then((data) => ({
-    uploadId: data.uploadId,
-    key,
-  }));
+  return await getSignedMultipleUploadURL(path, fileName);
 };
 
 const parallelUploadWithLimit = async (
+  eventId: string,
   fileOptionsList: any[],
   toBeUploadList: any[],
   groupLimit: number,
@@ -30,7 +21,7 @@ const parallelUploadWithLimit = async (
     );
     if (!file) return;
     //start upload
-    const { uploadId, key } = await handleMultipleStartUpload(file);
+    const { uploadId, key } = await handleMultipleStartUpload(file, eventId);
     //upload
     const promise = chunkFileAndUpload(file, uploadId, key);
     promisesArray.push(promise);

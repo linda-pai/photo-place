@@ -7,6 +7,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { searchTracking } from "@/lib/gtag";
+import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 
 const SearchWrapper = dynamic(() => import("@/components/SearchWrapper"), {
   loading: () => <Spin />,
@@ -20,12 +21,6 @@ const NotifyForm = dynamic(() => import("@/components/NotifyForm"), {
   loading: () => <Spin />,
 });
 
-interface ImageItemProps {
-  eventId: string;
-  eventName: string;
-  id: string;
-  watermarkedUrl: string;
-}
 // Post component
 export default function EventSearchPage({
   eventInfo,
