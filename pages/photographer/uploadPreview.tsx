@@ -83,6 +83,7 @@ export default function UploadPreview({ eventId }: { eventId: string }) {
               onClose={() => setShowImageViewer(false)}
               onPrev={gotoPrevious}
               onNext={gotoNext}
+              customFooter={null}
             />
           </div>
 
@@ -129,6 +130,7 @@ export default function UploadPreview({ eventId }: { eventId: string }) {
               onClose={() => setShowImageViewer(false)}
               onPrev={gotoPrevious}
               onNext={gotoNext}
+              customFooter={null}
             />
           </div>
 

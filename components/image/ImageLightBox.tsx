@@ -1,29 +1,22 @@
-import dynamic from "next/dynamic";
 import Lightbox from "react-spring-lightbox";
 import { ArrowRightOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 
-const CustomImgViewerUI = dynamic(() => import("./CustomImgViewerUI"), {
-  ssr: false,
-});
-
 const ImageLightBox = ({
   images,
-  isExistInCart,
-  handleClickCart,
   isOpen,
   curIndex,
   onClose,
   onPrev,
   onNext,
+  customFooter,
 }: {
   images: any[];
-  isExistInCart?: any;
-  handleClickCart?: any;
   isOpen: boolean;
   curIndex: number;
   onClose: any;
   onPrev: any;
   onNext: any;
+  customFooter: any;
 }) => {
   const formattedImages = images.map((image) => ({
     src: image.watermarkedUrl,
@@ -62,15 +55,7 @@ const ImageLightBox = ({
           <ArrowRightOutlined />
         </div>
       )}
-      renderFooter={() =>
-        isExistInCart && (
-          <CustomImgViewerUI
-            image={images[curIndex]}
-            isExistInCart={isExistInCart}
-            handleClickCart={handleClickCart}
-          />
-        )
-      }
+      renderFooter={() => customFooter}
       className="bg-opacity-80 bg-black overflow-hidden"
     />
   );

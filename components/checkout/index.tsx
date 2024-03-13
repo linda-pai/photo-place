@@ -272,6 +272,7 @@ const Checkout = () => {
             onClose={() => setShowImageViewer(false)}
             onPrev={gotoPrevious}
             onNext={gotoNext}
+            customFooter={null}
           />
         </>
       ) : (

@@ -145,6 +145,7 @@ const ShoppingCart = () => {
         curIndex={currImg}
         onPrev={gotoPrevious}
         onNext={gotoNext}
+        customFooter={null}
       />
     </>
   );
