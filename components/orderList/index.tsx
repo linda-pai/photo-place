@@ -1,10 +1,15 @@
 import React, { useState } from "react";
-import { Table, Space, Button, Tag, Modal, message } from "antd";
-import { ExclamationCircleOutlined, CopyOutlined } from "@ant-design/icons";
+import { Table, Space, Button, Tag, Modal, message, Input } from "antd";
+import {
+  ExclamationCircleOutlined,
+  CopyOutlined,
+  EditOutlined,
+} from "@ant-design/icons";
 import dayjs from "dayjs";
 import { Order, OrderListProps } from "@/types/interfaces/CartDataProps";
 import copyToClipboard from "@/utils/copyToClipboard";
 import paymentOptions from "@/utils/paymentOptions";
+import updateOrderData from "@/lib/order/updateOrderData";
 import tableConfig from "./tableConfig";
 import dynamic from "next/dynamic";
 
@@ -17,6 +22,7 @@ const OrderList = ({ orders }: OrderListProps) => {
 
   const [orderData, setOrderData] = useState<Order[]>(orders);
   const [loading, setLoading] = useState(false);
+  const [editing, setEditing] = useState<{ [key: string]: boolean }>({});
   const [modal, contextHolder] = Modal.useModal();
 
   const columnsRenderMap = {
@@ -89,6 +95,23 @@ const OrderList = ({ orders }: OrderListProps) => {
       sorter: (a: Order, b: Order) => a.totalAmount - b.totalAmount,
       sortDirections: ["descend"],
     },
+    remark: {
+      render: (text: string, record: Order) => (
+        <div>
+          {/* 可編輯 */}
+          <EditOutlined onClick={() => toggle(record.orderId)} />
+          {editing[record.orderId] ? (
+            <Input
+              value={text}
+              onChange={(e) => handleRemarkChange(e, record)}
+              onPressEnter={() => handleInputConfirm(record.orderId, text)}
+            />
+          ) : (
+            <p>{text}</p>
+          )}
+        </div>
+      ),
+    },
     action: {
       render: (_: string, record: Order) => (
         <>
@@ -105,6 +128,32 @@ const OrderList = ({ orders }: OrderListProps) => {
         </>
       ),
     },
+  };
+
+  const handleInputConfirm = (orderId: string, text: string) => {
+    setEditing((prev) => ({ ...prev, [orderId]: false }));
+
+    updateOrderData({
+      remark: text,
+      orderId: orderId,
+    });
+  };
+
+  const handleRemarkChange = (e: any, record: Order) => {
+    const newOrderData = orderData.map((item) => {
+      if (item.orderId === record.orderId) {
+        return { ...item, remark: e.target.value };
+      }
+      return item;
+    });
+    setOrderData(newOrderData);
+  };
+
+  const toggle = (orderId: string) => {
+    setEditing((prevToggle) => ({
+      ...prevToggle,
+      [orderId]: !prevToggle[orderId],
+    }));
   };
 
   const columns = tableConfig(columnsRenderMap);
@@ -139,15 +188,9 @@ const OrderList = ({ orders }: OrderListProps) => {
 
   const handleOnConfirm = (record: Order) => {
     setLoading(true);
-    fetch(`${domain}/api/orders/update/${record.orderId}`, {
-      method: "PUT",
-      body: JSON.stringify({
-        ...record,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
+    //remove _id
+    record._id && delete record._id;
+    updateOrderData(record)
       .then((res) => res.json())
       .then(() => {
         getOrderData();

@@ -6,13 +6,15 @@ export interface CartDataProps {
 }
 
 export interface Order {
-  orderId: number;
+  _id: any;
+  orderId: string;
   totalAmount: number;
   createAt: string;
   paidAt: string;
   paymentMethod: string;
   orderBy: string;
   items: CartDataProps[];
+  remark?: string;
 }
 
 export interface OrderListProps {
