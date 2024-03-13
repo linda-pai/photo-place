@@ -176,7 +176,7 @@ export default function EventSearchPage({
         />
       </div>
       <div id="result-container">
-        {imageList.length === 0 ? (
+        {!eventInfo.isCompleteUpload ? (
           <div className="container mx-auto sm:my-10 my-4">
             <NotifyForm eventName={eventName} eventId={eventId} />
           </div>
