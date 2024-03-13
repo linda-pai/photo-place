@@ -10,4 +10,5 @@ export interface ImageItemProps {
   eventName: string;
   id: string;
   watermarkedUrl: string;
+  path?: any;
 }

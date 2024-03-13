@@ -116,6 +116,12 @@ const RecordOfUpload = () => {
           >
             <Button>查看</Button>
           </Link>
+          <Link
+            href={`/photographer/checkBibs?eventId=${record.eventId}`}
+            key={key}
+          >
+            <Button>號碼布檢查</Button>
+          </Link>
         </div>
       ),
     },
@@ -184,6 +190,7 @@ const RecordOfUpload = () => {
         onClose={() => setShowImageViewer(false)}
         onPrev={gotoPrevious}
         onNext={gotoNext}
+        customFooter={null}
       />
     </div>
   ) : (
