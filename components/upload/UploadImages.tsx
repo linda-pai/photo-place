@@ -130,7 +130,6 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
           eventName: eventId.label,
           author: session.id,
           name: authorName,
-          uploadGroupId: eventId.value + "_" + session.id,
           images: refinedList,
         };
 
@@ -146,8 +145,6 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
 
   //add watermark and upload after detect text
   const addWatermarkandUpload = async (key: string, file: File) => {
-    const uploadGroupId = eventId.value + "_" + session.id;
-
     const reqBody = {
       key,
       eventId: eventId.value,
@@ -155,7 +152,6 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
       fileName: file.name,
       lastModified: file.lastModified,
       author: session.id,
-      uploadGroupId,
       price,
     };
     const response = await addWatermark(reqBody);
@@ -351,7 +347,6 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
       eventName: eventId.label,
       author: session.id,
       name: authorName,
-      uploadGroupId: eventId.value + "_" + session.id,
       images: refinedList,
     };
 

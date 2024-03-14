@@ -31,7 +31,6 @@ interface RecordOfUploadProps {
   images: any[];
   chargeAt: string;
   uploadId: string;
-  uploadGroupId: string;
   isReleased: boolean;
 }
 
