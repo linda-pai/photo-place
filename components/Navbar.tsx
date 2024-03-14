@@ -93,6 +93,13 @@ const Nav = ({ navBarRef }: any) => {
         router.push("/cms/notify");
       },
     },
+    {
+      key: "4",
+      label: "賽事管理",
+      onClick: () => {
+        router.push("/cms/eventManagement");
+      },
+    },
   ];
 
   return (
