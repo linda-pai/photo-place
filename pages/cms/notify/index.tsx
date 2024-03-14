@@ -3,6 +3,7 @@ import { Spin } from "antd";
 import usePermission from "@/hooks/usePermission";
 import dynamic from "next/dynamic";
 import { NotifyProps } from "@/types/interfaces/NotifyProps";
+import { EventProps } from "@/types/interfaces/EventProps";
 
 const NotifyList = dynamic(() => import("@/components/notify/NotifyList"), {
   loading: () => <Spin />,
@@ -12,21 +13,12 @@ const NotifyTable = dynamic(() => import("@/components/notify/NotifyTable"), {
   loading: () => <Spin />,
 });
 
-interface Event {
-  data: string;
-  eventName: string;
-  coverImg: string;
-  userId: string;
-  isShow: boolean;
-  eventId: string;
-}
-
 const Notify = ({
   events,
   notifyData,
   eventId,
 }: {
-  events: Event[];
+  events: EventProps[];
   notifyData: any;
   eventId: string;
 }) => {
