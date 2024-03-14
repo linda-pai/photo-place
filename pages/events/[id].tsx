@@ -7,6 +7,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { searchTracking } from "@/lib/gtag";
+import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 
 const SearchWrapper = dynamic(() => import("@/components/SearchWrapper"), {
   loading: () => <Spin />,
@@ -16,12 +17,10 @@ const ImageList = dynamic(() => import("@/components/image/ImageList"), {
   loading: () => <Spin />,
 });
 
-interface ImageItemProps {
-  eventId: string;
-  eventName: string;
-  id: string;
-  watermarkedUrl: string;
-}
+const NotifyForm = dynamic(() => import("@/components/NotifyForm"), {
+  loading: () => <Spin />,
+});
+
 // Post component
 export default function EventSearchPage({
   eventInfo,
@@ -60,12 +59,12 @@ export default function EventSearchPage({
   }, [images]);
 
   useEffect(() => {
-    if (curPage !== page) onSearch();
+    if (curPage) onSearch();
   }, [curPage]);
 
   const handleOnChange = (e: any) => {
     setSearch(e.target.value.trim());
-    setCurPage(1);
+    setShowModal(false);
   };
 
   const onSearch = () => {
@@ -91,14 +90,13 @@ export default function EventSearchPage({
         setShowModal(true);
 
         scrollIntoViewWithOffset("#result-container", 100);
-
         //埋點
         searchTracking({
           event_category: "event",
           event_label: eventName,
           search_term: search,
           number_of_results: data.length,
-          user_id: session.id,
+          user_id: session?.id,
         });
       });
   };
@@ -174,83 +172,99 @@ export default function EventSearchPage({
           handleOnChange={handleOnChange}
           onSearch={onSearch}
           eventName={eventName}
+          search={search}
         />
       </div>
-      <div className="container mx-auto my-10" id="result-container">
-        <div className="text-center m-10 text-[color:var(--main-color-dark)]">
-          {/* <p>試營運期間，只有一位攝影師🥲</p> */}
-          {
-            <p
-              className={showModal && search ? "visible" : "invisible h-0"}
-            >{`找到 ${images.length} 張照片，${
-              images.length == 0
-                ? "我們未來會努力增加攝影師的💪"
-                : "太有緣份了！"
-            }`}</p>
-          }
-          {/* <p>不囉唆⚡全面 65 折優惠</p> */}
-        </div>
-
-        {images.length > 0 && (
-          <>
-            <div className="my-2 mx-3 text-[color:var(--main-color-dark)] text-sm">
-              <Tag color="#B0B97A">已完成辨識號碼布</Tag>
-            </div>
-            <ImageList
-              images={images}
-              isOpen={showImageViewer}
-              curIndex={currImgIndex}
-              onClose={() => setShowImageViewer(false)}
-              onPrev={gotoPrevious}
-              onNext={gotoNext}
-              handleClickImg={handleClickImg}
-              eventId={eventId}
-              eventName={eventName}
-            />
-
-            <div className="text-center my-10">
-              <Pagination
-                defaultCurrent={curPage}
-                onChange={setCurPage}
-                total={total}
-                pageSize={40}
-                showSizeChanger={false}
-                current={curPage}
-              />
-            </div>
-          </>
-        )}
-        {commonImages.length > 0 && !search && (
-          <>
-            <div className="my-2 mt-16 mb-4 text-[color:var(--main-color-dark)] text-sm">
-              <Tag>未成功辨識號碼布</Tag>
-            </div>
-            <ImageList
-              images={commonImages}
-              isOpen={showImageViewerCommon}
-              curIndex={currCommonImgIndex}
-              onClose={() => setShowImageViewerCommon(false)}
-              onPrev={gotoPreviousCommon}
-              onNext={gotoNextCommon}
-              handleClickImg={handleClickImgCommon}
-              eventId={eventId}
-              eventName={eventName}
-            />
-          </>
-        )}
-        <div>
-          {images.length > 0 && search && (
-            <Button
-              onClick={() => {
-                images.map((item: ImageItemProps) => pushToCart(item.id));
-                message.success(`已將 ${images.length} 張照片加入購物車`);
-              }}
-              className="mx-auto block my-10"
+      <div id="result-container">
+        {!eventInfo.isCompleteUpload ? (
+          <div className="container mx-auto sm:my-10 my-4">
+            <NotifyForm eventName={eventName} eventId={eventId} />
+          </div>
+        ) : (
+          <div className="container mx-auto sm:my-10 my-4">
+            <div
+              className={
+                showModal && search
+                  ? "visible text-center sm:m-10 m-4 text-[color:var(--main-color-dark)]"
+                  : "invisible h-0"
+              }
             >
-              全部加入購物車
-            </Button>
-          )}
-        </div>
+              {/* <p>試營運期間，只有一位攝影師🥲</p> */}
+              {
+                <>
+                  <p>{`號碼布: ${search}`}</p>
+                  <p>{`找到 ${images.length} 張照片，${
+                    images.length == 0
+                      ? "我們未來會努力增加攝影師的💪"
+                      : "太有緣份了！"
+                  }`}</p>
+                </>
+              }
+              {/* <p>不囉唆⚡全面 65 折優惠</p> */}
+            </div>
+
+            {images.length > 0 && (
+              <>
+                <div className="my-2 mx-3 text-[color:var(--main-color-dark)] text-sm">
+                  <Tag color="#B0B97A">已完成辨識號碼布</Tag>
+                </div>
+                <ImageList
+                  images={images}
+                  isOpen={showImageViewer}
+                  curIndex={currImgIndex}
+                  onClose={() => setShowImageViewer(false)}
+                  onPrev={gotoPrevious}
+                  onNext={gotoNext}
+                  handleClickImg={handleClickImg}
+                  eventId={eventId}
+                  eventName={eventName}
+                />
+
+                <div className="text-center my-10">
+                  <Pagination
+                    defaultCurrent={curPage}
+                    onChange={setCurPage}
+                    total={total}
+                    pageSize={40}
+                    showSizeChanger={false}
+                    current={curPage}
+                  />
+                </div>
+              </>
+            )}
+            {commonImages.length > 0 && !search && (
+              <>
+                <div className="my-2 mt-16 mb-4 text-[color:var(--main-color-dark)] text-sm">
+                  <Tag>未成功辨識號碼布</Tag>
+                </div>
+                <ImageList
+                  images={commonImages}
+                  isOpen={showImageViewerCommon}
+                  curIndex={currCommonImgIndex}
+                  onClose={() => setShowImageViewerCommon(false)}
+                  onPrev={gotoPreviousCommon}
+                  onNext={gotoNextCommon}
+                  handleClickImg={handleClickImgCommon}
+                  eventId={eventId}
+                  eventName={eventName}
+                />
+              </>
+            )}
+            <div>
+              {images.length > 0 && search && (
+                <Button
+                  onClick={() => {
+                    images.map((item: ImageItemProps) => pushToCart(item.id));
+                    message.success(`已將 ${images.length} 張照片加入購物車`);
+                  }}
+                  className="mx-auto block my-10"
+                >
+                  全部加入購物車
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
@@ -260,7 +274,7 @@ export async function getServerSideProps(context: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const eventId = context.params.id;
   const bib = context.query.bib || "";
-  const page = context.query.page || 1;
+  const page = Number(context.query.page);
 
   const imageList = await fetch(
     `${domain}/api/images/getByPathAndEventId/${eventId}/all`

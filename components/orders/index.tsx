@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/router";
 import { Table, Spin, Space, Button, Tag, Modal, message } from "antd";
 import {
   DownloadOutlined,
@@ -14,9 +13,6 @@ import dayjs from "dayjs";
 import copyToClipboard from "@/utils/copyToClipboard";
 import paymentOptions from "@/utils/paymentOptions";
 import downloadImage from "@/utils/downloadImage";
-import { useIsMobile } from "@/hooks/useIsMobile";
-import handleNewebPay from "@/lib/payment/handleNewebPay";
-import handleLinePay from "@/lib/payment/handleLinePay";
 import tableConfig from "./tableConfig";
 
 const PaymentInfo = dynamic(() => import("@/components/PaymentInfoModal"), {
@@ -41,11 +37,9 @@ interface Order {
 }
 
 const Orders = () => {
-  const isMobile = useIsMobile();
   const { data: session }: any = useSession();
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-  const router = useRouter();
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -165,55 +159,6 @@ const Orders = () => {
       });
   };
 
-  const handleOk = async (paymentValue: number) => {
-    setIsModalOpen(false);
-    setCurrentOrder((prev) => ({ ...prev, paymentMethod: paymentValue }));
-
-    const { orderId, totalAmount, items } = currentOrder;
-    switch (paymentValue) {
-      case 2:
-        //  LinePay
-        const LineData = {
-          orderId,
-          totalAmount,
-          items,
-          isMobile,
-        };
-        const LineRes = await handleLinePay(LineData);
-        if (LineRes.status === "success") {
-          try {
-            if (isMobile) {
-              router.push(LineRes.result?.app);
-              setTimeout(() => {
-                router.push("/user/orders");
-              }, 1000);
-            } else {
-              router.push(LineRes.result?.web);
-            }
-          } catch (err) {
-            message.error("LinePay扣款失敗, 請稍後再試");
-          }
-        } else {
-          message.error("LinePay扣款失敗, 請稍後再試");
-        }
-        break;
-      case 3:
-        // 藍新金流
-        const orderData = {
-          orderId,
-          totalAmount,
-          items,
-          email: session.user.email,
-        };
-        try {
-          await handleNewebPay(orderData);
-        } catch (err) {
-          message.error("藍新金流扣款失敗, 請稍後再試");
-        }
-        break;
-    }
-  };
-
   const handleCancel = () => {
     setIsModalOpen(false);
   };
@@ -295,11 +240,12 @@ const Orders = () => {
       />
       {contextHolder}
       <PaymentInfo
-        handleOk={handleOk}
         handleCancel={handleCancel}
         isModalOpen={isModalOpen}
         confirmBtnText="確認"
         paymentMethod={currentOrder.paymentMethod}
+        currentOrder={currentOrder}
+        modelDescription="付款完成後即可下載照片，是否要前往付款?"
       />
     </div>
   ) : (

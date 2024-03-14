@@ -10,7 +10,7 @@ interface UploaderProps {
 const Uploader = ({ onChange, filesList, loading }: UploaderProps) => {
   const { getRootProps, getInputProps } = useDropzone({
     onDrop: (acceptedFiles: any) => onChange(acceptedFiles),
-    disabled: loading,
+    //TODO:  disabled: loading,
   });
 
   return (
@@ -19,7 +19,8 @@ const Uploader = ({ onChange, filesList, loading }: UploaderProps) => {
         {...getRootProps()}
         className={`${
           loading
-            ? "hover:cursor-not-allowed bg-[#FFF] text-[color:var(--main-color-light)]"
+            ? //TODO:  ? "hover:cursor-not-allowed bg-[#FFF] text-[color:var(--main-color-light)]"
+              "bg-[#FFF] text-[color:var(--main-color-light)]"
             : "hover:cursor-pointer bg-[#FFFDFB] text-[color:var(--main-color-dark)]"
         } my-10 border-2 border-dashed border-[color:var(--main-color-light)] rounded-2xl p-10`}
       >

@@ -18,8 +18,8 @@ export default async function confirm(
 
   const LinePayData = await LinePayInfo.json();
   if (LinePayData.status === "success") {
-    res.redirect(`/user/orders?orderStatus=SUCCESS`);
+    res.redirect(`/user/succeed?orderStatus=SUCCESS`);
   } else {
-    res.redirect(`/user/orders?orderStatus=FAIL`);
+    res.redirect(`/user/succeed?orderStatus=FAIL`);
   }
 }

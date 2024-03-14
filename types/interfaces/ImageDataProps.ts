@@ -4,3 +4,11 @@ export interface ImageDataProps {
   id: string;
   price: number;
 }
+
+export interface ImageItemProps {
+  eventId: string;
+  eventName: string;
+  id: string;
+  watermarkedUrl: string;
+  path?: any;
+}

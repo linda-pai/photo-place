@@ -3,8 +3,8 @@ const writeUploadInfo = async (reqBody: {
   eventName: string;
   author: string;
   name: string;
-  uploadId: string;
-  imagesCount: number;
+  uploadGroupId: string;
+  images: any[];
 }) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
@@ -19,4 +19,22 @@ const writeUploadInfo = async (reqBody: {
   return await response;
 };
 
-export default writeUploadInfo;
+const uploadUploadInfo = async (reqBody: {
+  eventId: string;
+  author: string;
+  images: any[];
+}) => {
+  const domain = process.env.NEXT_PUBLIC_SERVER_URL;
+
+  const response = await fetch(`${domain}/api/images/updateUploadInfo`, {
+    method: "POST",
+    body: JSON.stringify(reqBody),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }).then((res) => res.json());
+
+  return await response;
+};
+
+export { writeUploadInfo, uploadUploadInfo };

@@ -109,7 +109,7 @@ const ShoppingCart = () => {
   };
 
   const gotoPrevious = () => {
-    setCurrImg(currImg - 1);
+    currImg > 0 && setCurrImg(currImg - 1);
   };
   const gotoNext = () => {
     currImg + 1 < cartData.length && setCurrImg(currImg + 1);
@@ -145,6 +145,7 @@ const ShoppingCart = () => {
         curIndex={currImg}
         onPrev={gotoPrevious}
         onNext={gotoNext}
+        customFooter={null}
       />
     </>
   );

@@ -2,9 +2,15 @@ interface Props {
   handleOnChange: (e: any) => void;
   onSearch: () => void;
   eventName?: string;
+  search: string;
 }
 
-const SearchWrapper = ({ handleOnChange, onSearch, eventName }: Props) => {
+const SearchWrapper = ({
+  handleOnChange,
+  onSearch,
+  eventName,
+  search,
+}: Props) => {
   return (
     <div className="mb-10">
       <div className="relative w-full h-screen bg-cover bg-[url('/banner.png')]">
@@ -25,6 +31,7 @@ const SearchWrapper = ({ handleOnChange, onSearch, eventName }: Props) => {
                     onSearch();
                   }
                 }}
+                value={search}
               />
               <input
                 type="search"

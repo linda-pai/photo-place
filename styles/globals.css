@@ -130,6 +130,10 @@ td {
   background-color: var(--main-color-light) !important;
 }
 
+:where(.css-2rgkd4).ant-modal-confirm-info .ant-modal-confirm-body > .anticon {
+  color: #faad14 !important;
+}
+
 .masonry {
   display: flex;
   flex-wrap: wrap;
@@ -153,4 +157,13 @@ td {
 input::placeholder {
   opacity: 0.5;
   color: #fff;
+}
+
+.two-line-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
 }

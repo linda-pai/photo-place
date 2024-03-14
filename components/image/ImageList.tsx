@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { setCookie, getCookie } from "cookies-next";
 import { useSession } from "next-auth/react";
 import { message } from "antd";
 import { clickAddToCart, removeAddToCart, searchTracking } from "@/lib/gtag";
 import ImageItems from "./ImageItems";
 import ImageLightBox from "./ImageLightBox";
+
+const CustomImgViewerUI = dynamic(() => import("./CustomImgViewerUI"), {
+  ssr: false,
+});
 
 interface ImageItemProps {
   eventId: string;
@@ -111,8 +116,13 @@ const ImageList = ({
         onClose={onClose}
         onPrev={onPrev}
         onNext={onNext}
-        isExistInCart={isExistInCart}
-        handleClickCart={handleClickCart}
+        customFooter={
+          <CustomImgViewerUI
+            image={images[curIndex]}
+            isExistInCart={isExistInCart}
+            handleClickCart={handleClickCart}
+          />
+        }
       />
     </div>
   );

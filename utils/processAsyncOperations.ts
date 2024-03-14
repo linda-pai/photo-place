@@ -1,9 +1,9 @@
 const asyncOperation = async (index: any, func: any) => {
   return new Promise((resolve) => {
     setTimeout(async () => {
-      await func();
-      resolve(`Result for ${index}`);
-    }, 100); // Simulating a 100ms delay
+      const res = await func();
+      resolve(res);
+    }, 100); // Simulating a 10ms delay
   });
 };
 
@@ -19,6 +19,7 @@ const processAsyncOperations = async (
       processedResults.push(result);
     }
     if (processedResults.length === fileOptionsList.length) handleOnFinishAll();
+    return processedResults;
   } catch (error) {
     console.error(error);
   }

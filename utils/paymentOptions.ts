@@ -7,7 +7,7 @@ const paymentOptions = [
     fee: 0,
     // disabled: false,
     icon: "https://photo-pacer-buckets.s3.ap-northeast-1.amazonaws.com/images/common/db94adef33eeb955e86704a49bfda5fbb09ef69b4d59c52faaa63b77d6c4bf2b-LINE-Pay%28h%29_W119_n.png",
-    // desc: "（Line Pay、一卡通 iPass MONEY）",
+    desc: "（Line Pay、一卡通 iPass MONEY）",
   },
   {
     label: "藍新金流",
