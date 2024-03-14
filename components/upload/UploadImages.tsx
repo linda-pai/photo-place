@@ -135,7 +135,6 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
         };
 
         writeUploadInfo(reqBody).then((response) => {
-          console.log("response", response);
           if (response.error) {
             message.error(response.error);
             return;
