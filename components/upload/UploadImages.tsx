@@ -529,7 +529,8 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
           loading={loading}
         />
         <Button
-          disabled={fileOptionsList.length === 0 || loading}
+          //TODO: disabled={fileOptionsList.length === 0 || loading}
+          disabled={fileOptionsList.length === 0}
           onClick={handleUpload}
         >
           確定上傳
