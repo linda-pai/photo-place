@@ -71,7 +71,7 @@ const AddableTags = ({
 
   return (
     <>
-      <div className="my-2">
+      <div className="my-2 w-[240px]">
         <TweenOneGroup
           appear={false}
           enter={{ scale: 0.8, opacity: 0, type: "from", duration: 100 }}

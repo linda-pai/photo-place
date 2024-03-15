@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { Pagination, Spin } from "antd";
+import { Pagination, Radio, Spin } from "antd";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import ImageLightBox from "@/components/image/ImageLightBox";
 
@@ -14,6 +14,7 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
   const { data: session }: any = useSession();
 
   const [images, setImages] = useState([] as ImageItemProps[]);
+  const [sortBy, setSortBy] = useState("pathCount"); //  pathCount or lastModified
 
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [currImgIndex, setCurrImgIndex] = useState(0); // [0, images.length - 1
@@ -23,12 +24,14 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
 
   useEffect(() => {
     session &&
-      fetch(`${domain}/api/images/getByAuthor/${eventId}/${session.id}`)
+      fetch(
+        `${domain}/api/images/getByAuthor/${eventId}/${session.id}/${sortBy}`
+      )
         .then((res) => res.json())
         .then((data) => {
           setImages(data);
         });
-  }, [session]);
+  }, [session, sortBy]);
 
   const gotoPrevious = () =>
     currImgIndex > 0 && setCurrImgIndex(currImgIndex - 1);
@@ -42,6 +45,7 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
   };
 
   const updateBibs = (newTags: string[], id: string) => {
+    if (newTags.length === 0) return;
     fetch(`${domain}/api/images/updateBibs`, {
       method: "POST",
       headers: {
@@ -59,6 +63,17 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
       </div>
       {images.length > 0 && (
         <div className="container mx-auto sm:my-10 my-4">
+          <div className="flex justify-end mx-4">
+            <Radio.Group
+              defaultValue="pathCount"
+              buttonStyle="solid"
+              onChange={(e) => setSortBy(e.target.value)}
+              className="mb-4"
+            >
+              <Radio.Button value="pathCount">按號碼布數量排序</Radio.Button>
+              <Radio.Button value="lastModified">按時間排序</Radio.Button>
+            </Radio.Group>
+          </div>
           <div className="masonry">
             {images.map((item: any, key: number) => (
               <div>
@@ -71,13 +86,16 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
                     className="item__content"
                     src={item.watermarkedUrl}
                     alt={item.watermarkedUrl}
-                    width={300}
-                    height={400}
+                    width={240}
+                    height={320}
                     quality={30}
                   />
                 </div>
                 <AddableTags
-                  bibs={item.path}
+                  key={images[key].path}
+                  bibs={item.path.map((tag: string) =>
+                    tag === "common" ? "" : tag
+                  )}
                   handleUpdateBibs={(newTags: string[]) =>
                     updateBibs(newTags, item.id)
                   }
