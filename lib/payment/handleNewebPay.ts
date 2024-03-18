@@ -1,6 +1,3 @@
-import { paymentConst } from "@/constants";
-import createOrder from "@/lib/order/createOrder";
-
 //藍新金流
 const handleNewebPay = async ({
   orderId,
@@ -24,6 +21,7 @@ const handleNewebPay = async ({
       totalAmount,
       items,
       Email: email,
+      orderBy,
     }),
     headers: {
       "Content-Type": "application/json",
@@ -33,15 +31,6 @@ const handleNewebPay = async ({
   const newebpayData = await newebpayRes.json();
 
   if (newebpayData.status === "success") {
-    const reqBody = {
-      orderId,
-      paymentMethod: paymentConst.NEWEBPAY,
-      totalAmount,
-      items,
-      orderBy,
-      ...newebpayData.result,
-    };
-    createOrder(reqBody);
     try {
       //藍新金流要用form submit
       const form = document.createElement("form");

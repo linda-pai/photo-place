@@ -1,6 +1,3 @@
-import createOrder from "@/lib/order/createOrder";
-import { paymentConst } from "@/constants";
-
 //LinePay
 const handleLinePay = async ({
   orderId,
@@ -17,15 +14,6 @@ const handleLinePay = async ({
 }) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
-  const reqBody = {
-    orderId,
-    paymentMethod: paymentConst.LINEPAY,
-    totalAmount,
-    items,
-    orderBy,
-  };
-  createOrder(reqBody);
-
   const linePayRes = await fetch(`${domain}/api/linepay/request`, {
     method: "POST",
     body: JSON.stringify({
@@ -33,6 +21,7 @@ const handleLinePay = async ({
       amount: totalAmount,
       items,
       isMobile,
+      orderBy,
     }),
     headers: {
       "Content-Type": "application/json",
