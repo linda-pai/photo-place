@@ -50,6 +50,7 @@ const PaymentInfo: React.FC<Props> = ({
           totalAmount,
           items,
           isMobile,
+          orderBy: session.id,
         };
         const LineRes = await handleLinePay(LineData);
         if (LineRes.status === "success") {
@@ -78,12 +79,13 @@ const PaymentInfo: React.FC<Props> = ({
           totalAmount,
           items,
           email: session.user.email,
+          orderBy: session.id,
         };
         try {
           const newebPayRes = await handleNewebPay(orderData);
-          if (newebPayRes.status === "success") {
+          if (newebPayRes?.status === "success") {
             message.success("訂單已付款");
-          } else if (newebPayRes.status === "paid") {
+          } else if (newebPayRes?.status === "paid") {
             message.success("訂單已付款");
           } else {
             message.error("藍新金流扣款失敗, 請稍後再試");
