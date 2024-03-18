@@ -33,7 +33,6 @@ const Checkout = () => {
   const isMobile = useIsMobile();
   const { data: session }: any = useSession();
 
-  const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
@@ -103,7 +102,9 @@ const Checkout = () => {
     deleteCookie("checkoutData");
   };
 
-  const gotoPayment = async (orderId: string) => {
+  const gotoPayment = async () => {
+    const orderId = "ord-" + uuidv4().substring(0, 12);
+
     switch (paymentValue) {
       case 2:
         //  LinePay
@@ -112,9 +113,11 @@ const Checkout = () => {
           totalAmount: total + fee,
           items: checkoutData,
           isMobile,
+          orderBy: session?.id,
         };
         const LineRes = await handleLinePay(LineData);
         if (LineRes.status === "success") {
+          removeFromCookieData();
           try {
             if (isMobile) {
               router.push(LineRes.result?.app);
@@ -139,46 +142,20 @@ const Checkout = () => {
           totalAmount: total + fee,
           items: checkoutData,
           email: session?.user.email,
+          orderBy: session?.id,
         };
         try {
-          await handleNewebPay(orderData);
+          const response = await handleNewebPay(orderData);
+          if (response?.status === "success") {
+            removeFromCookieData();
+          } else {
+            message.error("藍新金流扣款失敗, 請稍後再試");
+          }
         } catch (err) {
           message.error("藍新金流扣款失敗, 請稍後再試");
         }
         break;
     }
-  };
-
-  const createOrder = async () => {
-    const orderId = "ord-" + uuidv4().substring(0, 12);
-
-    setLoading(true);
-    //成立訂單
-    if (session)
-      fetch(`${domain}/api/orders/add`, {
-        method: "POST",
-        body: JSON.stringify({
-          orderId,
-          paymentMethod: paymentValue,
-          totalAmount: total + fee,
-          items: checkoutData,
-          orderBy: session.id,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then(async (res) => {
-          if (res.status === 200) {
-            message.success("訂單建立成功");
-            await removeFromCookieData();
-            await gotoPayment(orderId);
-          }
-        })
-        .catch((err) => {
-          console.log("err", err);
-          message.error("訂單建立失敗, 請稍後再試");
-        });
   };
 
   const showModal = () => {
@@ -203,7 +180,7 @@ const Checkout = () => {
       okText: "確認",
       cancelText: "取消",
       onOk: () => {
-        createOrder();
+        gotoPayment();
       },
     });
   };

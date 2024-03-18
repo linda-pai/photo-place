@@ -1,14 +1,19 @@
+import { paymentConst } from "@/constants";
+import createOrder from "@/lib/order/createOrder";
+
 //藍新金流
 const handleNewebPay = async ({
   orderId,
   totalAmount,
   items,
   email,
+  orderBy,
 }: {
   orderId: string;
   totalAmount: number;
   items: any[];
   email: string;
+  orderBy: string;
 }) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
@@ -24,9 +29,19 @@ const handleNewebPay = async ({
       "Content-Type": "application/json",
     },
   });
+
   const newebpayData = await newebpayRes.json();
 
   if (newebpayData.status === "success") {
+    const reqBody = {
+      orderId,
+      paymentMethod: paymentConst.NEWEBPAY,
+      totalAmount,
+      items,
+      orderBy,
+      ...newebpayData.result,
+    };
+    createOrder(reqBody);
     try {
       //藍新金流要用form submit
       const form = document.createElement("form");
@@ -43,12 +58,15 @@ const handleNewebPay = async ({
 
       document.body.appendChild(form);
       form.submit();
+      return { status: "success" };
     } catch (err) {
       console.error(err);
     }
   } else if (newebpayData.status === "paid") {
     //已經付款過
-    return newebpayData;
+    return {
+      status: "paid",
+    };
   }
 };
 
