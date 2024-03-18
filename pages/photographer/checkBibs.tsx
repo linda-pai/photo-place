@@ -14,6 +14,7 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
   const { data: session }: any = useSession();
 
   const [images, setImages] = useState([] as ImageItemProps[]);
+  const [total, setTotal] = useState(0);
   const [sortBy, setSortBy] = useState("pathCount"); //  pathCount or lastModified
 
   const [showImageViewer, setShowImageViewer] = useState(false);
@@ -23,15 +24,19 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
   useEffect(() => {
-    session &&
-      fetch(
-        `${domain}/api/images/getByAuthor/${eventId}/${session.id}/${sortBy}`
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          setImages(data);
-        });
-  }, [session, sortBy]);
+    if (!session) return;
+    fetch(
+      `${domain}/api/images/getByAuthor/${eventId}/${session.id}/${sortBy}?page=${curPage}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setImages(data);
+      });
+
+    fetch(`${domain}/api/images/getByAuthorCount/${eventId}/${session.id}`)
+      .then((res) => res.json())
+      .then((data) => setTotal(data.count));
+  }, [session, sortBy, curPage]);
 
   const gotoPrevious = () =>
     currImgIndex > 0 && setCurrImgIndex(currImgIndex - 1);
@@ -89,6 +94,7 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
                     width={240}
                     height={320}
                     quality={30}
+                    style={{ width: "100%", height: "auto" }}
                   />
                 </div>
                 <AddableTags
@@ -126,7 +132,7 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
             <Pagination
               defaultCurrent={curPage}
               onChange={setCurPage}
-              total={images.length}
+              total={total}
               pageSize={40}
               showSizeChanger={false}
               current={curPage}
