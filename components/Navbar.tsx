@@ -62,8 +62,7 @@ const Nav = ({ navBarRef }: any) => {
       ]
     : [];
 
-  const items: MenuProps["items"] = [
-    ...photographerItems,
+  const basicItems: MenuProps["items"] = [
     {
       key: "2",
       label: "訂單查詢",
@@ -77,6 +76,9 @@ const Nav = ({ navBarRef }: any) => {
       onClick: () => logout(),
     },
   ];
+
+  //photographerItems ＋ basicItems
+  const UserItems: MenuProps["items"] = basicItems.concat(photographerItems);
 
   const adminItems: MenuProps["items"] = [
     {
@@ -144,7 +146,7 @@ const Nav = ({ navBarRef }: any) => {
           {session ? (
             <>
               <div className="cursor-pointer">
-                <Dropdown menu={{ items }} placement="bottom">
+                <Dropdown menu={{ items: UserItems }} placement="bottom">
                   <div className=" text-3xl hover:text-[#ca7c6f]">
                     <UserOutlined />
                   </div>
