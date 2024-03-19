@@ -25,7 +25,7 @@ const NotifyForm = dynamic(() => import("@/components/NotifyForm"), {
 export default function EventSearchPage({
   eventInfo,
   imageList,
-  commonImages,
+  unIdentifyImages,
   navBarRef,
   bib,
   page,
@@ -40,9 +40,10 @@ export default function EventSearchPage({
   const [images, setImages] = useState([] as ImageItemProps[]);
   const [showModal, setShowModal] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
-  const [showImageViewerCommon, setShowImageViewerCommon] = useState(false);
+  const [showImageViewerUnIdentify, setShowImageViewerUnIdentify] =
+    useState(false);
   const [currImgIndex, setCurrImgIndex] = useState(0); // [0, images.length - 1
-  const [currCommonImgIndex, setCurrCommonImgIndex] = useState(0); // [0, images.length - 1
+  const [currUnIdentifyImgIndex, setCurrUnIdentifyImgIndex] = useState(0); // [0, images.length - 1
   const [curPage, setCurPage] = useState(page || 1);
   const [total, setTotal] = useState(imageListTotal);
 
@@ -80,9 +81,9 @@ export default function EventSearchPage({
       undefined,
       { shallow: true }
     );
-    const searchValue = search || "all";
+    const searchValue = search || "";
     fetch(
-      `${domain}/api/images/getByPathAndEventId/${eventId}/${searchValue}?page=${searchPage}`
+      `${domain}/api/images/getByPathAndEventId/${eventId}?path=${searchValue}&page=${searchPage}`
     )
       .then((res) => res.json())
       .then((data) => {
@@ -120,19 +121,20 @@ export default function EventSearchPage({
     setCurrImgIndex(images.findIndex((item: ImageItemProps) => item.id === id));
   };
 
-  const handleClickImgCommon = (id: string) => {
-    setShowImageViewerCommon(true);
-    setCurrCommonImgIndex(
-      commonImages.findIndex((item: ImageItemProps) => item.id === id)
+  const handleClickImgUnIdentify = (id: string) => {
+    setShowImageViewerUnIdentify(true);
+    setCurrUnIdentifyImgIndex(
+      unIdentifyImages.findIndex((item: ImageItemProps) => item.id === id)
     );
   };
 
-  const gotoPreviousCommon = () =>
-    currCommonImgIndex > 0 && setCurrCommonImgIndex(currCommonImgIndex - 1);
+  const gotoPreviousUnIdentify = () =>
+    currUnIdentifyImgIndex > 0 &&
+    setCurrUnIdentifyImgIndex(currUnIdentifyImgIndex - 1);
 
   const gotoNextCommon = () =>
-    currCommonImgIndex + 1 < commonImages.length &&
-    setCurrCommonImgIndex(currCommonImgIndex + 1);
+    currUnIdentifyImgIndex + 1 < unIdentifyImages.length &&
+    setCurrUnIdentifyImgIndex(currUnIdentifyImgIndex + 1);
 
   const gotoPrevious = () =>
     currImgIndex > 0 && setCurrImgIndex(currImgIndex - 1);
@@ -232,19 +234,19 @@ export default function EventSearchPage({
                 </div>
               </>
             )}
-            {commonImages.length > 0 && !search && (
+            {unIdentifyImages.length > 0 && !search && (
               <>
                 <div className="my-2 mt-16 mb-4 text-[color:var(--main-color-dark)] text-sm">
                   <Tag>未成功辨識號碼布</Tag>
                 </div>
                 <ImageList
-                  images={commonImages}
-                  isOpen={showImageViewerCommon}
-                  curIndex={currCommonImgIndex}
-                  onClose={() => setShowImageViewerCommon(false)}
-                  onPrev={gotoPreviousCommon}
+                  images={unIdentifyImages}
+                  isOpen={showImageViewerUnIdentify}
+                  curIndex={currUnIdentifyImgIndex}
+                  onClose={() => setShowImageViewerUnIdentify(false)}
+                  onPrev={gotoPreviousUnIdentify}
                   onNext={gotoNextCommon}
-                  handleClickImg={handleClickImgCommon}
+                  handleClickImg={handleClickImgUnIdentify}
                   eventId={eventId}
                   eventName={eventName}
                 />
@@ -277,22 +279,29 @@ export async function getServerSideProps(context: any) {
   const page = Number(context.query.page);
 
   const imageList = await fetch(
-    `${domain}/api/images/getByPathAndEventId/${eventId}/all`
+    `${domain}/api/images/getByPathAndEventId/${eventId}`
   ).then((res) => res.json());
 
-  const commonImages = await fetch(
-    `${domain}/api/images/getByPathAndEventId/${eventId}/common`
+  const unIdentifyImages = await fetch(
+    `${domain}/api/images/getByPathAndEventId/${eventId}?path=unIdentify`
   ).then((res) => res.json());
 
   const imageListTotal = await fetch(`${domain}/api/images/getCount/${eventId}`)
     .then((res) => res.json())
-    .then((data) => data.count - commonImages.length);
+    .then((data) => data.count - unIdentifyImages.length);
 
   const eventInfo = await fetch(`${domain}/api/events/getBy/${eventId}`).then(
     (res) => res.json()
   );
 
   return {
-    props: { imageList, commonImages, eventInfo, bib, page, imageListTotal },
+    props: {
+      imageList,
+      unIdentifyImages,
+      eventInfo,
+      bib,
+      page,
+      imageListTotal,
+    },
   };
 }

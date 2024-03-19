@@ -50,7 +50,6 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
   };
 
   const updateBibs = (newTags: string[], id: string) => {
-    if (newTags.length === 0) return;
     fetch(`${domain}/api/images/updateBibs`, {
       method: "POST",
       headers: {
