@@ -13,6 +13,7 @@ const handleNewebPay = async ({
   orderBy: string;
 }) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
+  const TimeStamp = Math.round(new Date().getTime() / 1000);
 
   const newebpayRes = await fetch(`${domain}/api/newebpay/request`, {
     method: "POST",
@@ -22,6 +23,7 @@ const handleNewebPay = async ({
       items,
       Email: email,
       orderBy,
+      MerchantOrderNo: TimeStamp,
     }),
     headers: {
       "Content-Type": "application/json",

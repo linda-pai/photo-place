@@ -81,6 +81,7 @@ const Orders = () => {
               <ImageItemDisplay
                 item={item}
                 onClick={() => handleClickImage(record, key)}
+                key={key}
               />
             ))}
           </div>
@@ -90,9 +91,7 @@ const Orders = () => {
     paymentMethod: {
       render: (text: string, orderInfo: any, key: number) => (
         <p key={key}>
-          {orderInfo.paidAt
-            ? paymentOptions.find((option: any) => option.value === text)?.label
-            : "-"}
+          {paymentOptions.find((option: any) => option.value === text)?.label}
         </p>
       ),
     },
@@ -104,6 +103,7 @@ const Orders = () => {
           ) : (
             <div
               onClick={() => {
+                if (orderInfo.paidAt) return;
                 showModal();
                 setCurrentOrder(orderInfo);
               }}

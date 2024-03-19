@@ -83,11 +83,9 @@ const PaymentInfo: React.FC<Props> = ({
         };
         try {
           const newebPayRes = await handleNewebPay(orderData);
-          if (newebPayRes?.status === "success") {
+          if (newebPayRes?.status === "paid") {
             message.success("訂單已付款");
-          } else if (newebPayRes?.status === "paid") {
-            message.success("訂單已付款");
-          } else {
+          } else if (newebPayRes?.status === "fail") {
             message.error("藍新金流扣款失敗, 請稍後再試");
           }
         } catch (err) {
