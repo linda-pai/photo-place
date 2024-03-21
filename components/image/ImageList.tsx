@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import { setCookie, getCookie } from "cookies-next";
 import { useSession } from "next-auth/react";
 import { message } from "antd";
-import { clickAddToCart, removeAddToCart, searchTracking } from "@/lib/gtag";
+import { clickAddToCart, removeAddToCart } from "@/lib/gtag";
 import ImageItems from "./ImageItems";
 import ImageLightBox from "./ImageLightBox";
 
@@ -40,7 +40,6 @@ const ImageList = ({
   eventName: string;
 }) => {
   const { data: session }: any = useSession();
-
   const [cartData, setCartData] = useState({} as any);
 
   useEffect(() => {

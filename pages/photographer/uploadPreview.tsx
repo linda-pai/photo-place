@@ -20,7 +20,9 @@ export default function UploadPreview({ eventId }: { eventId: string }) {
 
   useEffect(() => {
     session &&
-      fetch(`${domain}/api/images/getByAuthor/${eventId}/${session.id}`)
+      fetch(
+        `${domain}/api/images/getByAuthor/${eventId}/${session.id}/lastModified`
+      )
         .then((res) => res.json())
         .then((data) => {
           const releasedImages = data.filter(

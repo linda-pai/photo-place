@@ -23,7 +23,6 @@ import parallelUploadWithLimit from "@/utils/parallelUploadWithLimit";
 import addWatermark from "@/lib/upload/addWatermark";
 import { writeUploadInfo } from "@/lib/upload/writeUploadInfo";
 import imagesRelease from "@/lib/upload/imagesRelease";
-import { IMAGE_STATUS } from "@/constants";
 
 interface Event {
   id: number;
@@ -118,19 +117,11 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
       onOk: handleRelease,
       onCancel: () => {
         //writeUploadInfo
-        const refinedList = fileOptionsList.map((file: any) => {
-          return {
-            path: file.path,
-            status: IMAGE_STATUS["UPLOADED"],
-          };
-        });
-
         const reqBody = {
           eventId: eventId.value,
           eventName: eventId.label,
           author: session.id,
           name: authorName,
-          images: refinedList,
         };
 
         writeUploadInfo(reqBody).then((response) => {
@@ -294,6 +285,14 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
       onOk: () => {
         setLoading(true);
 
+        const reqBody = {
+          eventId: eventId.value,
+          eventName: eventId.label,
+          author: session.id,
+          name: authorName,
+        };
+        writeUploadInfo(reqBody);
+
         const loadingMsgConfig = {
           key: msgKey,
           content: "上傳中...",
@@ -335,24 +334,16 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
     //   },
     // });
 
-    const refinedList = fileOptionsList.map((file: any) => {
-      return {
-        path: file.path,
-        status: IMAGE_STATUS["RELEASED"],
-      };
-    });
-
     const reqBody = {
       eventId: eventId.value,
       eventName: eventId.label,
       author: session.id,
       name: authorName,
-      images: refinedList,
     };
 
     writeUploadInfo(reqBody);
 
-    imagesRelease(eventId.value, refinedList).then((response: any) => {
+    imagesRelease(eventId.value).then((response: any) => {
       if (response?.error) {
         message.error(response?.error);
         return;

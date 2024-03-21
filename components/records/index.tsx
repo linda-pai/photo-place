@@ -1,13 +1,10 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { Spin, Table, Tag, Button } from "antd";
+import { Spin, Table, Button } from "antd";
 import dynamic from "next/dynamic";
 import dayjs from "dayjs";
 import tableConfig from "./tableConfig";
-import imagesRelease from "@/lib/upload/imagesRelease";
-import { uploadUploadInfo } from "@/lib/upload/writeUploadInfo";
-import { IMAGE_STATUS } from "@/constants";
 
 const ImageDetail = dynamic(
   () => import("@/components/orderList/ImageDetail"),
@@ -51,44 +48,6 @@ const RecordOfUpload = () => {
         <p key={key}>{text ? dayjs(text).format("YYYY-MM-DD HH:mm") : "-"}</p>
       ),
     },
-    images: {
-      render: (images: any[], uploadInfo: any, key: number) => (
-        <>
-          <p>{images.length}張</p>
-        </>
-      ),
-    },
-    released: {
-      render: (images: any[], _: any, key: number) => (
-        <Tag color="green" key={key}>
-          {
-            images?.filter((image) => image.status === IMAGE_STATUS["RELEASED"])
-              .length
-          }
-          張
-        </Tag>
-      ),
-    },
-    unReleased: {
-      render: (images: any[], record: any, key: number) => (
-        <div className="flex items-center">
-          <div>
-            <Tag color="red" key={key}>
-              {
-                images?.filter(
-                  (image) => image.status !== IMAGE_STATUS["RELEASED"]
-                ).length
-              }
-              張
-            </Tag>
-          </div>
-          {images?.filter((image) => image.status !== IMAGE_STATUS["RELEASED"])
-            .length > 0 && (
-            <Button onClick={() => handleRelease(record)}>發佈</Button>
-          )}
-        </div>
-      ),
-    },
     sellInfo: {
       render: (_: string, { sellInfo }: any, index: number) => (
         <div
@@ -110,10 +69,12 @@ const RecordOfUpload = () => {
       render: (_: string, record: RecordOfUploadProps, key: number) => (
         <div className="flex gap-1">
           <Link
-            href={`/photographer/uploadPreview?eventId=${record.eventId}`}
+            href={`/photographer/uploadDetail?eventId=${
+              record.eventId
+            }&record=${JSON.stringify(record)}`}
             key={key}
           >
-            <Button>查看</Button>
+            <Button>詳情</Button>
           </Link>
           <Link
             href={`/photographer/checkBibs?eventId=${record.eventId}`}
@@ -146,28 +107,6 @@ const RecordOfUpload = () => {
   };
   const gotoNext = () => {
     currImg + 1 < currList.length && setCurrImg(currImg + 1);
-  };
-
-  const handleRelease = (record: RecordOfUploadProps) => {
-    const unReleasedImages = record.images.filter(
-      (file: any) => file.status !== IMAGE_STATUS["RELEASED"]
-    );
-    imagesRelease(record.eventId, unReleasedImages);
-
-    const refinedList = record.images.map((file: any) => {
-      return {
-        path: file.path,
-        status: IMAGE_STATUS["RELEASED"],
-      };
-    });
-
-    const reqBody = {
-      eventId: record.eventId,
-      author: session.id,
-      images: refinedList,
-    };
-
-    uploadUploadInfo(reqBody);
   };
 
   return !loading ? (

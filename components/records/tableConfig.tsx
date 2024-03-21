@@ -24,27 +24,6 @@ const tableConfig = (columnsRenderMap: any) => {
       ...columnsRenderMap.createAt,
     },
     {
-      title: "上傳張數",
-      dataIndex: "images",
-      key: "images",
-      width: 120,
-      ...columnsRenderMap.images,
-    },
-    {
-      title: "已發布",
-      dataIndex: "images",
-      key: "images",
-      width: 120,
-      ...columnsRenderMap.released,
-    },
-    {
-      title: "未發布",
-      dataIndex: "images",
-      key: "images",
-      width: 120,
-      ...columnsRenderMap.unReleased,
-    },
-    {
       title: "售出張數",
       dataIndex: "sellInfo",
       key: "sellInfo",
