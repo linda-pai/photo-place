@@ -123,7 +123,7 @@ const Checkout = () => {
               router.push(LineRes.result?.app);
               // 手機版付款完成後回不來，所以1秒後導向成功頁
               setTimeout(() => {
-                router.push("/user/succeed");
+                router.push("/user/orders");
               }, 1000);
             } else {
               router.push(LineRes.result?.web);

@@ -58,7 +58,7 @@ const PaymentInfo: React.FC<Props> = ({
             if (isMobile) {
               router.push(LineRes.result?.app);
               setTimeout(() => {
-                router.push("/user/succeed");
+                router.push("/user/orders");
               }, 1000);
             } else {
               router.push(LineRes.result?.web);
