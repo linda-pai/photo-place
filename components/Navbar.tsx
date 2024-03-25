@@ -115,7 +115,7 @@ const Nav = ({ navBarRef }: any) => {
       }
     >
       <div
-        className="container mx-auto sm:px-0 px-4 flex justify-between items-center font-mono"
+        className="container mx-auto px-4 flex justify-between items-center font-mono"
         role="navigation"
       >
         <Link href="/" className="w-[12%] min-w-[100px]">

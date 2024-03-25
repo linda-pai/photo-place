@@ -45,6 +45,9 @@ th,
 td {
   color: var(--main-color-dark) !important;
 }
+.container {
+  max-width: 1280px;
+}
 @media only screen and (max-width: 768px) {
   ._e296pg,
   .content_e296pg {
@@ -75,6 +78,24 @@ td {
 }
 :where(.css-6j9yrn).ant-modal .ant-modal-content {
   padding: 24px 36px;
+}
+
+.ant-radio-group-solid
+  .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
+  background-color: #b0b97a !important;
+  color: #fff !important;
+  border-color: #b0b97a !important;
+}
+.ant-radio-group-solid .ant-radio-button-wrapper-disabled {
+  background-color: #b0b97a !important;
+  color: #fff !important;
+  border-color: #b0b97a !important;
+}
+.ant-radio-button-wrapper:hover {
+  color: var(--main-color-dark) !important;
+}
+.ant-radio-button-wrapper:not(:first-child)::before {
+  display: none;
 }
 .ant-modal-footer {
   display: flex;
