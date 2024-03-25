@@ -1,3 +1,5 @@
+//TODO:  已經改成component了 ，可以刪掉
+
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
@@ -17,6 +19,8 @@ export default function UploadPreview({ eventId }: { eventId: string }) {
   const [curPage, setCurPage] = useState(1);
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
+
+  const pageSize = 15;
 
   useEffect(() => {
     session &&
@@ -92,7 +96,7 @@ export default function UploadPreview({ eventId }: { eventId: string }) {
               defaultCurrent={curPage}
               onChange={setCurPage}
               total={releasedImages.length}
-              pageSize={40}
+              pageSize={pageSize}
               showSizeChanger={false}
               current={curPage}
             />
@@ -139,7 +143,7 @@ export default function UploadPreview({ eventId }: { eventId: string }) {
               defaultCurrent={curPage}
               onChange={setCurPage}
               total={unReleasedImages.length}
-              pageSize={40}
+              pageSize={pageSize}
               showSizeChanger={false}
               current={curPage}
             />

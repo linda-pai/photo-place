@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { Pagination } from "antd";
+import dayjs from "dayjs";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import ImageLightBox from "@/components/image/ImageLightBox";
 
@@ -21,27 +22,33 @@ export default function UploadPreview({
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [currImgIndex, setCurrImgIndex] = useState(0); // [0, images.length - 1
   const [curPage, setCurPage] = useState(1);
+  const [totalReleased, setTotalReleased] = useState(0);
+  const [totalUnReleased, setTotalUnReleased] = useState(0);
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
+  const pageSize = 15;
 
   useEffect(() => {
-    session &&
-      fetch(
-        `${domain}/api/images/getByAuthor/${eventId}/${session.id}/lastModified`
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          const releasedImages = data.filter(
-            (item: any) => item.isReleased === true
-          );
-          const unReleasedImages = data.filter(
-            (item: any) => item.isReleased === false
-          );
+    if (!session) return;
 
-          setReleasedImages(releasedImages);
-          setUnReleasedImages(unReleasedImages);
-        });
-  }, [session]);
+    fetch(
+      `${domain}/api/images/getByAuthor/${eventId}/${session.id}/lastModified?isReleased=true&page=${curPage}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setReleasedImages(data.images);
+        setTotalReleased(data.totalCount);
+      });
+
+    fetch(
+      `${domain}/api/images/getByAuthor/${eventId}/${session.id}/lastModified?isReleased=false&page=${curPage}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setUnReleasedImages(data.images);
+        setTotalUnReleased(data.totalCount);
+      });
+  }, [session, curPage]);
 
   const gotoPrevious = () =>
     currImgIndex > 0 && setCurrImgIndex(currImgIndex - 1);
@@ -61,9 +68,6 @@ export default function UploadPreview({
     <>
       {releasedImages.length > 0 && toggle["RELEASED"] && (
         <div className="text-center mt-24 text-[color:var(--main-color-dark)]">
-          <p>releasedImages</p>
-          <p>共 {releasedImages.length} 張照片</p>
-
           <div className="container mx-auto sm:my-10 my-4">
             <div className="masonry">
               {releasedImages.map((item: any, key: number) => (
@@ -80,6 +84,10 @@ export default function UploadPreview({
                     height={400}
                     quality={30}
                   />
+                  <div className="absolute bottom-0 text-start text-sm text-[color:var(--main-color-dark)] p-1 bg-[#fff] bg-opacity-70">
+                    <p>{item.fileName}</p>
+                    <p>{dayjs(item.lastModified).format("YYYY/MM/DD HH:mm")}</p>
+                  </div>
                 </div>
               ))}
               <ImageLightBox
@@ -97,8 +105,8 @@ export default function UploadPreview({
               <Pagination
                 defaultCurrent={curPage}
                 onChange={setCurPage}
-                total={releasedImages.length}
-                pageSize={40}
+                total={totalReleased}
+                pageSize={pageSize}
                 showSizeChanger={false}
                 current={curPage}
               />
@@ -109,11 +117,6 @@ export default function UploadPreview({
 
       {unReleasedImages.length > 0 && toggle["UNRELEASED"] && (
         <div className="container mx-auto sm:my-10 my-4">
-          <div className="text-center mt-24 text-[color:var(--main-color-dark)]">
-            <p>unReleasedImages</p>
-            <p>共 {unReleasedImages.length} 張照片</p>
-          </div>
-
           <div className="masonry">
             {unReleasedImages.map((item: any, key: number) => (
               <div
@@ -146,8 +149,8 @@ export default function UploadPreview({
             <Pagination
               defaultCurrent={curPage}
               onChange={setCurPage}
-              total={unReleasedImages.length}
-              pageSize={40}
+              total={totalUnReleased}
+              pageSize={pageSize}
               showSizeChanger={false}
               current={curPage}
             />
