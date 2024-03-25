@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
-import { message, Button, Tag, Spin, Pagination } from "antd";
+import { useEffect, useState, useMemo } from "react";
+import { message, Button, Spin, Radio } from "antd";
 import { setCookie, getCookie } from "cookies-next";
-import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
 import dynamic from "next/dynamic";
 import Head from "next/head";
-import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { searchTracking } from "@/lib/gtag";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
+import { IMAGE_STATUS } from "@/constants";
+import LastElement from "@/components/LastElement";
 
 const SearchWrapper = dynamic(() => import("@/components/SearchWrapper"), {
   loading: () => <Spin />,
@@ -24,80 +24,106 @@ const NotifyForm = dynamic(() => import("@/components/NotifyForm"), {
 // Post component
 export default function EventSearchPage({
   eventInfo,
-  imageList,
-  unIdentifyImages,
   navBarRef,
   bib,
-  page,
-  imageListTotal,
+  identifyInfo,
+  unIdentifyInfo,
 }: any) {
-  const { data: session }: any = useSession();
-
-  const router = useRouter();
-
+  const pageSize = 15;
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-  const [search, setSearch] = useState(bib || "");
-  const [images, setImages] = useState([] as ImageItemProps[]);
-  const [showModal, setShowModal] = useState(false);
-  const [showImageViewer, setShowImageViewer] = useState(false);
-  const [showImageViewerUnIdentify, setShowImageViewerUnIdentify] =
-    useState(false);
-  const [currImgIndex, setCurrImgIndex] = useState(0); // [0, images.length - 1
-  const [currUnIdentifyImgIndex, setCurrUnIdentifyImgIndex] = useState(0); // [0, images.length - 1
-  const [curPage, setCurPage] = useState(page || 1);
-  const [total, setTotal] = useState(imageListTotal);
 
-  //id as evetId
   const { eventId, eventName, coverImg } = eventInfo;
 
-  useEffect(() => {
-    setImages(imageList);
-  }, []);
+  const { data: session }: any = useSession();
+
+  const [search, setSearch] = useState(bib || "");
+  const [images, setImages] = useState({
+    [IMAGE_STATUS.IDENTIFYED]: identifyInfo.images as ImageItemProps[],
+    [IMAGE_STATUS.UNIDENTIFYED]: unIdentifyInfo.images as ImageItemProps[],
+  });
+
+  const [loadedCount, setLoadedCount] = useState(0);
+
+  const [category, setCategory] = useState(IMAGE_STATUS.IDENTIFYED);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [showImageViewer, setShowImageViewer] = useState(false);
+  const [currImgIndex, setCurrImgIndex] = useState(0); // [0, images.length - 1
+  const [curPage, setCurPage] = useState({
+    [IMAGE_STATUS.IDENTIFYED]: 1,
+    [IMAGE_STATUS.UNIDENTIFYED]: 1,
+  });
+
+  const lastPage = {
+    [IMAGE_STATUS.IDENTIFYED]: Math.ceil(identifyInfo.totalCount / pageSize),
+    [IMAGE_STATUS.UNIDENTIFYED]: Math.ceil(
+      unIdentifyInfo.totalCount / pageSize
+    ),
+  };
 
   useEffect(() => {
-    const dataLength = search ? images.length : imageListTotal;
-    setTotal(dataLength);
-  }, [images]);
-
-  useEffect(() => {
-    if (curPage) onSearch();
+    if (curPage[category]) {
+      onSearch();
+    }
   }, [curPage]);
 
-  const handleOnChange = (e: any) => {
+  //useMemo to prevent re-render
+  const unIdentify = useMemo(() => {
+    return {
+      images: images[IMAGE_STATUS.UNIDENTIFYED],
+      curPage: curPage[IMAGE_STATUS.UNIDENTIFYED],
+    };
+  }, [images]);
+
+  const identify = useMemo(() => {
+    return {
+      images: images[IMAGE_STATUS.IDENTIFYED],
+      curPage: curPage[IMAGE_STATUS.IDENTIFYED],
+    };
+  }, [images]);
+
+  const handleOnChangeSearch = (e: any) => {
     setSearch(e.target.value.trim());
     setShowModal(false);
   };
 
+  const handleOnChangeCategory = (e: any) => setCategory(e.target.value);
+
   const onSearch = () => {
+    setIsLoading(true);
     if (search !== "" && search.match(/^[0-9]+$/) == null)
       return message.error("請輸入正確的號碼布");
 
-    const searchPage = search ? 1 : curPage;
-    router.push(
-      {
-        pathname: `/events/${eventId}`,
-        query: { bib: search, page: searchPage },
-      },
-      undefined,
-      { shallow: true }
-    );
-    const searchValue = search || "";
+    const searchPage = search ? 1 : curPage[category];
+    const searchValue =
+      category === IMAGE_STATUS.IDENTIFYED ? search : "unIdentify";
+
     fetch(
       `${domain}/api/images/getByPathAndEventId/${eventId}?path=${searchValue}&page=${searchPage}`
     )
       .then((res) => res.json())
       .then((data) => {
-        setImages(data);
+        setImages((prev) => {
+          return {
+            ...prev,
+            [category]:
+              searchPage === 1
+                ? data.images
+                : [...prev[category], ...data.images],
+          };
+        });
+
+        // set more to true if nextPage exists
+        setIsLoading(false);
         setShowModal(true);
 
-        scrollIntoViewWithOffset("#result-container", 100);
         //埋點
         searchTracking({
           event_category: "event",
           event_label: eventName,
           search_term: search,
           number_of_results: data.length,
-          user_id: session?.id,
+          user_id: session?.id || "",
         });
       });
   };
@@ -118,29 +144,21 @@ export default function EventSearchPage({
 
   const handleClickImg = (id: string) => {
     setShowImageViewer(true);
-    setCurrImgIndex(images.findIndex((item: ImageItemProps) => item.id === id));
-  };
-
-  const handleClickImgUnIdentify = (id: string) => {
-    setShowImageViewerUnIdentify(true);
-    setCurrUnIdentifyImgIndex(
-      unIdentifyImages.findIndex((item: ImageItemProps) => item.id === id)
+    setCurrImgIndex(
+      images[category].findIndex((item: ImageItemProps) => item.id === id)
     );
   };
-
-  const gotoPreviousUnIdentify = () =>
-    currUnIdentifyImgIndex > 0 &&
-    setCurrUnIdentifyImgIndex(currUnIdentifyImgIndex - 1);
-
-  const gotoNextCommon = () =>
-    currUnIdentifyImgIndex + 1 < unIdentifyImages.length &&
-    setCurrUnIdentifyImgIndex(currUnIdentifyImgIndex + 1);
 
   const gotoPrevious = () =>
     currImgIndex > 0 && setCurrImgIndex(currImgIndex - 1);
 
   const gotoNext = () =>
-    currImgIndex + 1 < images.length && setCurrImgIndex(currImgIndex + 1);
+    currImgIndex + 1 < images[category].length &&
+    setCurrImgIndex(currImgIndex + 1);
+
+  const handleOnLoad = () => {
+    setLoadedCount((prev) => prev + 1);
+  };
 
   return (
     <>
@@ -171,7 +189,7 @@ export default function EventSearchPage({
       </Head>
       <div ref={navBarRef}>
         <SearchWrapper
-          handleOnChange={handleOnChange}
+          handleOnChange={handleOnChangeSearch}
           onSearch={onSearch}
           eventName={eventName}
           search={search}
@@ -195,8 +213,8 @@ export default function EventSearchPage({
               {
                 <>
                   <p>{`號碼布: ${search}`}</p>
-                  <p>{`找到 ${images.length} 張照片，${
-                    images.length == 0
+                  <p>{`找到 ${images[category].length} 張照片，${
+                    images[category].length == 0
                       ? "我們未來會努力增加攝影師的💪"
                       : "太有緣份了！"
                   }`}</p>
@@ -205,59 +223,69 @@ export default function EventSearchPage({
               {/* <p>不囉唆⚡全面 65 折優惠</p> */}
             </div>
 
-            {images.length > 0 && (
+            {images[category].length > 0 && (
               <>
-                <div className="my-2 mx-3 text-[color:var(--main-color-dark)] text-sm">
-                  <Tag color="#B0B97A">已完成辨識號碼布</Tag>
+                <div className="my-4 mx-3 text-[color:var(--main-color-dark)] text-sm">
+                  <Radio.Group
+                    defaultValue={IMAGE_STATUS.IDENTIFYED}
+                    buttonStyle="solid"
+                    onChange={handleOnChangeCategory}
+                    value={category}
+                  >
+                    <Radio.Button value={IMAGE_STATUS.IDENTIFYED}>
+                      已完成辨識號碼布
+                    </Radio.Button>
+                    <Radio.Button value={IMAGE_STATUS.UNIDENTIFYED}>
+                      未成功辨識號碼布
+                    </Radio.Button>
+                  </Radio.Group>
                 </div>
-                <ImageList
-                  images={images}
-                  isOpen={showImageViewer}
-                  curIndex={currImgIndex}
-                  onClose={() => setShowImageViewer(false)}
-                  onPrev={gotoPrevious}
-                  onNext={gotoNext}
-                  handleClickImg={handleClickImg}
-                  eventId={eventId}
-                  eventName={eventName}
-                />
-
-                <div className="text-center my-10">
-                  <Pagination
-                    defaultCurrent={curPage}
-                    onChange={setCurPage}
-                    total={total}
-                    pageSize={40}
-                    showSizeChanger={false}
-                    current={curPage}
+                {/* add transition */}
+                <div className="transition-all duration-500">
+                  <ImageList
+                    images={
+                      category === IMAGE_STATUS.IDENTIFYED
+                        ? identify.images
+                        : unIdentify.images
+                    }
+                    isOpen={showImageViewer}
+                    curIndex={currImgIndex}
+                    onClose={() => setShowImageViewer(false)}
+                    onPrev={gotoPrevious}
+                    onNext={gotoNext}
+                    handleClickImg={handleClickImg}
+                    eventId={eventId}
+                    eventName={eventName}
+                    onLoad={handleOnLoad}
                   />
                 </div>
-              </>
-            )}
-            {unIdentifyImages.length > 0 && !search && (
-              <>
-                <div className="my-2 mt-16 mb-4 text-[color:var(--main-color-dark)] text-sm">
-                  <Tag>未成功辨識號碼布</Tag>
-                </div>
-                <ImageList
-                  images={unIdentifyImages}
-                  isOpen={showImageViewerUnIdentify}
-                  curIndex={currUnIdentifyImgIndex}
-                  onClose={() => setShowImageViewerUnIdentify(false)}
-                  onPrev={gotoPreviousUnIdentify}
-                  onNext={gotoNextCommon}
-                  handleClickImg={handleClickImgUnIdentify}
-                  eventId={eventId}
-                  eventName={eventName}
-                />
+                {lastPage[category] > curPage[category] &&
+                  loadedCount === images[category].length && (
+                    <LastElement
+                      key={category}
+                      isLoading={isLoading}
+                      intersectionFunc={() =>
+                        setCurPage((prev) => {
+                          return {
+                            ...prev,
+                            [category]: prev[category] + 1,
+                          };
+                        })
+                      }
+                    />
+                  )}
               </>
             )}
             <div>
-              {images.length > 0 && search && (
+              {images[category].length > 0 && search && (
                 <Button
                   onClick={() => {
-                    images.map((item: ImageItemProps) => pushToCart(item.id));
-                    message.success(`已將 ${images.length} 張照片加入購物車`);
+                    images[category].map((item: ImageItemProps) =>
+                      pushToCart(item.id)
+                    );
+                    message.success(
+                      `已將 ${images[category].length} 張照片加入購物車`
+                    );
                   }}
                   className="mx-auto block my-10"
                 >
@@ -276,19 +304,14 @@ export async function getServerSideProps(context: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const eventId = context.params.id;
   const bib = context.query.bib || "";
-  const page = Number(context.query.page);
 
-  const imageList = await fetch(
-    `${domain}/api/images/getByPathAndEventId/${eventId}`
-  ).then((res) => res.json());
-
-  const unIdentifyImages = await fetch(
+  const unIdentifyInfo = await fetch(
     `${domain}/api/images/getByPathAndEventId/${eventId}?path=unIdentify`
   ).then((res) => res.json());
 
-  const imageListTotal = await fetch(`${domain}/api/images/getCount/${eventId}`)
-    .then((res) => res.json())
-    .then((data) => data.count - unIdentifyImages.length);
+  const identifyInfo = await fetch(
+    `${domain}/api/images/getByPathAndEventId/${eventId}`
+  ).then((res) => res.json());
 
   const eventInfo = await fetch(`${domain}/api/events/getBy/${eventId}`).then(
     (res) => res.json()
@@ -296,12 +319,10 @@ export async function getServerSideProps(context: any) {
 
   return {
     props: {
-      imageList,
-      unIdentifyImages,
       eventInfo,
       bib,
-      page,
-      imageListTotal,
+      identifyInfo,
+      unIdentifyInfo,
     },
   };
 }

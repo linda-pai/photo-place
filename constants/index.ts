@@ -6,8 +6,8 @@ const paymentConst = {
 const CHARGE_PERCENTAGE = 0.04;
 
 const IMAGE_STATUS = {
-  UPLOADED: 0,
-  RELEASED: 2,
+  IDENTIFYED: 3,
+  UNIDENTIFYED: 4,
   // RECOGNIZED: 1,
   // UNRECOGNIZED: 3,
 };
