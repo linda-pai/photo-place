@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { Pagination, Radio, Spin } from "antd";
+import { Button, Pagination, Radio, Spin, message } from "antd";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import ImageLightBox from "@/components/image/ImageLightBox";
 
@@ -57,6 +57,21 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
     });
   };
 
+  const handleDeleteImg = (id: string) => {
+    fetch(`${domain}/api/images/delete/${eventId}/${id}/${session.id}`, {
+      method: "POST",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === "success") {
+          message.success("刪除成功");
+          setImages(images.filter((item) => item.id !== id));
+        } else {
+          message.error("刪除失敗");
+        }
+      });
+  };
+
   return (
     <>
       <div className="text-center mt-24 text-[color:var(--main-color-dark)]">
@@ -78,13 +93,16 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
           </div>
           <div className="masonry">
             {images.map((item: any, key: number) => (
-              <div key={key}>
+              <div
+                key={key}
+                className="sm:basis-[calc(20%_-_16px)] basis-[calc(33%_-_16px)] relative"
+              >
                 <div
-                  className="sm:basis-[calc(20%_-_16px)] basis-[calc(33%_-_16px)] cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
+                  className="cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group "
                   onClick={() => handleClickImg(item.id)}
                 >
                   <Image
-                    className="item__content"
+                    className="item__content "
                     src={item.watermarkedUrl}
                     alt={item.watermarkedUrl}
                     width={240}
@@ -102,6 +120,13 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
                     updateBibs(newTags, item.id)
                   }
                 />
+                <Button
+                  onClick={() => handleDeleteImg(item.id)}
+                  className="mx-auto block my-10 absolute top-[-32px] right-2"
+                  danger
+                >
+                  刪除
+                </Button>
               </div>
             ))}
             <ImageLightBox
