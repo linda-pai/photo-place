@@ -4,6 +4,8 @@ import { setCookie, getCookie } from "cookies-next";
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
 import { searchTracking } from "@/lib/gtag";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import { IMAGE_STATUS } from "@/constants";
@@ -35,18 +37,22 @@ export default function EventSearchPage({
   const { eventId, eventName, coverImg } = eventInfo;
 
   const { data: session }: any = useSession();
+  const router = useRouter();
 
   const [search, setSearch] = useState(bib || "");
+  const [isSearched, setIsSearched] = useState(false);
   const [images, setImages] = useState({
     [IMAGE_STATUS.IDENTIFYED]: identifyInfo.images as ImageItemProps[],
     [IMAGE_STATUS.UNIDENTIFYED]: unIdentifyInfo.images as ImageItemProps[],
   });
 
-  const [loadedCount, setLoadedCount] = useState(0);
+  const [loadedCount, setLoadedCount] = useState({
+    [IMAGE_STATUS.IDENTIFYED]: 0,
+    [IMAGE_STATUS.UNIDENTIFYED]: 0,
+  });
 
   const [category, setCategory] = useState(IMAGE_STATUS.IDENTIFYED);
   const [isLoading, setIsLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [currImgIndex, setCurrImgIndex] = useState(0); // [0, images.length - 1
   const [curPage, setCurPage] = useState({
@@ -54,10 +60,17 @@ export default function EventSearchPage({
     [IMAGE_STATUS.UNIDENTIFYED]: 1,
   });
 
+  const [total, setTotal] = useState({
+    [IMAGE_STATUS.IDENTIFYED]: identifyInfo.totalCount,
+    [IMAGE_STATUS.UNIDENTIFYED]: unIdentifyInfo.totalCount,
+  });
+
   const lastPage = {
-    [IMAGE_STATUS.IDENTIFYED]: Math.ceil(identifyInfo.totalCount / pageSize),
+    [IMAGE_STATUS.IDENTIFYED]: Math.ceil(
+      total[IMAGE_STATUS.IDENTIFYED] / pageSize
+    ),
     [IMAGE_STATUS.UNIDENTIFYED]: Math.ceil(
-      unIdentifyInfo.totalCount / pageSize
+      total[IMAGE_STATUS.UNIDENTIFYED] / pageSize
     ),
   };
 
@@ -66,6 +79,16 @@ export default function EventSearchPage({
       onSearch();
     }
   }, [curPage]);
+
+  useEffect(() => {
+    if (search && isSearched) {
+      setCurPage({
+        [IMAGE_STATUS.IDENTIFYED]: 1,
+        [IMAGE_STATUS.UNIDENTIFYED]: 1,
+      });
+      setCategory(IMAGE_STATUS.IDENTIFYED);
+    }
+  }, [search, isSearched]);
 
   //useMemo to prevent re-render
   const unIdentify = useMemo(() => {
@@ -84,22 +107,44 @@ export default function EventSearchPage({
 
   const handleOnChangeSearch = (e: any) => {
     setSearch(e.target.value.trim());
-    setShowModal(false);
+    if (e.target.value.trim() === "") {
+      resetImages();
+    }
+    setIsSearched(false);
   };
 
   const handleOnChangeCategory = (e: any) => setCategory(e.target.value);
+
+  const resetImages = () => {
+    setCurPage({
+      [IMAGE_STATUS.IDENTIFYED]: 1,
+      [IMAGE_STATUS.UNIDENTIFYED]: 1,
+    });
+    setImages({
+      [IMAGE_STATUS.IDENTIFYED]: images[IMAGE_STATUS.IDENTIFYED],
+      [IMAGE_STATUS.UNIDENTIFYED]: images[IMAGE_STATUS.UNIDENTIFYED],
+    });
+  };
 
   const onSearch = () => {
     setIsLoading(true);
     if (search !== "" && search.match(/^[0-9]+$/) == null)
       return message.error("請輸入正確的號碼布");
 
-    const searchPage = search ? 1 : curPage[category];
     const searchValue =
       category === IMAGE_STATUS.IDENTIFYED ? search : "unIdentify";
 
+    router.push(
+      {
+        pathname: `/events/${eventId}`,
+        query: { bib: search },
+      },
+      undefined,
+      { shallow: true }
+    );
+
     fetch(
-      `${domain}/api/images/getByPathAndEventId/${eventId}?path=${searchValue}&page=${searchPage}`
+      `${domain}/api/images/getByPathAndEventId/${eventId}?path=${searchValue}&page=${curPage[category]}`
     )
       .then((res) => res.json())
       .then((data) => {
@@ -107,15 +152,25 @@ export default function EventSearchPage({
           return {
             ...prev,
             [category]:
-              searchPage === 1
+              curPage[category] === 1
                 ? data.images
                 : [...prev[category], ...data.images],
           };
         });
 
+        setTotal((prev) => {
+          return {
+            ...prev,
+            [category]: data.totalCount,
+          };
+        });
+
         // set more to true if nextPage exists
         setIsLoading(false);
-        setShowModal(true);
+        search && setIsSearched(true);
+
+        curPage[category] === 1 &&
+          scrollIntoViewWithOffset("#result-container", 100);
 
         //埋點
         searchTracking({
@@ -157,7 +212,14 @@ export default function EventSearchPage({
     setCurrImgIndex(currImgIndex + 1);
 
   const handleOnLoad = () => {
-    setLoadedCount((prev) => prev + 1);
+    setLoadedCount((prev) => {
+      if (prev[category] >= images[category].length)
+        return { ...prev, [category]: images[category].length };
+      return {
+        ...prev,
+        [category]: prev[category] + 1,
+      };
+    });
   };
 
   return (
@@ -204,7 +266,7 @@ export default function EventSearchPage({
           <div className="container mx-auto sm:my-10 my-4">
             <div
               className={
-                showModal && search
+                isSearched
                   ? "visible text-center sm:m-10 m-4 text-[color:var(--main-color-dark)]"
                   : "invisible h-0"
               }
@@ -213,7 +275,7 @@ export default function EventSearchPage({
               {
                 <>
                   <p>{`號碼布: ${search}`}</p>
-                  <p>{`找到 ${images[category].length} 張照片，${
+                  <p>{`找到 ${total[category]} 張照片，${
                     images[category].length == 0
                       ? "我們未來會努力增加攝影師的💪"
                       : "太有緣份了！"
@@ -225,21 +287,23 @@ export default function EventSearchPage({
 
             {images[category].length > 0 && (
               <>
-                <div className="my-4 mx-3 text-[color:var(--main-color-dark)] text-sm">
-                  <Radio.Group
-                    defaultValue={IMAGE_STATUS.IDENTIFYED}
-                    buttonStyle="solid"
-                    onChange={handleOnChangeCategory}
-                    value={category}
-                  >
-                    <Radio.Button value={IMAGE_STATUS.IDENTIFYED}>
-                      已完成辨識號碼布
-                    </Radio.Button>
-                    <Radio.Button value={IMAGE_STATUS.UNIDENTIFYED}>
-                      未成功辨識號碼布
-                    </Radio.Button>
-                  </Radio.Group>
-                </div>
+                {!search && !isSearched && (
+                  <div className="my-4 mx-3 text-[color:var(--main-color-dark)] text-sm">
+                    <Radio.Group
+                      defaultValue={IMAGE_STATUS.IDENTIFYED}
+                      buttonStyle="solid"
+                      onChange={handleOnChangeCategory}
+                      value={category}
+                    >
+                      <Radio.Button value={IMAGE_STATUS.IDENTIFYED}>
+                        已完成辨識號碼布
+                      </Radio.Button>
+                      <Radio.Button value={IMAGE_STATUS.UNIDENTIFYED}>
+                        未成功辨識號碼布
+                      </Radio.Button>
+                    </Radio.Group>
+                  </div>
+                )}
                 {/* add transition */}
                 <div className="transition-all duration-500">
                   <ImageList
@@ -260,7 +324,7 @@ export default function EventSearchPage({
                   />
                 </div>
                 {lastPage[category] > curPage[category] &&
-                  loadedCount === images[category].length && (
+                  loadedCount[category] === images[category].length && (
                     <LastElement
                       key={category}
                       isLoading={isLoading}
