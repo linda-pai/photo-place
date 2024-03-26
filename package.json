@@ -26,7 +26,8 @@
     "react-dropzone": "^14.2.3",
     "react-spring-lightbox": "^1.8.0",
     "sharp": "^0.33.1",
-    "styled-components": "^6.1.8"
+    "styled-components": "^6.1.8",
+    "undici": "^6.10.1"
   },
   "devDependencies": {
     "@types/node": "^20",

@@ -76,7 +76,7 @@ const CreateEventBlock = ({
   };
 
   const onDateChange: DatePickerProps["onChange"] = (date, dateString) => {
-    setDate(dateString);
+    setDate(dateString as string);
   };
 
   const onEventNameChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
