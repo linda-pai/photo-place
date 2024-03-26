@@ -23,6 +23,8 @@ import parallelUploadWithLimit from "@/utils/parallelUploadWithLimit";
 import addWatermark from "@/lib/upload/addWatermark";
 import { writeUploadInfo } from "@/lib/upload/writeUploadInfo";
 import imagesRelease from "@/lib/upload/imagesRelease";
+import UploadQueue from "@/lib/upload/uploadQueue";
+import completeUpload from "@/lib/upload/completeUpload";
 
 interface Event {
   id: number;
@@ -105,6 +107,8 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
   };
 
   const handleOnFinishAll = async () => {
+    console.timeEnd("upload");
+
     setLoading(false);
     message.success("全部上傳完成🎉🎉");
     message.destroy(msgKey);
@@ -135,7 +139,7 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
   };
 
   //add watermark and upload after detect text
-  const addWatermarkandUpload = async (key: string, file: File) => {
+  const handleAddWatermarkandUpload = async (key: string, file: File) => {
     const reqBody = {
       key,
       eventId: eventId.value,
@@ -145,14 +149,51 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
       author: session.id,
       price,
     };
-    const response = await addWatermark(reqBody);
+    const addWaterMarkFunction = async () =>
+      await addWatermark(reqBody).then((res) => {
+        if (res.error) {
+          message.error(res.error);
+          return;
+        }
+        setDetectCount((prev) => {
+          if (prev + 1 === fileOptionsList.length) handleOnFinishAll();
+          return prev + 1;
+        });
+      });
 
-    if (response.error) {
-      message.error(response.error);
-      return;
-    } else {
-      setDetectCount((prev) => prev + 1);
-    }
+    const uploadQueue = new UploadQueue(addWaterMarkFunction);
+    uploadQueue.enqueue([file]);
+  };
+
+  const handleCompleteUpload = async (
+    key: string,
+    file: File,
+    uploadPartsArray: any[],
+    uploadId: string
+  ) => {
+    const completeFunction = async () =>
+      await completeUpload(key, uploadPartsArray, uploadId).then((res) => {
+        if (res.error) {
+          message.error(res.error);
+          return;
+        }
+        setFileOptionsList((prev: any) => {
+          const newFileOptionsList = prev.map((item: any) =>
+            item.name && item.name === file.name
+              ? { ...item, uploaded: true }
+              : item
+          );
+          setCookie("uploadInfo", JSON.stringify(newFileOptionsList));
+          return newFileOptionsList;
+        });
+
+        setCompleteCount((prev) => prev + 1);
+
+        handleAddWatermarkandUpload(key, file);
+      });
+
+    const uploadQueue = new UploadQueue(completeFunction);
+    uploadQueue.enqueue([file]);
   };
 
   const chunkFileAndUpload = async (
@@ -217,57 +258,8 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
     });
 
     //complete-upload
-    await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/complete-upload`, {
-      method: "POST",
-      body: JSON.stringify({
-        key,
-        parts: uploadPartsArray,
-        uploadId,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => res.json())
-      .then((result) => {
-        if (result.error) {
-          //retry with settimeout
-          return setTimeout(() => {
-            fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/complete-upload`, {
-              method: "POST",
-              body: JSON.stringify({
-                key,
-                parts: uploadPartsArray,
-                uploadId,
-              }),
-              headers: {
-                "Content-Type": "application/json",
-              },
-            });
-          }, 2000);
-        }
-
-        setFileOptionsList((prev: any) => {
-          const newFileOptionsList = prev.map((item: any) =>
-            item.name && item.name === file.name
-              ? { ...item, uploaded: true }
-              : item
-          );
-          setCookie("uploadInfo", JSON.stringify(newFileOptionsList));
-          return newFileOptionsList;
-        });
-
-        setCompleteCount((prev) => {
-          //update fileOptionsList to add uploaded status
-          if (prev + 1 === fileOptionsList.length) handleOnFinishAll();
-          return prev + 1;
-        });
-        addWatermarkandUpload(key, file);
-        return;
-      })
-      .catch((err) => {
-        console.log("err", err);
-      });
+    handleCompleteUpload(key, file, uploadPartsArray, uploadId);
+    return;
   };
 
   const handleUpload = async () => {
@@ -301,10 +293,10 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
         message.open({ ...loadingMsgConfig, type: "loading" });
         //寫入上傳資訊
         //50張一組，完成後再上傳下一組
+        console.time("upload");
         const groupLimit = 50;
         parallelUploadWithLimit(
           eventId.value,
-          fileOptionsList,
           tobeUploadedList,
           groupLimit,
           chunkFileAndUpload
@@ -380,16 +372,17 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
     {
       title: "上傳中",
       description: "照片上傳中",
-      subTitle: `剩餘時間: ${
-        Math.ceil((fileOptionsList.length - completeCount) * 3) / 60 < 1
-          ? Math.ceil((fileOptionsList.length - completeCount) * 3) + "秒"
-          : Math.ceil((fileOptionsList.length - completeCount) * 3) / 60 + "分"
-      }
-   `,
+      subTitle: `${completeCount}/${fileOptionsList.length}張照片`,
+      // subTitle: `剩餘時間: ${
+      //   Math.ceil((fileOptionsList.length - completeCount) * 3) / 60 < 1
+      //     ? Math.ceil((fileOptionsList.length - completeCount) * 3) + "秒"
+      //     : Math.ceil((fileOptionsList.length - completeCount) * 3) / 60 + "分"
+      // }
     },
     {
       title: "偵測中",
       description: "號碼布偵測中",
+      subTitle: `${detectCount}/${fileOptionsList.length}張照片`,
     },
     {
       title: "完成",
@@ -398,7 +391,6 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
         <SmileOutlined style={currentStep === 2 ? { color: "#ffd700" } : {}} />
       ),
       status: currentStep === 2 ? "finish" : "wait",
-      subTitle: `${completeCount}/${fileOptionsList.length}張照片`,
     },
   ] as any;
 
