@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { message, Button, Spin, Radio } from "antd";
+import { message, Button, Spin, Radio, Select } from "antd";
 import { setCookie, getCookie } from "cookies-next";
 import dynamic from "next/dynamic";
 import Head from "next/head";
@@ -30,6 +30,7 @@ export default function EventSearchPage({
   bib,
   identifyInfo,
   unIdentifyInfo,
+  photographerOptions,
 }: any) {
   const pageSize = 15;
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
@@ -52,6 +53,7 @@ export default function EventSearchPage({
   });
 
   const [category, setCategory] = useState(IMAGE_STATUS.IDENTIFYED);
+  const [author, setAuthor] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [currImgIndex, setCurrImgIndex] = useState(0); // [0, images.length - 1
@@ -144,7 +146,7 @@ export default function EventSearchPage({
     );
 
     fetch(
-      `${domain}/api/images/getByPathAndEventId/${eventId}?path=${searchValue}&page=${curPage[category]}`
+      `${domain}/api/images/getByPathAndEventId/${eventId}?path=${searchValue}&page=${curPage[category]}&author=${author}`
     )
       .then((res) => res.json())
       .then((data) => {
@@ -222,6 +224,16 @@ export default function EventSearchPage({
     });
   };
 
+  const handleOnChangePhotographer = (value: string) => {
+    if (value === "請選擇攝影師") return;
+    setCurPage({
+      [IMAGE_STATUS.IDENTIFYED]: 1,
+      [IMAGE_STATUS.UNIDENTIFYED]: 1,
+    });
+    setCategory(IMAGE_STATUS.IDENTIFYED);
+    setAuthor(value);
+  };
+
   return (
     <>
       <Head>
@@ -288,20 +300,31 @@ export default function EventSearchPage({
             {images[category].length > 0 && (
               <>
                 {!search && !isSearched && (
-                  <div className="my-4 mx-3 text-[color:var(--main-color-dark)] text-sm">
-                    <Radio.Group
-                      defaultValue={IMAGE_STATUS.IDENTIFYED}
-                      buttonStyle="solid"
-                      onChange={handleOnChangeCategory}
-                      value={category}
-                    >
-                      <Radio.Button value={IMAGE_STATUS.IDENTIFYED}>
-                        已完成辨識號碼布
-                      </Radio.Button>
-                      <Radio.Button value={IMAGE_STATUS.UNIDENTIFYED}>
-                        未成功辨識號碼布
-                      </Radio.Button>
-                    </Radio.Group>
+                  <div className="flex justify-between items-center">
+                    <div className="my-4 mx-3 text-[color:var(--main-color-dark)] text-sm">
+                      <Radio.Group
+                        defaultValue={IMAGE_STATUS.IDENTIFYED}
+                        buttonStyle="solid"
+                        onChange={handleOnChangeCategory}
+                        value={category}
+                      >
+                        <Radio.Button value={IMAGE_STATUS.IDENTIFYED}>
+                          已完成辨識號碼布
+                        </Radio.Button>
+                        <Radio.Button value={IMAGE_STATUS.UNIDENTIFYED}>
+                          未成功辨識號碼布
+                        </Radio.Button>
+                      </Radio.Group>
+                    </div>
+                    <Select
+                      defaultValue="請選擇攝影師"
+                      className="w-1/6 mx-3"
+                      options={[
+                        { label: "全部", value: "" },
+                        ...photographerOptions,
+                      ]}
+                      onChange={handleOnChangePhotographer}
+                    />
                   </div>
                 )}
                 {/* add transition */}
@@ -381,12 +404,26 @@ export async function getServerSideProps(context: any) {
     (res) => res.json()
   );
 
+  const photographerOptions = await fetch(
+    `${domain}/api/images/getPhotographers/${eventId}`
+  )
+    .then((res) => res.json())
+    .then((data) => {
+      return data.map((item: any) => {
+        return {
+          label: item.name,
+          value: item.author,
+        };
+      });
+    });
+
   return {
     props: {
       eventInfo,
       bib,
       identifyInfo,
       unIdentifyInfo,
+      photographerOptions,
     },
   };
 }
