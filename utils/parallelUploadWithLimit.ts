@@ -18,11 +18,19 @@ const parallelUploadWithLimit = async (
     const file = fileList[index];
     if (!file) return;
     const retryLimit = 3;
-    const retryDelay = 2000;
+    const retryDelay = 10000;
+
     let attempts = 0;
     let uploadSuccess = false;
+    let isRetrying = false;
 
     while (!uploadSuccess && attempts < retryLimit) {
+      if (isRetrying) {
+        return;
+      }
+
+      isRetrying = true;
+
       try {
         //1. start upload
         const { uploadId, key } = await handleMultipleStartUpload(
@@ -50,6 +58,7 @@ const parallelUploadWithLimit = async (
       } catch (error) {
         console.error(`Upload failed for ${file.name}. Retrying...`);
         attempts++;
+        //TODO: Bug: 這邊會一次呼叫3次
         await new Promise((resolve) => setTimeout(resolve, retryDelay));
       }
     }
@@ -60,6 +69,7 @@ const parallelUploadWithLimit = async (
       );
       // Add file back to the queue for retry
       fileList.push(file);
+      isRetrying = false;
     }
   }
 };

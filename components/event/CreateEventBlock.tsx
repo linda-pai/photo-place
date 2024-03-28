@@ -10,8 +10,10 @@ const Uploader = dynamic(() => import("@/components/upload/Uploader"), {
 
 const CreateEventBlock = ({
   handleOnSuccess,
+  isShowImageUpload,
 }: {
   handleOnSuccess: () => void;
+  isShowImageUpload: boolean;
 }) => {
   const { data: session }: any = useSession();
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
@@ -85,9 +87,6 @@ const CreateEventBlock = ({
 
   return (
     <>
-      <h1 className="text-center text-[color:var(--main-color-dark)]">
-        新增活動
-      </h1>
       <div className="m-4 text-center">
         <DatePicker onChange={onDateChange} />
         <Input
@@ -96,9 +95,11 @@ const CreateEventBlock = ({
           className="w-[40%] m-2"
         />
       </div>
-      <div className="mx-auto">
-        <Uploader onChange={handleUpload} filesList={imageFile} />
-      </div>
+      {isShowImageUpload && (
+        <div className="mx-auto">
+          <Uploader onChange={handleUpload} filesList={imageFile} />
+        </div>
+      )}
       {imageFile.length > 0 && (
         <div className="flex justify-center">
           <Image
@@ -110,13 +111,24 @@ const CreateEventBlock = ({
         </div>
       )}
       <div className="text-center my-5">
-        <Button
-          onClick={handleUploadEvent}
-          disabled={!Boolean(coverImg && eventName && date)}
-          className="bg-white text-[color:var(--main-color-dark)]"
-        >
-          上傳活動
-        </Button>
+        {isShowImageUpload ? (
+          <Button
+            onClick={handleUploadEvent}
+            disabled={!Boolean(coverImg && eventName && date)}
+            className="bg-white text-[color:var(--main-color-dark)]"
+          >
+            上傳活動
+          </Button>
+        ) : (
+          //TODO: 這邊待評估是否要改API，如果重複新增賽事怎麼處理
+          <Button
+            onClick={handleUploadEvent}
+            disabled={!Boolean(eventName && date)}
+            className="bg-white text-[color:var(--main-color-dark)]"
+          >
+            提交
+          </Button>
+        )}
       </div>
     </>
   );

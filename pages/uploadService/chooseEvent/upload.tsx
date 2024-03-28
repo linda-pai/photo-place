@@ -7,18 +7,12 @@ const UploadImages = dynamic(() => import("@/components/upload/UploadImages"), {
   loading: () => <Spin />,
 });
 
-interface Event {
-  id: number;
-  date: string;
-  eventName: string;
-}
-
-const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
+const UploadPage: React.FC<{ eventId: string }> = ({ eventId }) => {
   const isAllowed = userPermission();
 
   return isAllowed ? (
     <>
-      <UploadImages eventOption={eventOption} />
+      <UploadImages eventId={eventId} />
     </>
   ) : (
     <Spin className="mx-auto my-[40vh] w-full" size="large" />
@@ -26,11 +20,9 @@ const UploadPage: React.FC<{ eventOption: Event[] }> = ({ eventOption }) => {
 };
 
 export async function getServerSideProps(context: any) {
-  const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-  const res = await fetch(`${domain}/api/events/getEventOptions`);
-  const eventOption = await res.json();
+  const eventId = context.query.eventId || "";
 
-  return { props: { eventOption } };
+  return { props: { eventId } };
 }
 
 export default UploadPage;

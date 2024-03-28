@@ -1,16 +1,20 @@
 export default class UploadQueue {
   private queue: File[];
   private isProcessing: boolean;
-  private retryFunction: (file: any) => Promise<void>;
+  private retryFunction: (file: any) => Promise<any>;
+  private name: string;
   private retryLimit: number;
   private retryDelay: number;
+  private isRetrying: boolean = false;
 
-  constructor(retryFunction: (file: any) => Promise<void>) {
+  constructor(name: string, retryFunction: (file: any) => Promise<any>) {
     this.queue = [];
     this.isProcessing = false;
     this.retryFunction = retryFunction;
+    this.name = name;
     this.retryLimit = 3;
-    this.retryDelay = 8000;
+    this.retryDelay = 10000;
+    this.isRetrying = false;
   }
 
   enqueue(file: File[]): void {
@@ -27,7 +31,7 @@ export default class UploadQueue {
       try {
         await this.uploadBatch(file as any);
       } catch (error) {
-        console.error("Upload failed, will retry:", file?.name);
+        console.error(`${this.name} failed, will retry:`, file?.name);
         // Add file back to the queue for retry
         this.queue.push(file as File);
       }
@@ -36,6 +40,12 @@ export default class UploadQueue {
   }
 
   private async uploadBatch(batch: File): Promise<void> {
+    if (this.isRetrying) {
+      return;
+    }
+
+    this.isRetrying = true;
+
     let attempts = 0;
     let uploadSuccess = false;
 
@@ -43,18 +53,23 @@ export default class UploadQueue {
       try {
         await this.retryFunction(batch);
         uploadSuccess = true; // Upload successful
+        console.log(`${this.name}  succeeded:`, batch.name);
       } catch (error) {
         console.error(
-          `Upload failed. Retrying in ${this.retryDelay} milliseconds...`
+          `${this.name} ${batch.name} ${attempts} times failed. Retrying in ${this.retryDelay} milliseconds...`
         );
         attempts++;
-        await new Promise((resolve) => setTimeout(resolve, this.retryDelay)); // Delay before retry
+        //TODO: Bug: 這邊會一次呼叫3次
+        await new Promise((resolve) => setTimeout(resolve, this.retryDelay));
       }
     }
-
     if (!uploadSuccess) {
-      console.error(`Upload failed after ${this.retryLimit} attempts.`);
+      console.error(
+        `${this.name} ${batch.name} failed after ${this.retryLimit} attempts.`
+      );
       // Handle failure after retry attempts
+
+      this.isRetrying = false;
     }
   }
 }

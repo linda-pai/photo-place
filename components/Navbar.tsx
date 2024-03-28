@@ -56,7 +56,7 @@ const Nav = ({ navBarRef }: any) => {
           key: "5",
           label: "上傳照片",
           onClick: () => {
-            router.push("/upload");
+            router.push("/uploadService");
           },
         },
       ]
