@@ -31,11 +31,18 @@ const customImgViewerUI = ({ image, isExistInCart, handleClickCart }: any) => {
           </p>
         </button>
       </div>
-      {image.lastModified && (
-        <p className="sm:text-xs text-[12px] text-[#8f8f8f] mx-2">
-          {dayjs(image.lastModified).format("YYYY/MM/DD HH:mm")}
-        </p>
-      )}
+      <div>
+        {image?.authorName && (
+          <p className="text-xs text-[#8f8f8f] m-2">
+            photo by {image?.photographer}
+          </p>
+        )}
+        {image.lastModified && (
+          <p className="sm:text-xs text-[12px] text-[#8f8f8f] m-2">
+            {dayjs(image.lastModified).format("YYYY/MM/DD HH:mm")}
+          </p>
+        )}
+      </div>
     </>
   );
 };
