@@ -5,6 +5,7 @@ const addWatermark = async (reqBody: {
   fileName: string;
   lastModified: number;
   author: string;
+  authorName: string;
   price: number;
 }) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
