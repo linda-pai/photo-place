@@ -37,6 +37,10 @@ const UploadBreadcrumb = dynamic(
   }
 );
 
+const UploadPrompt = dynamic(() => import("@/components/UploadPrompt"), {
+  loading: () => <Spin />,
+});
+
 const UploadImages = ({ eventId }: { eventId: string }) => {
   const { data: session }: any = useSession();
   const router = useRouter();
@@ -335,6 +339,10 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
     });
   };
 
+  const onConfirmLeave = () => {
+    message.destroy();
+  };
+
   const currentStep =
     detectCount > 0
       ? detectCount === fileOptionsList.length
@@ -439,6 +447,7 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
   return (
     <div className="mt-24 container mx-auto px-4">
       <UploadBreadcrumb />
+      <UploadPrompt isUploading={loading} onConfirmLeave={onConfirmLeave} />
       <div className="text-center">
         <div className="my-8">
           <h2 className="max-w-[400px] mx-auto text-lg text-[color:var(--main-color-dark)]">
