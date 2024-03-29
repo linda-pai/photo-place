@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { Descriptions, Modal, Tag, Button, message } from "antd";
 import dayjs from "dayjs";
 import UploadPreview from "@/components/image/UploadPreview";
@@ -20,10 +21,12 @@ const uploadDetail = ({
   const [imageLength, setImageLength] = useState({
     isReleasedLength: 0,
     unReleasedLength: 0,
+    featuredLength: 0,
   });
   const [toggle, setToggle] = useState({
     RELEASED: false,
     UNRELEASED: false,
+    FEATURED: false,
   });
 
   useEffect(() => {
@@ -45,6 +48,7 @@ const uploadDetail = ({
             isReleasedLength:
               imageLength.isReleasedLength + imageLength.unReleasedLength,
             unReleasedLength: 0,
+            featuredLength: 0,
           });
         } else {
           message.error("發佈失敗");
@@ -64,7 +68,6 @@ const uploadDetail = ({
     <div className="container mx-auto text-slate-600 my-24 overflow-hidden">
       <h1 className="text-center text-2xl mb-8">攝影師上傳紀錄詳情</h1>
       <Descriptions
-        title="Upload Info"
         bordered
         column={2}
         size="small"
@@ -115,6 +118,17 @@ const uploadDetail = ({
                 {toggle["UNRELEASED"] ? "收合" : "展開"}
               </p>
             )}
+          </div>
+        </Descriptions.Item>
+        <Descriptions.Item label="已精選照片">
+          <div className="flex items-center">
+            <Tag color="blue">{imageLength.featuredLength}張</Tag>
+            <Link
+              className="text-blue-500 hover:cursor-pointer"
+              href={`/photographer/featured?eventId=${eventId}`}
+            >
+              前往查看
+            </Link>
           </div>
         </Descriptions.Item>
       </Descriptions>

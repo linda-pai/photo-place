@@ -66,20 +66,16 @@ const RecordOfUpload = () => {
     },
 
     action: {
-      render: (_: string, record: RecordOfUploadProps, key: number) => (
-        <div className="flex gap-1">
+      render: (_: string, record: RecordOfUploadProps) => (
+        <div className="flex gap-1" key={record.eventId}>
           <Link
             href={`/photographer/uploadDetail?eventId=${
               record.eventId
             }&record=${JSON.stringify(record)}`}
-            key={key}
           >
             <Button>詳情</Button>
           </Link>
-          <Link
-            href={`/photographer/checkBibs?eventId=${record.eventId}`}
-            key={key}
-          >
+          <Link href={`/photographer/checkBibs?eventId=${record.eventId}`}>
             <Button>號碼布檢查</Button>
           </Link>
         </div>
@@ -112,7 +108,7 @@ const RecordOfUpload = () => {
   return !loading ? (
     <div>
       <Table columns={columns as any} dataSource={uploadDetail} />
-      {/* TODO:待評估是否要先付款（目前有收益才會扣服務費） */}
+      {/* TODO:待評估是否要先付款（有收益才扣服務費則不需要） */}
       {/* <PaymentInfo
         handleCancel={handleCancel}
         isModalOpen={isModalOpen}

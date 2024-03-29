@@ -3,6 +3,7 @@ import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { Button, Pagination, Radio, Spin, message } from "antd";
+import { DeleteOutlined, StarOutlined } from "@ant-design/icons";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import ImageLightBox from "@/components/image/ImageLightBox";
 
@@ -57,7 +58,9 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
     });
   };
 
-  const handleDeleteImg = (id: string) => {
+  const handleDeleteImg = (id: string, e: any) => {
+    e.stopPropagation();
+
     fetch(`${domain}/api/images/delete/${eventId}/${id}/${session.id}`, {
       method: "POST",
     })
@@ -68,6 +71,34 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
           setImages(images.filter((item) => item.id !== id));
         } else {
           message.error("刪除失敗");
+        }
+      });
+  };
+
+  const handleFeatureImg = (id: string, isFeatured: boolean, e: any) => {
+    e.stopPropagation();
+
+    fetch(`${domain}/api/images/setFeatured/${eventId}/${id}/${session.id}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ isFeatured: !isFeatured }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === "success") {
+          message.success(isFeatured ? "取消精選成功" : "設定精選成功");
+          setImages(
+            images.map((item) => {
+              if (item.id === id) {
+                return { ...item, isFeatured: !item.isFeatured };
+              }
+              return item;
+            })
+          );
+        } else {
+          message.error("設定精選失敗");
         }
       });
   };
@@ -98,18 +129,39 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
                 className="sm:basis-[calc(20%_-_16px)] basis-[calc(33%_-_16px)] relative"
               >
                 <div
-                  className="cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group "
+                  className="cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
                   onClick={() => handleClickImg(item.id)}
                 >
                   <Image
-                    className="item__content "
+                    className="item__content w-full h-auto"
                     src={item.watermarkedUrl}
                     alt={item.watermarkedUrl}
-                    width={240}
-                    height={320}
+                    width="0"
+                    height="0"
+                    sizes="100vw"
                     quality={30}
-                    style={{ width: "100%", height: "auto" }}
                   />
+                  <div className="group-hover:flex gap-2 justify-end hidden bg-[#fff] bg-opacity-70 absolute top-0 w-full sm:h-[10%] h-[18%] min-h-[28px] max-h-[34px] group hover:bg-opacity-90 transition-all duration-300">
+                    <Button
+                      onClick={(e) => handleDeleteImg(item.id, e)}
+                      className="flex items-center justify-center mr-2"
+                      danger
+                    >
+                      <DeleteOutlined />
+                    </Button>
+                    <Button
+                      onClick={(e) =>
+                        handleFeatureImg(item.id, item.isFeatured, e)
+                      }
+                      className={`flex items-center justify-center mr-2 ${
+                        item.isFeatured
+                          ? "text-[color:var(--main-color)] border border-[color:var(--main-color)]"
+                          : "text-black bg-[#fff] border border-[#000]"
+                      }`}
+                    >
+                      <StarOutlined />
+                    </Button>
+                  </div>
                 </div>
                 <AddableTags
                   key={images[key].path}
@@ -120,13 +172,6 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
                     updateBibs(newTags, item.id)
                   }
                 />
-                <Button
-                  onClick={() => handleDeleteImg(item.id)}
-                  className="mx-auto block my-10 absolute top-[-32px] right-2"
-                  danger
-                >
-                  刪除
-                </Button>
               </div>
             ))}
             <ImageLightBox

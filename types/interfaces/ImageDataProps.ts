@@ -11,4 +11,5 @@ export interface ImageItemProps {
   id: string;
   watermarkedUrl: string;
   path?: any;
+  isFeatured?: boolean;
 }
