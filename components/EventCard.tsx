@@ -1,5 +1,6 @@
 import Link from "next/link";
 import dayjs from "dayjs";
+import { DEFAULT_COVER_IMG } from "@/constants";
 
 const EventCard = ({ event }: any) => {
   const { eventId, eventName, date, coverImg } = event || {};
@@ -9,10 +10,7 @@ const EventCard = ({ event }: any) => {
       <div className="m-3 bg-[#fff] rounded-md overflow-hidden scale-100 hover:scale-105 transition-scale ease-in-out duration-300 shadow-md">
         <div className="relative w-full aspect-[5/6]">
           <img
-            src={
-              coverImg ||
-              "https://photo-pacer-buckets.s3.ap-northeast-1.amazonaws.com/images-dev/common/8180dbf5c144f6ad3a8eadc4508ecc307fedbd361741c37104da3484fb93773c-photo-pacer-high-resolution-logo%20%282%29%20%282%29.png"
-            }
+            src={coverImg || DEFAULT_COVER_IMG}
             alt={`${eventName}封面照片`}
             className="object-cover w-full h-full opacity-70 hover:opacity-100 duration-300 transition-opacity"
           />
