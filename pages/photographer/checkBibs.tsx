@@ -6,12 +6,15 @@ import { Button, Pagination, Radio, Spin, message } from "antd";
 import { DeleteOutlined, StarOutlined } from "@ant-design/icons";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import ImageLightBox from "@/components/image/ImageLightBox";
+import userPermission from "@/hooks/usePermission";
 
 const AddableTags = dynamic(() => import("@/components/AddableTags"), {
   loading: () => <Spin />,
 });
 
 export default function CheckBibs({ eventId }: { eventId: string }) {
+  const isAllowed = userPermission();
+
   const { data: session }: any = useSession();
 
   const [images, setImages] = useState([] as ImageItemProps[]);
@@ -103,7 +106,7 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
       });
   };
 
-  return (
+  return isAllowed ? (
     <>
       <div className="text-center mt-24 text-[color:var(--main-color-dark)]">
         <p>號碼布檢查</p>
@@ -207,6 +210,8 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
         </div>
       )}
     </>
+  ) : (
+    <Spin className="mx-auto my-[40vh] w-full" size="large" />
   );
 }
 

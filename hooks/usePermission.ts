@@ -4,8 +4,11 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { message } from "antd";
+import useAuth from "@/hooks/useAuth";
 
 function usePermission(): boolean {
+  const isLogin = useAuth();
+
   const [isAllowed, setIsAllowed] = useState(false);
   const router = useRouter();
   const { data: session }: any = useSession();
@@ -28,9 +31,14 @@ function usePermission(): boolean {
       path: "/uploadImagePage",
       allowedRoles: [process.env.NEXT_PUBLIC_ADMIN_ID],
     },
+    {
+      path: "/photographer",
+      allowedRoles: [process.env.NEXT_PUBLIC_ADMIN_ID],
+    },
   ];
 
   useEffect(() => {
+    if (!isLogin) return;
     const userId = session?.id;
     const allowedRoles = permissionByPath.find((item: any) =>
       router.pathname.includes(item.path)

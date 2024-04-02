@@ -2,6 +2,7 @@ import { Button, Checkbox } from "antd";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import { Spin } from "antd";
+import userPermission from "@/hooks/usePermission";
 
 const UploadBreadcrumb = dynamic(
   () => import("@/components/UploadBreadcrumb"),
@@ -11,9 +12,11 @@ const UploadBreadcrumb = dynamic(
 );
 
 const uploadService = () => {
+  const isAllowed = userPermission();
+
   const router = useRouter();
 
-  return (
+  return isAllowed ? (
     <div className="mt-24 text-center container mx-auto px-4">
       <UploadBreadcrumb />
       <div className="text-center mx-auto my-10  max-w-[800px] min-h-[30vh]">
@@ -32,6 +35,8 @@ const uploadService = () => {
         </Button>
       </div>
     </div>
+  ) : (
+    <Spin className="mx-auto my-[40vh] w-full" size="large" />
   );
 };
 

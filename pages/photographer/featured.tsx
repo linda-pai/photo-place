@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { Pagination } from "antd";
+import { Pagination, Spin } from "antd";
 import dayjs from "dayjs";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import ImageLightBox from "@/components/image/ImageLightBox";
+import userPermission from "@/hooks/usePermission";
 
 export default function Featured({ eventId }: { eventId: string }) {
+  const isAllowed = userPermission();
+
   const { data: session }: any = useSession();
 
   const [featuredImages, setFeaturedImages] = useState([] as ImageItemProps[]); // [0, images.length - 1
@@ -47,7 +50,7 @@ export default function Featured({ eventId }: { eventId: string }) {
     );
   };
 
-  return (
+  return isAllowed ? (
     <>
       <div className="container mx-auto text-slate-600 my-24 overflow-hidden">
         <h2 className="text-center text-2xl mb-8">精選照片</h2>
@@ -98,6 +101,8 @@ export default function Featured({ eventId }: { eventId: string }) {
         )}
       </div>
     </>
+  ) : (
+    <Spin className="mx-auto my-[40vh] w-full" size="large" />
   );
 }
 

@@ -3,11 +3,14 @@
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { Pagination } from "antd";
+import { Pagination, Spin } from "antd";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import ImageLightBox from "@/components/image/ImageLightBox";
+import userPermission from "@/hooks/usePermission";
 
 export default function UploadPreview({ eventId }: { eventId: string }) {
+  const isAllowed = userPermission();
+
   const { data: session }: any = useSession();
 
   const [releasedImages, setReleasedImages] = useState([] as ImageItemProps[]);
@@ -55,7 +58,7 @@ export default function UploadPreview({ eventId }: { eventId: string }) {
     );
   };
 
-  return (
+  return isAllowed ? (
     <>
       <div className="text-center mt-24 text-[color:var(--main-color-dark)]">
         <p>releasedImages</p>
@@ -151,6 +154,8 @@ export default function UploadPreview({ eventId }: { eventId: string }) {
         </div>
       )}
     </>
+  ) : (
+    <Spin className="mx-auto my-[40vh] w-full" size="large" />
   );
 }
 

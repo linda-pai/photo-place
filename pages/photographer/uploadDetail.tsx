@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { Descriptions, Modal, Tag, Button, message } from "antd";
+import { Descriptions, Modal, Tag, Button, message, Spin } from "antd";
 import dayjs from "dayjs";
 import UploadPreview from "@/components/image/UploadPreview";
 import imagesRelease from "@/lib/upload/imagesRelease";
+import userPermission from "@/hooks/usePermission";
 
 const uploadDetail = ({
   eventId,
@@ -13,6 +14,8 @@ const uploadDetail = ({
   eventId: string;
   record: any;
 }) => {
+  const isAllowed = userPermission();
+
   const { data: session }: any = useSession();
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
@@ -64,7 +67,7 @@ const uploadDetail = ({
     });
   };
 
-  return (
+  return isAllowed ? (
     <div className="container mx-auto text-slate-600 my-24 overflow-hidden">
       <h1 className="text-center text-2xl mb-8">攝影師上傳紀錄詳情</h1>
       <Descriptions
@@ -135,6 +138,8 @@ const uploadDetail = ({
       <UploadPreview eventId={eventId} toggle={toggle} />
       {contextHolder}
     </div>
+  ) : (
+    <Spin className="mx-auto my-[40vh] w-full" size="large" />
   );
 };
 
