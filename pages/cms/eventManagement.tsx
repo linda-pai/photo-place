@@ -78,11 +78,17 @@ const EventManagement = ({ events }: { events: EventProps[] }) => {
       title: "賽事名稱",
       dataIndex: "eventName",
       key: "eventName",
+      width: 360,
     },
     {
       title: "日期",
       dataIndex: "date",
       key: "date",
+      sorter: (a: EventProps, b: EventProps) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return dateA.getTime() - dateB.getTime();
+      },
     },
     {
       title: "封面圖",
