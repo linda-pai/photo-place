@@ -1,5 +1,5 @@
 export default class UploadQueue {
-  private queue: File[];
+  public queue: File[];
   private isProcessing: boolean;
   private retryFunction: (file: any) => Promise<any>;
   private name: string;
@@ -17,13 +17,6 @@ export default class UploadQueue {
     this.isRetrying = false;
   }
 
-  enqueue(file: File[]): void {
-    this.queue.push(...file);
-    if (!this.isProcessing) {
-      this.processQueue();
-    }
-  }
-
   async processQueue(): Promise<void> {
     this.isProcessing = true;
     while (this.queue.length > 0) {
@@ -37,6 +30,27 @@ export default class UploadQueue {
       }
     }
     this.isProcessing = false;
+  }
+
+  enqueue(file: File[]): void {
+    this.queue.push(...file);
+    if (!this.isProcessing) {
+      this.processQueue();
+    }
+  }
+
+  //parallel upload with limit 要用這個
+  async asyncEnqueue(file: File): Promise<void> {
+    try {
+      await this.retryFunction(file);
+      // console.log(`start succeeded:`, file.name);
+    } catch (err) {
+      // Add file back to the queue for retry
+      this.queue.push(file);
+      if (!this.isProcessing) {
+        this.processQueue();
+      }
+    }
   }
 
   private async uploadBatch(batch: File): Promise<void> {
@@ -53,13 +67,12 @@ export default class UploadQueue {
       try {
         await this.retryFunction(batch);
         uploadSuccess = true; // Upload successful
-        console.log(`${this.name}  succeeded:`, batch.name);
+        // console.log(`${this.name}  succeeded:`, batch.name);
       } catch (error) {
         console.error(
           `${this.name} ${batch.name} ${attempts} times failed. Retrying in ${this.retryDelay} milliseconds...`
         );
         attempts++;
-        //TODO: Bug: 這邊會一次呼叫3次
         await new Promise((resolve) => setTimeout(resolve, this.retryDelay));
       }
     }

@@ -1,3 +1,4 @@
+//非 multipart upload 的 getSignedURL
 const getSignedUploadURL = async (reqBody: {
   eventId: string;
   fileName: string;

@@ -25,6 +25,7 @@ import { writeUploadInfo } from "@/lib/upload/writeUploadInfo";
 import imagesRelease from "@/lib/upload/imagesRelease";
 import UploadQueue from "@/lib/upload/uploadQueue";
 import completeUpload from "@/lib/upload/completeUpload";
+import getStartMultipleUploadURL from "@/lib/upload/getStartMultipleUploadURL";
 
 const Uploader = dynamic(() => import("@/components/upload/Uploader"), {
   loading: () => <Spin />,
@@ -197,7 +198,7 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
     uploadQueue.enqueue([file]);
   };
 
-  const chunkFileAndUpload = async (
+  const handleChunkFileAndUpload = async (
     file: File,
     uploadId: string,
     key: string
@@ -245,8 +246,20 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
     });
 
     //complete-upload
-    handleCompleteUpload(key, file, uploadPartsArray, uploadId);
-    return;
+    return await handleCompleteUpload(key, file, uploadPartsArray, uploadId);
+  };
+
+  const chunkFileAndUpload = async (file: File) => {
+    const fileName = file.name;
+    const path = `/${eventId}/`;
+
+    const uploadFunction = async () => {
+      const { key, uploadId } = await getStartMultipleUploadURL(path, fileName);
+      await handleChunkFileAndUpload(file, uploadId, key);
+    };
+
+    const startAndUploadQueue = new UploadQueue("startUpload", uploadFunction);
+    return await startAndUploadQueue.asyncEnqueue(file);
   };
 
   const handleUpload = async () => {
@@ -283,7 +296,6 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
         console.time("upload");
         const groupLimit = 50;
         parallelUploadWithLimit(
-          eventId,
           tobeUploadedList,
           groupLimit,
           chunkFileAndUpload
