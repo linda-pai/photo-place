@@ -48,19 +48,25 @@ const RecordOfUpload = () => {
         <p key={key}>{text ? dayjs(text).format("YYYY-MM-DD HH:mm") : "-"}</p>
       ),
     },
+    soldCount: {
+      render: (text: number) => <p>共 {text || 0} 張</p>,
+    },
     sellInfo: {
-      render: (_: string, { sellInfo }: any, index: number) => (
-        <div
-          className="max-w-[200px]"
-          onClick={() => {
-            sellInfo && setCurrList(sellInfo);
-          }}
-        >
-          <ImageDetail
-            items={sellInfo}
-            index={index}
-            handleImageClick={() => setShowImageViewer(true)}
-          />
+      render: (_: string, { soldImages }: any, index: number) => (
+        <div className="max-w-[200px]">
+          {soldImages?.map((item: any, index: number) => (
+            <>
+              <ImageDetail
+                index={index}
+                items={item.images}
+                handleImageClick={(key: number) => {
+                  setShowImageViewer(true);
+                  setCurrList(soldImages[index].images);
+                  setCurrImg(key);
+                }}
+              />
+            </>
+          ))}
         </div>
       ),
     },

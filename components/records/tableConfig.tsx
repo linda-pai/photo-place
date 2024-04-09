@@ -25,6 +25,13 @@ const tableConfig = (columnsRenderMap: any) => {
     },
     {
       title: "售出張數",
+      dataIndex: "soldCount",
+      key: "soldCount",
+      width: 120,
+      ...columnsRenderMap.soldCount,
+    },
+    {
+      title: "售出資訊",
       dataIndex: "sellInfo",
       key: "sellInfo",
       width: 200,

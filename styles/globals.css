@@ -79,6 +79,9 @@ td {
 :where(.css-6j9yrn).ant-modal .ant-modal-content {
   padding: 24px 36px;
 }
+:where(.css-djtmh8).ant-segmented .ant-segmented-item-selected {
+  background-color: var(--main-color) !important;
+}
 
 .ant-radio-group-solid
   .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {

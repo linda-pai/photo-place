@@ -22,14 +22,14 @@ const ImageDetail = ({ index, items, handleImageClick }: any) => {
 
       {toggle[index] && (
         <Collapse
-          items={items.map((item: any) => ({
+          items={items.map((item: any, key: number) => ({
             key: item.id,
             label: item.id,
             children: (
               <>
                 <p>TWD {item.price} 元</p>
                 <img
-                  onClick={handleImageClick}
+                  onClick={() => handleImageClick(key)}
                   src={item.watermarkedUrl}
                   alt={item.watermarkedUrl}
                 />
