@@ -28,8 +28,7 @@ export default function EventSearchPage({
   eventInfo,
   navBarRef,
   bib,
-  identifyInfo,
-  unIdentifyInfo,
+  imagesInfo,
   photographerOptions,
 }: any) {
   const pageSize = 15;
@@ -43,13 +42,13 @@ export default function EventSearchPage({
   const [search, setSearch] = useState(bib || "");
   const [isSearched, setIsSearched] = useState(false);
   const [images, setImages] = useState({
-    [IMAGE_STATUS.IDENTIFYED]: identifyInfo.images as ImageItemProps[],
-    [IMAGE_STATUS.UNIDENTIFYED]: unIdentifyInfo.images as ImageItemProps[],
+    [IMAGE_STATUS.IDENTIFYED]: imagesInfo.images as ImageItemProps[],
+    // [IMAGE_STATUS.UNIDENTIFYED]: unIdentifyInfo.images as ImageItemProps[],
   });
 
   const [loadedCount, setLoadedCount] = useState({
     [IMAGE_STATUS.IDENTIFYED]: 0,
-    [IMAGE_STATUS.UNIDENTIFYED]: 0,
+    // [IMAGE_STATUS.UNIDENTIFYED]: 0,
   });
 
   const [category, setCategory] = useState(IMAGE_STATUS.IDENTIFYED);
@@ -59,21 +58,21 @@ export default function EventSearchPage({
   const [currImgIndex, setCurrImgIndex] = useState(0); // [0, images.length - 1
   const [curPage, setCurPage] = useState({
     [IMAGE_STATUS.IDENTIFYED]: 1,
-    [IMAGE_STATUS.UNIDENTIFYED]: 1,
+    // [IMAGE_STATUS.UNIDENTIFYED]: 1,
   });
 
   const [total, setTotal] = useState({
-    [IMAGE_STATUS.IDENTIFYED]: identifyInfo.totalCount,
-    [IMAGE_STATUS.UNIDENTIFYED]: unIdentifyInfo.totalCount,
+    [IMAGE_STATUS.IDENTIFYED]: imagesInfo.totalCount,
+    // [IMAGE_STATUS.UNIDENTIFYED]: unIdentifyInfo.totalCount,
   });
 
   const lastPage = {
     [IMAGE_STATUS.IDENTIFYED]: Math.ceil(
       total[IMAGE_STATUS.IDENTIFYED] / pageSize
     ),
-    [IMAGE_STATUS.UNIDENTIFYED]: Math.ceil(
-      total[IMAGE_STATUS.UNIDENTIFYED] / pageSize
-    ),
+    // [IMAGE_STATUS.UNIDENTIFYED]: Math.ceil(
+    //   total[IMAGE_STATUS.UNIDENTIFYED] / pageSize
+    // ),
   };
 
   useEffect(() => {
@@ -86,19 +85,11 @@ export default function EventSearchPage({
     if (search && isSearched) {
       setCurPage({
         [IMAGE_STATUS.IDENTIFYED]: 1,
-        [IMAGE_STATUS.UNIDENTIFYED]: 1,
+        // [IMAGE_STATUS.UNIDENTIFYED]: 1,
       });
       setCategory(IMAGE_STATUS.IDENTIFYED);
     }
   }, [search, isSearched]);
-
-  //useMemo to prevent re-render
-  const unIdentify = useMemo(() => {
-    return {
-      images: images[IMAGE_STATUS.UNIDENTIFYED],
-      curPage: curPage[IMAGE_STATUS.UNIDENTIFYED],
-    };
-  }, [images]);
 
   const identify = useMemo(() => {
     return {
@@ -120,11 +111,11 @@ export default function EventSearchPage({
   const resetImages = () => {
     setCurPage({
       [IMAGE_STATUS.IDENTIFYED]: 1,
-      [IMAGE_STATUS.UNIDENTIFYED]: 1,
+      // [IMAGE_STATUS.UNIDENTIFYED]: 1,
     });
     setImages({
       [IMAGE_STATUS.IDENTIFYED]: images[IMAGE_STATUS.IDENTIFYED],
-      [IMAGE_STATUS.UNIDENTIFYED]: images[IMAGE_STATUS.UNIDENTIFYED],
+      // [IMAGE_STATUS.UNIDENTIFYED]: images[IMAGE_STATUS.UNIDENTIFYED],
     });
   };
 
@@ -228,7 +219,7 @@ export default function EventSearchPage({
     if (value === "請選擇攝影師") return;
     setCurPage({
       [IMAGE_STATUS.IDENTIFYED]: 1,
-      [IMAGE_STATUS.UNIDENTIFYED]: 1,
+      // [IMAGE_STATUS.UNIDENTIFYED]: 1,
     });
     setCategory(IMAGE_STATUS.IDENTIFYED);
     setAuthor(value);
@@ -300,8 +291,8 @@ export default function EventSearchPage({
             {images[category].length > 0 && (
               <>
                 {!search && !isSearched && (
-                  <div className="flex justify-between items-center">
-                    <div className="my-4 mx-3 text-[color:var(--main-color-dark)] text-sm">
+                  <div className="flex items-center">
+                    <div className="my-4 mx-1 text-[color:var(--main-color-dark)] text-sm">
                       <Radio.Group
                         defaultValue={IMAGE_STATUS.IDENTIFYED}
                         buttonStyle="solid"
@@ -309,16 +300,16 @@ export default function EventSearchPage({
                         value={category}
                       >
                         <Radio.Button value={IMAGE_STATUS.IDENTIFYED}>
-                          已完成辨識號碼布
+                          精選照片
                         </Radio.Button>
-                        <Radio.Button value={IMAGE_STATUS.UNIDENTIFYED}>
+                        {/* <Radio.Button value={IMAGE_STATUS.UNIDENTIFYED}>
                           未成功辨識號碼布
-                        </Radio.Button>
+                        </Radio.Button> */}
                       </Radio.Group>
                     </div>
                     <Select
                       defaultValue="請選擇攝影師"
-                      className="w-1/6 mx-3"
+                      className="w-1/6 mx-1"
                       options={[
                         { label: "全部", value: "" },
                         ...photographerOptions,
@@ -330,11 +321,7 @@ export default function EventSearchPage({
                 {/* add transition */}
                 <div className="transition-all duration-500">
                   <ImageList
-                    images={
-                      category === IMAGE_STATUS.IDENTIFYED
-                        ? identify.images
-                        : unIdentify.images
-                    }
+                    images={identify.images}
                     isOpen={showImageViewer}
                     curIndex={currImgIndex}
                     onClose={() => setShowImageViewer(false)}
@@ -392,11 +379,7 @@ export async function getServerSideProps(context: any) {
   const eventId = context.params.id;
   const bib = context.query.bib || "";
 
-  const unIdentifyInfo = await fetch(
-    `${domain}/api/images/getByPathAndEventId/${eventId}?path=unIdentify`
-  ).then((res) => res.json());
-
-  const identifyInfo = await fetch(
+  const imagesInfo = await fetch(
     `${domain}/api/images/getByPathAndEventId/${eventId}`
   ).then((res) => res.json());
 
@@ -421,8 +404,7 @@ export async function getServerSideProps(context: any) {
     props: {
       eventInfo,
       bib,
-      identifyInfo,
-      unIdentifyInfo,
+      imagesInfo,
       photographerOptions,
     },
   };
