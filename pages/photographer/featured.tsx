@@ -1,11 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { Pagination, Spin } from "antd";
+import { Pagination, Spin, Button } from "antd";
+import { StarOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import ImageLightBox from "@/components/image/ImageLightBox";
 import userPermission from "@/hooks/usePermission";
+import featureImg from "@/lib/featured/featureImg";
+import dynamic from "next/dynamic";
+
+const WatermarkModal = dynamic(
+  () => import("@/components/addWatermark/WatermarkModal"),
+  {
+    loading: () => <Spin />,
+  }
+);
 
 export default function Featured({ eventId }: { eventId: string }) {
   const isAllowed = userPermission();
@@ -50,12 +60,25 @@ export default function Featured({ eventId }: { eventId: string }) {
     );
   };
 
+  const handleFeatureImg = (id: string, isFeatured: boolean, e: any) => {
+    e.stopPropagation();
+
+    featureImg({
+      eventId,
+      id,
+      author: session.id,
+      isFeatured,
+    });
+  };
+
   return isAllowed ? (
     <>
       <div className="container mx-auto text-slate-600 my-24 overflow-hidden">
         <h2 className="text-center text-2xl mb-8">精選照片</h2>
         {featuredImages.length > 0 && (
           <div className="container mx-auto sm:my-10 my-4">
+            <WatermarkModal featuredImages={featuredImages} eventId={eventId} />
+
             <div className="masonry">
               {featuredImages.map((item: any, key: number) => (
                 <div
@@ -65,12 +88,26 @@ export default function Featured({ eventId }: { eventId: string }) {
                 >
                   <Image
                     className="item__content"
-                    src={item.watermarkedUrl}
-                    alt={item.watermarkedUrl}
+                    src={item.url}
+                    alt={item.url}
                     width={300}
                     height={400}
                     quality={30}
                   />
+                  <div className="group-hover:flex gap-2 justify-end hidden bg-[#fff] bg-opacity-70 absolute top-0 w-full sm:h-[10%] h-[18%] min-h-[28px] max-h-[34px] group hover:bg-opacity-90 transition-all duration-300">
+                    <Button
+                      onClick={(e) =>
+                        handleFeatureImg(item.id, item.isFeatured, e)
+                      }
+                      className={`flex items-center justify-center mr-2 ${
+                        item.isFeatured
+                          ? "text-[color:var(--main-color)] border border-[color:var(--main-color)]"
+                          : "text-black bg-[#fff] border border-[#000]"
+                      }`}
+                    >
+                      <StarOutlined />
+                    </Button>
+                  </div>
                   <div className="absolute bottom-0 text-start text-sm text-[color:var(--main-color-dark)] p-1 bg-[#fff] bg-opacity-70">
                     <p>{item.fileName}</p>
                     <p>{dayjs(item.lastModified).format("YYYY/MM/DD HH:mm")}</p>

@@ -10,6 +10,7 @@ export interface ImageItemProps {
   eventName: string;
   id: string;
   watermarkedUrl: string;
+  url: string;
   path?: any;
   isFeatured?: boolean;
 }

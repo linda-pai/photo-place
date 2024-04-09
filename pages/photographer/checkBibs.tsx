@@ -7,6 +7,7 @@ import { DeleteOutlined, StarOutlined } from "@ant-design/icons";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import ImageLightBox from "@/components/image/ImageLightBox";
 import userPermission from "@/hooks/usePermission";
+import featureImg from "@/lib/featured/featureImg";
 
 const AddableTags = dynamic(() => import("@/components/AddableTags"), {
   loading: () => <Spin />,
@@ -81,29 +82,23 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
   const handleFeatureImg = (id: string, isFeatured: boolean, e: any) => {
     e.stopPropagation();
 
-    fetch(`${domain}/api/images/setFeatured/${eventId}/${id}/${session.id}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ isFeatured: !isFeatured }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.status === "success") {
-          message.success(isFeatured ? "取消精選成功" : "設定精選成功");
-          setImages(
-            images.map((item) => {
-              if (item.id === id) {
-                return { ...item, isFeatured: !item.isFeatured };
-              }
-              return item;
-            })
-          );
-        } else {
-          message.error("設定精選失敗");
-        }
-      });
+    featureImg({
+      eventId,
+      id,
+      author: session.id,
+      isFeatured,
+    }).then((data) => {
+      if (data.status === "success") {
+        setImages(
+          images.map((item) => {
+            if (item.id === id) {
+              return { ...item, isFeatured: !item.isFeatured };
+            }
+            return item;
+          })
+        );
+      }
+    });
   };
 
   return isAllowed ? (
