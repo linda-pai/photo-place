@@ -4,6 +4,7 @@ import usePermission from "@/hooks/usePermission";
 import { EventProps } from "@/types/interfaces/EventProps";
 import { Table, Switch, Button, Modal, message } from "antd";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
+import { DEFAULT_COVER_IMG } from "@/constants";
 
 const EventManagement = ({ events }: { events: EventProps[] }) => {
   const isAllowed = usePermission();
@@ -95,7 +96,12 @@ const EventManagement = ({ events }: { events: EventProps[] }) => {
       dataIndex: "coverImg",
       key: "coverImg",
       render: (coverImg: string) => (
-        <Image src={coverImg} width={80} height={80} alt="coverImg" />
+        <Image
+          src={coverImg || DEFAULT_COVER_IMG}
+          width={80}
+          height={80}
+          alt="coverImg"
+        />
       ),
     },
     {
