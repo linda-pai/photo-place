@@ -25,7 +25,8 @@ import { writeUploadInfo } from "@/lib/upload/writeUploadInfo";
 import imagesRelease from "@/lib/upload/imagesRelease";
 import UploadQueue from "@/lib/upload/uploadQueue";
 import completeUpload from "@/lib/upload/completeUpload";
-import getStartMultipleUploadURL from "@/lib/upload/getStartMultipleUploadURL";
+import getStartMultipartUploadURL from "@/lib/upload/getStartMultipartUploadURL";
+import chunkFileAndPutS3 from "@/lib/upload/chunkFileAndPutS3";
 
 const Uploader = dynamic(() => import("@/components/upload/Uploader"), {
   loading: () => <Spin />,
@@ -204,48 +205,8 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
     key: string
   ) => {
     //2. chunk image withe each 5MB and upload
-    const chunkSize = 5 * 1024 * 1024;
-    const NUM_CHUNKS = Math.floor(file.size / chunkSize) + 1;
-
-    let promisesArray = [] as any;
-    let uploadPartsArray = [] as any;
-
-    //upload each chunk
-    for (let i = 1; i < NUM_CHUNKS + 1; i++) {
-      const start = (i - 1) * chunkSize;
-      const end = i * chunkSize;
-      const chunk = i < NUM_CHUNKS ? file.slice(start, end) : file.slice(start);
-
-      //get presigned url
-      await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/get-upload-url?uploadId=${uploadId}&fileName=${file.name}&partNumber=${i}&key=${key}`
-      )
-        .then((res) => res.json())
-        .then((result) => {
-          //put chunk to presigned url
-          const { preSignedURL } = result;
-          let uploadResp = fetch(preSignedURL, {
-            method: "PUT",
-            body: chunk,
-            headers: {
-              "Content-Type": "image/*",
-            },
-          }).then((data) => data);
-
-          promisesArray.push(uploadResp);
-        });
-    }
-
-    await Promise.all(promisesArray).then((resolvedArray: any[]) => {
-      resolvedArray.forEach((resolvedPromise, index) => {
-        uploadPartsArray.push({
-          ETag: resolvedPromise.headers.get("ETag"),
-          PartNumber: index + 1,
-        });
-      });
-    });
-
-    //complete-upload
+    const uploadPartsArray = await chunkFileAndPutS3(file, uploadId, key);
+    //complete-upload - s3 multipart upload requires complete upload
     return await handleCompleteUpload(key, file, uploadPartsArray, uploadId);
   };
 
@@ -254,7 +215,10 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
     const path = `/${eventId}/`;
 
     const uploadFunction = async () => {
-      const { key, uploadId } = await getStartMultipleUploadURL(path, fileName);
+      const { key, uploadId } = await getStartMultipartUploadURL(
+        path,
+        fileName
+      );
       await handleChunkFileAndUpload(file, uploadId, key);
     };
 
@@ -494,8 +458,7 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
           loading={loading}
         />
         <Button
-          //TODO: disabled={fileOptionsList.length === 0 || loading}
-          disabled={fileOptionsList.length === 0}
+          disabled={fileOptionsList.length === 0 || loading}
           onClick={handleUpload}
         >
           確定上傳
