@@ -46,7 +46,7 @@ export default function Home({ events }: { events: Event[] }) {
 export async function getServerSideProps(context: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   // Fetch data from external API
-  const res = await fetch(`${domain}/api/events`);
+  const res = await fetch(`${domain}/api/events?sort=desc`);
   const events = await res.json();
 
   const { token } = context.req.cookies;

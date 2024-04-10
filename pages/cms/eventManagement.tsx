@@ -187,7 +187,9 @@ export default EventManagement;
 export async function getServerSideProps() {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   // Fetch data from external API
-  const events = await fetch(`${domain}/api/events`).then((res) => res.json());
+  const events = await fetch(`${domain}/api/events?sort=asc`).then((res) =>
+    res.json()
+  );
 
   // Pass data to the page via props
   return { props: { events } };
