@@ -243,7 +243,6 @@ const Orders = () => {
         handleCancel={handleCancel}
         isModalOpen={isModalOpen}
         confirmBtnText="確認"
-        paymentMethod={currentOrder.paymentMethod}
         currentOrder={currentOrder}
         modelDescription="付款完成後即可下載照片，是否要前往付款?"
       />
