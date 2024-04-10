@@ -2,9 +2,14 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import usePermission from "@/hooks/usePermission";
 import { EventProps } from "@/types/interfaces/EventProps";
-import { Table, Switch, Button, Modal, message } from "antd";
+import { Table, Switch, Button, Modal, message, Spin } from "antd";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { DEFAULT_COVER_IMG } from "@/constants";
+import dynamic from "next/dynamic";
+
+const Editable = dynamic(() => import("@/components/cms/Editable"), {
+  loading: () => <Spin />,
+});
 
 const EventManagement = ({
   events,
@@ -18,28 +23,31 @@ const EventManagement = ({
     [key: string]: boolean;
   }>({});
   const [isReviewd, setIsReviewd] = useState<{ [key: string]: boolean }>({});
+
+  const [eventData, setEventData] = useState<EventProps[]>(events);
+
   const [modal, contextHolder] = Modal.useModal();
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
   useEffect(() => {
     setIsShow(
-      events.reduce((acc, curr) => {
+      eventData.reduce((acc, curr) => {
         return { ...acc, [curr.eventId]: curr.isShow };
       }, {})
     );
     setIsCompleteUpload(
-      events.reduce((acc, curr) => {
+      eventData.reduce((acc, curr) => {
         return { ...acc, [curr.eventId]: curr.isCompleteUpload };
       }, {})
     );
 
     setIsReviewd(
-      events.reduce((acc, curr) => {
+      eventData.reduce((acc, curr) => {
         return { ...acc, [curr.eventId]: curr.isReviewd };
       }, {})
     );
-  }, [events]);
+  }, [eventData]);
 
   const updateEvent = (id: string, reqBody: any) => {
     fetch(`${domain}/api/events/update/${id}`, {
@@ -48,7 +56,11 @@ const EventManagement = ({
         "Content-Type": "application/json",
       },
       body: JSON.stringify(reqBody),
-    });
+    })
+      .then((res) => res.json())
+      .then(() => {
+        message.success("更新成功");
+      });
   };
 
   const handleOnChange = (checked: boolean, eventId: string, key: string) => {
@@ -89,6 +101,17 @@ const EventManagement = ({
     });
   };
 
+  const handleRemarkChange = (e: any, record: EventProps) => {
+    const newEvents = eventData.map((event) => {
+      if (event.eventId === record.eventId) {
+        return { ...event, description: e.target.value };
+      }
+      return event;
+    });
+
+    setEventData(newEvents);
+  };
+
   const columns = [
     {
       title: "賽事名稱",
@@ -120,7 +143,7 @@ const EventManagement = ({
       ),
     },
     {
-      title: `審核 (${events.filter((event) => !event.isReviewd).length} )`,
+      title: `審核 (${eventData.filter((event) => !event.isReviewd).length} )`,
       dataIndex: "eventId",
       key: "isReviewd",
       render: (eventId: string) => (
@@ -158,6 +181,22 @@ const EventManagement = ({
       ),
     },
     {
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
+      render: (text: string, record: EventProps) => (
+        <Editable
+          item={record}
+          targetId={record.eventId}
+          text={text}
+          updateFunction={() =>
+            updateEvent(record.eventId, { description: text })
+          }
+          handleRemarkChange={handleRemarkChange}
+        />
+      ),
+    },
+    {
       title: "Action",
       dataIndex: "eventId",
       key: "action",
@@ -172,7 +211,7 @@ const EventManagement = ({
   return isAllowed ? (
     <div className="container mx-auto my-24 text-slate-600">
       <h1 className="text-center text-2xl mb-10">賽事管理中心</h1>
-      <Table dataSource={events} columns={columns} />
+      <Table dataSource={eventData} columns={columns} />
       {contextHolder}
     </div>
   ) : (
