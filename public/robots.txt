@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://photopacer.com,https://www.photopacer.com
+Host: https://www.photopacer.com
 
 # Sitemaps
-Sitemap: https://photopacer.com,https://www.photopacer.com/sitemap.xml
+Sitemap: https://www.photopacer.com/sitemap.xml
