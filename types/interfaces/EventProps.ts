@@ -5,6 +5,7 @@ export interface EventProps {
   userId: string;
   isShow: boolean;
   isCompleteUpload: boolean;
+  isReviewd: boolean;
   eventId: string;
   date: string;
 }

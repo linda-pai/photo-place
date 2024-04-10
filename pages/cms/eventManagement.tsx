@@ -6,12 +6,18 @@ import { Table, Switch, Button, Modal, message } from "antd";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { DEFAULT_COVER_IMG } from "@/constants";
 
-const EventManagement = ({ events }: { events: EventProps[] }) => {
+const EventManagement = ({
+  events,
+}: {
+  events: EventProps[];
+  reviewingEvents: EventProps[];
+}) => {
   const isAllowed = usePermission();
   const [isShow, setIsShow] = useState<{ [key: string]: boolean }>({});
   const [isCompleteUpload, setIsCompleteUpload] = useState<{
     [key: string]: boolean;
   }>({});
+  const [isReviewd, setIsReviewd] = useState<{ [key: string]: boolean }>({});
   const [modal, contextHolder] = Modal.useModal();
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
@@ -25,6 +31,12 @@ const EventManagement = ({ events }: { events: EventProps[] }) => {
     setIsCompleteUpload(
       events.reduce((acc, curr) => {
         return { ...acc, [curr.eventId]: curr.isCompleteUpload };
+      }, {})
+    );
+
+    setIsReviewd(
+      events.reduce((acc, curr) => {
+        return { ...acc, [curr.eventId]: curr.isReviewd };
       }, {})
     );
   }, [events]);
@@ -47,6 +59,9 @@ const EventManagement = ({ events }: { events: EventProps[] }) => {
         break;
       case "isCompleteUpload":
         setIsCompleteUpload({ ...isCompleteUpload, [eventId]: checked });
+        break;
+      case "isReviewd":
+        setIsReviewd({ ...isReviewd, [eventId]: checked });
         break;
     }
     updateEvent(eventId, reqBody);
@@ -105,6 +120,22 @@ const EventManagement = ({ events }: { events: EventProps[] }) => {
       ),
     },
     {
+      title: `是否審核通過 ( ${
+        events.filter((event) => !event.isReviewd).length
+      } )`,
+      dataIndex: "eventId",
+      key: "isReviewd",
+      render: (eventId: string) => (
+        <Switch
+          checked={isReviewd[eventId]}
+          onChange={(checked) => handleOnChange(checked, eventId, "isReviewd")}
+        />
+      ),
+      sorter: (a: EventProps, b: EventProps) => {
+        return a.isReviewd === b.isReviewd ? 0 : a.isReviewd ? -1 : 1;
+      },
+    },
+    {
       title: "是否顯示在首頁",
       dataIndex: "eventId",
       key: "isShow",
@@ -158,8 +189,7 @@ export default EventManagement;
 export async function getServerSideProps() {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   // Fetch data from external API
-  const res = await fetch(`${domain}/api/events`);
-  const events = await res.json();
+  const events = await fetch(`${domain}/api/events`).then((res) => res.json());
 
   // Pass data to the page via props
   return { props: { events } };

@@ -3,6 +3,7 @@ import { useSession } from "next-auth/react";
 import { Input, Button, DatePicker, Image, Spin, message } from "antd";
 import type { DatePickerProps } from "antd";
 import dynamic from "next/dynamic";
+import dayjs from "dayjs";
 
 const Uploader = dynamic(() => import("@/components/upload/Uploader"), {
   loading: () => <Spin />,
@@ -58,6 +59,7 @@ const CreateEventBlock = ({
       eventName,
       coverImg,
       userId,
+      isReviewed: userId === process.env.NEXT_PUBLIC_ADMIN_ID ? true : false,
     };
 
     await fetch(`${domain}/api/events/add`, {
@@ -70,6 +72,9 @@ const CreateEventBlock = ({
       .then((res) => res.json())
       .then(() => {
         message.success("活動新增成功");
+        // 清空表單
+        setDate("");
+        setEventName("");
         handleOnSuccess();
       })
       .catch((err) => {
@@ -88,11 +93,15 @@ const CreateEventBlock = ({
   return (
     <>
       <div className="m-4 text-center">
-        <DatePicker onChange={onDateChange} />
+        <DatePicker
+          onChange={onDateChange}
+          value={date !== "" ? dayjs(date) : null}
+        />
         <Input
           placeholder="活動名稱"
           onChange={onEventNameChange}
           className="w-[40%] m-2"
+          value={eventName}
         />
       </div>
       {isShowImageUpload && (
@@ -120,7 +129,6 @@ const CreateEventBlock = ({
             上傳活動
           </Button>
         ) : (
-          //TODO: 這邊待評估是否要改API，如果重複新增賽事怎麼處理
           <Button
             onClick={handleUploadEvent}
             disabled={!Boolean(eventName && date)}

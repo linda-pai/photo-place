@@ -1,12 +1,20 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { TreeSelect, Button, Spin } from "antd";
+import { TreeSelect, Button, Spin, Divider, message } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
 import dynamic from "next/dynamic";
-import dayjs from "dayjs";
 import userPermission from "@/hooks/usePermission";
+import formatOptions from "@/lib/event/formatOptions";
 
 const UploadBreadcrumb = dynamic(
   () => import("@/components/UploadBreadcrumb"),
+  {
+    loading: () => <Spin />,
+  }
+);
+
+const CreateEventBlock = dynamic(
+  () => import("@/components/event/CreateEventBlock"),
   {
     loading: () => <Spin />,
   }
@@ -21,12 +29,32 @@ const chooseEvent = ({ eventOption }: { eventOption: Event[] }) => {
 
   const handleSelected = (value: string) => setEventId(value);
 
+  const fetchEventOptions = async () => {
+    const domain = process.env.NEXT_PUBLIC_SERVER_URL;
+    const eventOption = await fetch(`${domain}/api/events/getEventOptions`)
+      .then((res) => res.json())
+      .then((data) => {
+        message.success("賽事列表已更新");
+        return data;
+      });
+
+    const formatted = formatOptions(eventOption);
+
+    setEventOptions(formatted);
+  };
+
   return isAllowed ? (
     <div className="mt-24 container mx-auto px-4">
       <UploadBreadcrumb />
       <div className="text-center mx-auto mt-32 max-w-[800px] min-h-[50vh] text-[var(--main-color-dark)] text-lg">
         <h1>請選擇您拍攝的賽事相簿</h1>
-        <div className="my-4">
+        <div className="my-4 flex">
+          <Button
+            onClick={fetchEventOptions}
+            className="flex items-center mx-1"
+          >
+            <ReloadOutlined />
+          </Button>
           <TreeSelect
             showSearch
             style={{ width: "100%" }}
@@ -52,6 +80,19 @@ const chooseEvent = ({ eventOption }: { eventOption: Event[] }) => {
         >
           下一步
         </Button>
+        <Divider />
+        <div className="my-16">
+          <div>
+            <p>找不到您所拍攝的賽事？創建一個賽事：</p>
+            <p className="text-sm text-[var(--main-color-light)]">
+              註：需等待管理員審核後才會顯示在列表中
+            </p>
+            <CreateEventBlock
+              handleOnSuccess={() => {}}
+              isShowImageUpload={false}
+            />
+          </div>
+        </div>
       </div>
     </div>
   ) : (
@@ -64,59 +105,8 @@ export async function getServerSideProps(context: any) {
   const res = await fetch(`${domain}/api/events/getEventOptions`);
   const eventOption = await res.json();
 
-  const removeDuplicate = (arr: any) => {
-    return arr.filter(
-      (v: any, i: any, a: any) =>
-        a.findIndex((t: any) => t.value === v.value) === i
-    );
-  };
-  const years = eventOption.map(
-    (event: { date: string; eventName: string; eventId: string }) => {
-      return {
-        value: dayjs(event.date).format("YYYYMM"),
-        title: dayjs(event.date).format("YYYY年MM月"),
-        children: [],
-      };
-    }
-  );
-
-  const yearsData = removeDuplicate(years);
-
-  const months = eventOption.map(
-    (event: { date: string; eventName: string; eventId: string }) => {
-      return {
-        value: dayjs(event.date).format("M"),
-        title: dayjs(event.date).format("M月"),
-        children: [],
-      };
-    }
-  );
-  const monthsData = removeDuplicate(months);
-
-  eventOption.forEach(
-    (event: { date: string; eventName: string; eventId: string }) => {
-      const yearIndex = yearsData.findIndex(
-        (year: { value: string }) =>
-          year.value === dayjs(event.date).format("YYYYMM")
-      );
-      const monthIndex = monthsData.findIndex(
-        (month: { value: string }) =>
-          month.value === dayjs(event.date).format("M")
-      );
-      yearsData[yearIndex].children.push({
-        value: event.eventId,
-        title: event.eventName,
-        date: event.date,
-      });
-      monthsData[monthIndex].children.push({
-        value: event.eventId,
-        title: event.eventName,
-        date: event.date,
-      });
-    }
-  );
-
-  return { props: { eventOption: yearsData } };
+  const formatted = formatOptions(eventOption);
+  return { props: { eventOption: formatted } };
 }
 
 export default chooseEvent;
