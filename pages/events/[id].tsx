@@ -8,7 +8,7 @@ import { useRouter } from "next/router";
 import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
 import { searchTracking } from "@/lib/gtag";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
-import { IMAGE_STATUS } from "@/constants";
+import { IMAGE_STATUS, SITE_NAME } from "@/constants";
 import LastElement from "@/components/LastElement";
 
 const SearchWrapper = dynamic(() => import("@/components/SearchWrapper"), {
@@ -34,7 +34,7 @@ export default function EventSearchPage({
   const pageSize = 15;
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
-  const { eventId, eventName, coverImg } = eventInfo;
+  const { eventId, eventName, coverImg, description } = eventInfo;
 
   const { data: session }: any = useSession();
   const router = useRouter();
@@ -233,10 +233,17 @@ export default function EventSearchPage({
           property="og:title"
           content={`${eventName} | 號碼布搜尋照片 | Photo Pacer 攝影小隊`}
         />
-        <meta name="description" content={`號碼布辨識系統，快入找到賽事相片`} />
+        <meta
+          name="description"
+          content={`${
+            description || SITE_NAME
+          } - 號碼布辨識系統，快入找到賽事相片`}
+        />
         <meta
           property="og:description"
-          content={`號碼布辨識系統，快入找到賽事相片`}
+          content={`${
+            description || SITE_NAME
+          } - 號碼布辨識系統，快入找到賽事相片`}
         />
         <meta property="og:image" content={coverImg} />
         <meta

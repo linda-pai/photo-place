@@ -19,10 +19,19 @@ interface Event {
 }
 
 export default function Home({ events }: { events: Event[] }) {
+  const metadata = {
+    title: "Photo Pacer 攝影小隊 - 馬拉松照片",
+    description:
+      "在您參與的馬拉松、自行車賽，或是其他各種運動活動中，Photo Pacer 攝影小隊將會在現場捕捉到最令人難忘的瞬間。我們的目標是透過專業攝影的照片，讓您的運動經歷得以永久保存，同時也讓其他熱愛運動的人們分享您的榮耀時刻。",
+  };
+
   return (
     <>
       <Head>
         <title>Photo Pacer 攝影小隊 - 首頁</title>
+        <meta property="og:title" content={metadata.title} />
+        <meta property="og:description" content={metadata.description} />
+        <meta name="description" content={metadata.description} />
         <meta property="og:title" content={`Photo Pacer 攝影小隊 - 首頁`} />
         <link rel="canonical" href={`${process.env.NEXT_PUBLIC_APP_URL}`} />
       </Head>

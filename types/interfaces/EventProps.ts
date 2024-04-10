@@ -8,6 +8,7 @@ export interface EventProps {
   isReviewd: boolean;
   eventId: string;
   date: string;
+  description?: string;
 }
 
 export interface EventOption {
