@@ -120,9 +120,7 @@ const EventManagement = ({
       ),
     },
     {
-      title: `是否審核通過 ( ${
-        events.filter((event) => !event.isReviewd).length
-      } )`,
+      title: `審核 (${events.filter((event) => !event.isReviewd).length} )`,
       dataIndex: "eventId",
       key: "isReviewd",
       render: (eventId: string) => (
@@ -136,7 +134,7 @@ const EventManagement = ({
       },
     },
     {
-      title: "是否顯示在首頁",
+      title: "顯示在首頁",
       dataIndex: "eventId",
       key: "isShow",
       render: (eventId: string) => (
@@ -147,7 +145,7 @@ const EventManagement = ({
       ),
     },
     {
-      title: "是否完成上傳",
+      title: "完成上傳",
       dataIndex: "eventId",
       key: "isCompleteUpload",
       render: (eventId: string) => (
