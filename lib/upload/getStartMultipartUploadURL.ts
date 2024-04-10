@@ -1,4 +1,4 @@
-const getStartMultipleUploadURL = async (path: string, fileName: string) => {
+const getStartMultipartUploadURL = async (path: string, fileName: string) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
   return await fetch(`${domain}/start-upload`, {
@@ -13,4 +13,4 @@ const getStartMultipleUploadURL = async (path: string, fileName: string) => {
   }).then((res) => res.json());
 };
 
-export default getStartMultipleUploadURL;
+export default getStartMultipartUploadURL;

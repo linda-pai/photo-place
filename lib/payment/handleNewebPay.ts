@@ -1,3 +1,4 @@
+import { CartDataProps } from "@/types/interfaces/CartDataProps";
 //藍新金流
 const handleNewebPay = async ({
   orderId,
@@ -8,7 +9,7 @@ const handleNewebPay = async ({
 }: {
   orderId: string;
   totalAmount: number;
-  items: any[];
+  items: CartDataProps[];
   email: string;
   orderBy: string;
 }) => {
@@ -53,11 +54,8 @@ const handleNewebPay = async ({
     } catch (err) {
       console.error(err);
     }
-  } else if (newebpayData.status === "paid") {
-    //已經付款過
-    return {
-      status: "paid",
-    };
+  } else {
+    return newebpayData;
   }
 };
 

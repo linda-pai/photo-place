@@ -30,7 +30,6 @@ export default function UploadPreview({
 
   useEffect(() => {
     if (!session) return;
-
     fetch(
       `${domain}/api/images/getByAuthor/${eventId}/${session.id}/lastModified?isReleased=true&page=${curPage}`
     )

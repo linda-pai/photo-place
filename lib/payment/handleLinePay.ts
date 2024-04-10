@@ -1,3 +1,5 @@
+import { CartDataProps } from "@/types/interfaces/CartDataProps";
+
 //LinePay
 const handleLinePay = async ({
   orderId,
@@ -8,7 +10,7 @@ const handleLinePay = async ({
 }: {
   orderId: string;
   totalAmount: number;
-  items: any[];
+  items: CartDataProps[];
   isMobile: boolean;
   orderBy: string;
 }) => {

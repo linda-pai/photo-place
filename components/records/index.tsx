@@ -52,25 +52,22 @@ const RecordOfUpload = () => {
       render: (text: number) => <p>共 {text || 0} 張</p>,
     },
     sellInfo: {
-      render: (_: string, { soldImages }: any, index: number) => (
+      render: (_: string, { soldImages }: any) => (
         <div className="max-w-[200px]">
           {soldImages?.map((item: any, index: number) => (
-            <>
-              <ImageDetail
-                index={index}
-                items={item.images}
-                handleImageClick={(key: number) => {
-                  setShowImageViewer(true);
-                  setCurrList(soldImages[index].images);
-                  setCurrImg(key);
-                }}
-              />
-            </>
+            <ImageDetail
+              index={index}
+              items={item.images}
+              handleImageClick={(key: number) => {
+                setShowImageViewer(true);
+                setCurrList(soldImages[index].images);
+                setCurrImg(key);
+              }}
+            />
           ))}
         </div>
       ),
     },
-
     action: {
       render: (_: string, record: RecordOfUploadProps) => (
         <div className="flex gap-1" key={record.eventId}>
