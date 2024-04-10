@@ -9,6 +9,7 @@ import {
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { useSession, signOut } from "next-auth/react";
+import { ROLE_PHOTOGRAPHER } from "@/lib/roles";
 
 const Nav = ({ navBarRef }: any) => {
   const router = useRouter();
@@ -44,7 +45,7 @@ const Nav = ({ navBarRef }: any) => {
   };
 
   const photographerItems: any = session
-    ? session.id === process.env.NEXT_PUBLIC_ADMIN_ID && [
+    ? ROLE_PHOTOGRAPHER.includes(session.id) && [
         {
           key: "4",
           label: "攝影師上傳紀錄",
