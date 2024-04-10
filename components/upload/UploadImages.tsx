@@ -22,7 +22,6 @@ import {
 import parallelUploadWithLimit from "@/utils/parallelUploadWithLimit";
 import addWatermark from "@/lib/upload/addWatermark";
 import { writeUploadInfo } from "@/lib/upload/writeUploadInfo";
-import imagesRelease from "@/lib/upload/imagesRelease";
 import UploadQueue from "@/lib/upload/uploadQueue";
 import completeUpload from "@/lib/upload/completeUpload";
 import getStartMultipartUploadURL from "@/lib/upload/getStartMultipartUploadURL";
@@ -80,6 +79,7 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
     setCompleteCount(
       uploadData.filter((file: any) => file.uploaded).length || 0
     );
+    setDetectCount(uploadData.filter((file: any) => file.detected).length || 0);
   }, []);
 
   const handleEventIdError = () => {
@@ -134,9 +134,14 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
     modal.confirm({
       title: `已上傳完成${fileOptionsList.length}張照片`,
       icon: <ExclamationCircleOutlined />,
-      content: `是否要發佈${fileOptionsList.length}張照片？`,
-      okText: "確認",
-      onOk: handleRelease,
+      okText: "去檢查號碼布",
+      cancelText: "前往上傳紀錄頁",
+      onOk: () => {
+        router.push(`/photographer/checkBibs?eventId=${eventId}`);
+      },
+      onCancel: () => {
+        router.push("/photographer/records");
+      },
     });
   };
 
@@ -158,6 +163,17 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
           message.error(res.error);
           return;
         }
+
+        setFileOptionsList((prev: any) => {
+          const newFileOptionsList = prev.map((item: any) =>
+            item.path && item.path === file.name
+              ? { ...item, detected: true }
+              : item
+          );
+          setCookie("uploadInfo", JSON.stringify(newFileOptionsList));
+          return newFileOptionsList;
+        });
+
         setDetectCount((prev) => {
           if (prev + 1 === fileOptionsList.length) handleOnFinishAll();
           return prev + 1;
@@ -269,58 +285,14 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
     });
   };
 
-  const handleRelease = async () => {
-    setLoading(true);
-
-    const loadingMsgConfig = {
-      key: msgKey,
-      content: "發佈中...",
-      duration: 0,
-    };
-    message.open({ ...loadingMsgConfig, type: "loading" });
-    // modal.confirm({
-    //   title: "發佈照片",
-    //   icon: <ExclamationCircleOutlined />,
-    //   content: `確定要發佈${fileOptionsList.length}張照片嗎？`,
-    //   okText: "確認",
-    //   cancelText: "取消",
-    //   onOk: () => {
-
-    //   },
-    // });
-
-    imagesRelease(eventId).then((response: any) => {
-      if (response?.error) {
-        message.error(response?.error);
-        return;
-      }
-
-      message.success("發佈成功🎉🎉");
-      message.destroy(msgKey);
-      setLoading(false);
-      setFileOptionsList([]);
-      setCookie("uploadInfo", JSON.stringify([]));
-
-      modal.confirm({
-        title: `已發佈${fileOptionsList.length}張照片`,
-        icon: <ExclamationCircleOutlined />,
-        content: `是否要前往活動頁面？`,
-        okText: "確認",
-        cancelText: "取消",
-        onOk: () => {
-          window.location.href = `/events/${eventId}`;
-        },
-        onCancel: () => {},
-      });
-    });
-  };
-
   const onConfirmLeave = () => {
     message.destroy();
   };
 
   const currentStep =
-    detectCount > 0
+    completeCount < fileOptionsList.length
+      ? 0
+      : detectCount > 0
       ? detectCount === fileOptionsList.length
         ? 2
         : 1
@@ -458,7 +430,10 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
           loading={loading}
         />
         <Button
-          disabled={fileOptionsList.length === 0 || loading}
+          disabled={
+            fileOptionsList.filter((file: any) => file.type).length === 0 ||
+            loading
+          }
           onClick={handleUpload}
         >
           確定上傳

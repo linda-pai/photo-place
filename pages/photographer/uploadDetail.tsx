@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { Descriptions, Modal, Tag, Button, message, Spin } from "antd";
+import { Descriptions, Tag, Spin } from "antd";
 import dayjs from "dayjs";
 import UploadPreview from "@/components/image/UploadPreview";
-import imagesRelease from "@/lib/upload/imagesRelease";
 import userPermission from "@/hooks/usePermission";
 
 const uploadDetail = ({
@@ -19,16 +18,12 @@ const uploadDetail = ({
   const { data: session }: any = useSession();
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
-  const [modal, contextHolder] = Modal.useModal();
-
   const [imageLength, setImageLength] = useState({
-    isReleasedLength: 0,
-    unReleasedLength: 0,
+    allImageLength: 0,
     featuredLength: 0,
   });
   const [toggle, setToggle] = useState({
-    RELEASED: false,
-    UNRELEASED: false,
+    ALL: false,
     FEATURED: false,
   });
 
@@ -39,28 +34,7 @@ const uploadDetail = ({
         .then(setImageLength);
   }, [eventId, session]);
 
-  const handleRelease = () => {
-    modal.confirm({
-      title: "發布確認",
-      content: `確定要發布嗎${imageLength.unReleasedLength}張照片嗎？`,
-      onOk: async () => {
-        const res = await imagesRelease(eventId);
-        if (res.status === 200) {
-          message.success("發佈成功");
-          setImageLength({
-            isReleasedLength:
-              imageLength.isReleasedLength + imageLength.unReleasedLength,
-            unReleasedLength: 0,
-            featuredLength: 0,
-          });
-        } else {
-          message.error("發佈失敗");
-        }
-      },
-    });
-  };
-
-  const handleOnToggle = (key: "RELEASED" | "UNRELEASED") => {
+  const handleOnToggle = (key: "ALL") => {
     setToggle({
       ...toggle,
       [key]: !toggle[key],
@@ -70,24 +44,11 @@ const uploadDetail = ({
   return isAllowed ? (
     <div className="container mx-auto text-slate-600 my-24 overflow-hidden">
       <h1 className="text-center text-2xl mb-8">攝影師上傳紀錄詳情</h1>
-      <Descriptions
-        bordered
-        column={2}
-        size="small"
-        extra={
-          <Button
-            type="primary"
-            onClick={handleRelease}
-            disabled={imageLength.unReleasedLength === 0}
-          >
-            發布
-          </Button>
-        }
-      >
+      <Descriptions bordered column={2} size="small">
         <Descriptions.Item label="賽事名稱">
           {record.eventName}
         </Descriptions.Item>
-        <Descriptions.Item label="Author">{record.author}</Descriptions.Item>
+        <Descriptions.Item label="攝影師">{record.name}</Descriptions.Item>
         <Descriptions.Item label="最後修改日期">
           {dayjs(record.createAt).format("YYYY-MM-DD HH:mm:ss")}
         </Descriptions.Item>
@@ -97,28 +58,15 @@ const uploadDetail = ({
             ? dayjs(record.chargeAt).format("YYYY-MM-DD HH:mm:ss")
             : "-"}
         </Descriptions.Item>
-        <Descriptions.Item label="已發布照片">
+        <Descriptions.Item label="已上傳照片">
           <div className="flex items-center">
-            <Tag color="green">{imageLength.isReleasedLength}張</Tag>
-            {imageLength.isReleasedLength > 0 && (
+            <Tag color="green">{imageLength.allImageLength}張</Tag>
+            {imageLength.allImageLength > 0 && (
               <p
                 className="text-blue-500 hover:cursor-pointer"
-                onClick={() => handleOnToggle("RELEASED")}
+                onClick={() => handleOnToggle("ALL")}
               >
-                {toggle["RELEASED"] ? "收合" : "展開"}
-              </p>
-            )}
-          </div>
-        </Descriptions.Item>
-        <Descriptions.Item label="未發布照片">
-          <div className="flex items-center">
-            <Tag color="red">{imageLength.unReleasedLength}張</Tag>
-            {imageLength.unReleasedLength > 0 && (
-              <p
-                className="text-blue-500 hover:cursor-pointer"
-                onClick={() => handleOnToggle("UNRELEASED")}
-              >
-                {toggle["UNRELEASED"] ? "收合" : "展開"}
+                {toggle["ALL"] ? "收合" : "展開"}
               </p>
             )}
           </div>
@@ -136,7 +84,6 @@ const uploadDetail = ({
         </Descriptions.Item>
       </Descriptions>
       <UploadPreview eventId={eventId} toggle={toggle} />
-      {contextHolder}
     </div>
   ) : (
     <Spin className="mx-auto my-[40vh] w-full" size="large" />

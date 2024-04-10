@@ -28,7 +28,6 @@ interface RecordOfUploadProps {
   images: any[];
   chargeAt: string;
   uploadId: string;
-  isReleased: boolean;
 }
 
 const RecordOfUpload = () => {
