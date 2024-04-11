@@ -139,8 +139,8 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
                     sizes="100vw"
                     quality={30}
                   />
-                  <div className="group-hover:flex gap-2 justify-between items-center hidden bg-[#fff] bg-opacity-70 absolute top-0 w-full sm:h-[10%] h-[18%] min-h-[28px] max-h-[34px] group hover:bg-opacity-90 transition-all duration-300">
-                    <p className="text-[color:var(--main-color-dark)] mx-1">
+                  <div className="group-hover:flex gap-2 py-6 justify-evenly items-center hidden bg-[#fff] bg-opacity-40 absolute top-0 w-full sm:h-[10%] h-[18%] min-h-[28px] max-h-[34px] group hover:bg-opacity-80 transition-all duration-300">
+                    <p className="text-[color:var(--main-color-dark)] mx-1 text-sm">
                       {item.fileName}
                     </p>
                     <div className="flex justify-end">
@@ -157,8 +157,8 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
                         }
                         className={`flex items-center justify-center mr-2 ${
                           item.isFeatured
-                            ? "text-[color:var(--main-color)] border border-[color:var(--main-color)]"
-                            : "text-black bg-[#fff] border border-[#000]"
+                            ? "text-[color:var(--main-color)] border border-[#fff] bg-[color:var(--main-color)] text-[#fff]"
+                            : "text-[color:var(--main-color-dark)] bg-[#fff] border border-[color:var(--main-color-dark)] bg-transparent"
                         }`}
                       >
                         <StarOutlined />
@@ -191,6 +191,7 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
                     handleUpdateBibs={(newTags: string[]) =>
                       updateBibs(newTags, images[currImgIndex].id)
                     }
+                    key={images[currImgIndex].path}
                   />
                 </div>
               }
