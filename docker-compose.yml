@@ -8,11 +8,17 @@ services:
       context: .
     command: yarn start
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
     ports:
       - 3001:3001
     networks:
       - photopacer-network  
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '0.75'
+    #     reservations:
+    #       cpus: '0.25'
   nextjs-app:
     image: photopacer2023/photopacer-frontend:latest
     restart: always
@@ -20,14 +26,14 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      - NODE_ENV=development
-      - NEXTAUTH_URL=https://photopacer.com
+      - NODE_ENV=production
+      - NEXTAUTH_URL=https://www.photopacer.com
     ports:
       - 3000:3000
     networks:
       - photopacer-network
 
-
+      
 networks:
   photopacer-network:
     driver: bridge

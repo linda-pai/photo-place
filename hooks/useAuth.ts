@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 
-//TODO: 是否需要加入權限判斷
 const useAuth = () => {
   const { data: session } = useSession();
   const router = useRouter();

@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import { setCookie, getCookie } from "cookies-next";
 import {
-  Select,
   Input,
   InputNumber,
   Button,
@@ -22,29 +22,31 @@ import {
 import parallelUploadWithLimit from "@/utils/parallelUploadWithLimit";
 import addWatermark from "@/lib/upload/addWatermark";
 import { writeUploadInfo } from "@/lib/upload/writeUploadInfo";
-import imagesRelease from "@/lib/upload/imagesRelease";
-import { IMAGE_STATUS } from "@/constants";
-
-interface Event {
-  id: number;
-  date: string;
-  eventName: string;
-}
-
-interface SelectOption {
-  value: string;
-  label: string;
-}
+import UploadQueue from "@/lib/upload/uploadQueue";
+import completeUpload from "@/lib/upload/completeUpload";
+import getStartMultipartUploadURL from "@/lib/upload/getStartMultipartUploadURL";
+import chunkFileAndPutS3 from "@/lib/upload/chunkFileAndPutS3";
 
 const Uploader = dynamic(() => import("@/components/upload/Uploader"), {
   loading: () => <Spin />,
 });
 
-const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
+const UploadBreadcrumb = dynamic(
+  () => import("@/components/UploadBreadcrumb"),
+  {
+    loading: () => <Spin />,
+  }
+);
+
+const UploadPrompt = dynamic(() => import("@/components/UploadPrompt"), {
+  loading: () => <Spin />,
+});
+
+const UploadImages = ({ eventId }: { eventId: string }) => {
   const { data: session }: any = useSession();
+  const router = useRouter();
 
   const [loading, setLoading] = useState(false);
-  const [eventId, setEventId] = useState({} as SelectOption);
   const [fileOptionsList, setFileOptionsList] = useState([] as any);
   const [completeCount, setCompleteCount] = useState(0);
   const [detectCount, setDetectCount] = useState(0);
@@ -52,6 +54,7 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
   const [modal, contextHolder] = Modal.useModal();
   const [authorName, setAuthorName] = useState(session?.user?.name || "");
   const [price, setPrice] = useState(159);
+  const [eventName, setEventName] = useState("");
 
   const msgKey = Math.random().toString();
 
@@ -60,15 +63,31 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
   }, []);
 
   useEffect(() => {
+    if (!eventId) return handleEventIdError();
+    fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/events/getBy/${eventId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const { eventName } = data;
+        if (!eventName) return handleEventIdError();
+        setEventName(eventName);
+      });
+  }, [eventId]);
+
+  useEffect(() => {
     const uploadData = JSON.parse(getCookie("uploadInfo") || "[]");
     setFileOptionsList(uploadData);
     setCompleteCount(
       uploadData.filter((file: any) => file.uploaded).length || 0
     );
+    setDetectCount(uploadData.filter((file: any) => file.detected).length || 0);
   }, []);
 
-  const handleSelected = (obj: SelectOption) =>
-    setEventId({ value: obj.value, label: obj.label });
+  const handleEventIdError = () => {
+    message.error("請選擇活動");
+    setTimeout(() => {
+      router.push("/photographer/chooseEvent");
+    }, 1000);
+  };
 
   const handleChangeAuthorName = (e: any) => setAuthorName(e.target.value);
   const handleChangePrice = (value: any) => setPrice(value);
@@ -106,6 +125,8 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
   };
 
   const handleOnFinishAll = async () => {
+    console.timeEnd("upload");
+
     setLoading(false);
     message.success("全部上傳完成🎉🎉");
     message.destroy(msgKey);
@@ -113,149 +134,68 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
     modal.confirm({
       title: `已上傳完成${fileOptionsList.length}張照片`,
       icon: <ExclamationCircleOutlined />,
-      content: `是否要發佈${fileOptionsList.length}張照片？`,
-      okText: "確認",
-      onOk: handleRelease,
+      okText: "去檢查號碼布",
+      cancelText: "前往上傳紀錄頁",
+      onOk: () => {
+        router.push(`/photographer/checkBibs?eventId=${eventId}`);
+      },
       onCancel: () => {
-        //writeUploadInfo
-        const refinedList = fileOptionsList.map((file: any) => {
-          return {
-            path: file.path,
-            status: IMAGE_STATUS["UPLOADED"],
-          };
-        });
-
-        const reqBody = {
-          eventId: eventId.value,
-          eventName: eventId.label,
-          author: session.id,
-          name: authorName,
-          images: refinedList,
-        };
-
-        writeUploadInfo(reqBody).then((response) => {
-          if (response.error) {
-            message.error(response.error);
-            return;
-          }
-        });
+        router.push("/photographer/records");
       },
     });
   };
 
   //add watermark and upload after detect text
-  const addWatermarkandUpload = async (key: string, file: File) => {
+  const handleAddWatermarkandUpload = async (key: string, file: File) => {
     const reqBody = {
       key,
-      eventId: eventId.value,
-      eventName: eventId.label,
+      eventId,
+      eventName,
       fileName: file.name,
       lastModified: file.lastModified,
       author: session.id,
+      authorName,
       price,
     };
-    const response = await addWatermark(reqBody);
-
-    if (response.error) {
-      message.error(response.error);
-      return;
-    } else {
-      setDetectCount((prev) => prev + 1);
-    }
-  };
-
-  const chunkFileAndUpload = async (
-    file: File,
-    uploadId: string,
-    key: string
-  ) => {
-    //2. chunk image withe each 5MB and upload
-    const chunkSize = 5 * 1024 * 1024;
-    const NUM_CHUNKS = Math.floor(file.size / chunkSize) + 1;
-
-    let promisesArray = [] as any;
-    let uploadPartsArray = [] as any;
-
-    //upload each chunk
-    for (let i = 1; i < NUM_CHUNKS + 1; i++) {
-      const start = (i - 1) * chunkSize;
-      const end = i * chunkSize;
-      const chunk = i < NUM_CHUNKS ? file.slice(start, end) : file.slice(start);
-
-      //get presigned url
-      await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/get-upload-url?uploadId=${uploadId}&fileName=${file.name}&partNumber=${i}&key=${key}`
-      )
-        .then((res) => res.json())
-        .then((result) => {
-          //put chunk to presigned url
-          const { preSignedURL } = result;
-          let uploadResp = fetch(preSignedURL, {
-            method: "PUT",
-            body: chunk,
-            headers: {
-              "Content-Type": "image/*",
-            },
-          }).then((data) => {
-            //retry with settimeout
-            if (data.status !== 200) {
-              setTimeout(() => {
-                fetch(preSignedURL, {
-                  method: "PUT",
-                  body: chunk,
-                  headers: {
-                    "Content-Type": "image/*",
-                  },
-                });
-              }, 2000);
-            }
-            return data;
-          });
-
-          promisesArray.push(uploadResp);
-        });
-    }
-
-    await Promise.all(promisesArray).then((resolvedArray: any[]) => {
-      resolvedArray.forEach((resolvedPromise, index) => {
-        uploadPartsArray.push({
-          ETag: resolvedPromise.headers.get("ETag"),
-          PartNumber: index + 1,
-        });
-      });
-    });
-
-    //complete-upload
-    await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/complete-upload`, {
-      method: "POST",
-      body: JSON.stringify({
-        key,
-        parts: uploadPartsArray,
-        uploadId,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => res.json())
-      .then((result) => {
-        if (result.error) {
-          //retry with settimeout
-          return setTimeout(() => {
-            fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/complete-upload`, {
-              method: "POST",
-              body: JSON.stringify({
-                key,
-                parts: uploadPartsArray,
-                uploadId,
-              }),
-              headers: {
-                "Content-Type": "application/json",
-              },
-            });
-          }, 2000);
+    const addWaterMarkFunction = async () =>
+      await addWatermark(reqBody).then((res) => {
+        if (res.error) {
+          message.error(res.error);
+          return;
         }
 
+        setFileOptionsList((prev: any) => {
+          const newFileOptionsList = prev.map((item: any) =>
+            item.path && item.path === file.name
+              ? { ...item, detected: true }
+              : item
+          );
+          setCookie("uploadInfo", JSON.stringify(newFileOptionsList));
+          return newFileOptionsList;
+        });
+
+        setDetectCount((prev) => {
+          if (prev + 1 === fileOptionsList.length) handleOnFinishAll();
+          return prev + 1;
+        });
+      });
+
+    const uploadQueue = new UploadQueue("addWaterMark", addWaterMarkFunction);
+    uploadQueue.enqueue([file]);
+  };
+
+  const handleCompleteUpload = async (
+    key: string,
+    file: File,
+    uploadPartsArray: any[],
+    uploadId: string
+  ) => {
+    const completeFunction = async () =>
+      await completeUpload(key, uploadPartsArray, uploadId).then((res) => {
+        if (res.error) {
+          message.error(res.error);
+          return;
+        }
         setFileOptionsList((prev: any) => {
           const newFileOptionsList = prev.map((item: any) =>
             item.name && item.name === file.name
@@ -266,22 +206,45 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
           return newFileOptionsList;
         });
 
-        setCompleteCount((prev) => {
-          //update fileOptionsList to add uploaded status
-          if (prev + 1 === fileOptionsList.length) handleOnFinishAll();
-          return prev + 1;
-        });
-        addWatermarkandUpload(key, file);
-        return;
-      })
-      .catch((err) => {
-        console.log("err", err);
+        setCompleteCount((prev) => prev + 1);
+
+        handleAddWatermarkandUpload(key, file);
       });
+
+    const uploadQueue = new UploadQueue("complete", completeFunction);
+    uploadQueue.enqueue([file]);
+  };
+
+  const handleChunkFileAndUpload = async (
+    file: File,
+    uploadId: string,
+    key: string
+  ) => {
+    //2. chunk image withe each 5MB and upload
+    const uploadPartsArray = await chunkFileAndPutS3(file, uploadId, key);
+    //complete-upload - s3 multipart upload requires complete upload
+    return await handleCompleteUpload(key, file, uploadPartsArray, uploadId);
+  };
+
+  const chunkFileAndUpload = async (file: File) => {
+    const fileName = file.name;
+    const path = `/${eventId}/`;
+
+    const uploadFunction = async () => {
+      const { key, uploadId } = await getStartMultipartUploadURL(
+        path,
+        fileName
+      );
+      await handleChunkFileAndUpload(file, uploadId, key);
+    };
+
+    const startAndUploadQueue = new UploadQueue("startUpload", uploadFunction);
+    return await startAndUploadQueue.asyncEnqueue(file);
   };
 
   const handleUpload = async () => {
     if (!session.id) return message.error("請先登入");
-    if (!eventId.value) return message.error("請選擇活動");
+    if (!eventId) return message.error("請選擇活動");
 
     const tobeUploadedList = fileOptionsList.filter((file: any) => file.type);
 
@@ -294,6 +257,14 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
       onOk: () => {
         setLoading(true);
 
+        const reqBody = {
+          eventId,
+          eventName,
+          author: session.id,
+          name: authorName,
+        };
+        writeUploadInfo(reqBody);
+
         const loadingMsgConfig = {
           key: msgKey,
           content: "上傳中...",
@@ -302,10 +273,9 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
         message.open({ ...loadingMsgConfig, type: "loading" });
         //寫入上傳資訊
         //50張一組，完成後再上傳下一組
+        console.time("upload");
         const groupLimit = 50;
         parallelUploadWithLimit(
-          eventId.value,
-          fileOptionsList,
           tobeUploadedList,
           groupLimit,
           chunkFileAndUpload
@@ -315,71 +285,14 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
     });
   };
 
-  const handleRelease = async () => {
-    setLoading(true);
-
-    const loadingMsgConfig = {
-      key: msgKey,
-      content: "發佈中...",
-      duration: 0,
-    };
-    message.open({ ...loadingMsgConfig, type: "loading" });
-    // modal.confirm({
-    //   title: "發佈照片",
-    //   icon: <ExclamationCircleOutlined />,
-    //   content: `確定要發佈${fileOptionsList.length}張照片嗎？`,
-    //   okText: "確認",
-    //   cancelText: "取消",
-    //   onOk: () => {
-
-    //   },
-    // });
-
-    const refinedList = fileOptionsList.map((file: any) => {
-      return {
-        path: file.path,
-        status: IMAGE_STATUS["RELEASED"],
-      };
-    });
-
-    const reqBody = {
-      eventId: eventId.value,
-      eventName: eventId.label,
-      author: session.id,
-      name: authorName,
-      images: refinedList,
-    };
-
-    writeUploadInfo(reqBody);
-
-    imagesRelease(eventId.value, refinedList).then((response: any) => {
-      if (response?.error) {
-        message.error(response?.error);
-        return;
-      }
-
-      message.success("發佈成功🎉🎉");
-      message.destroy(msgKey);
-      setLoading(false);
-      setFileOptionsList([]);
-      setCookie("uploadInfo", JSON.stringify([]));
-
-      modal.confirm({
-        title: `已發佈${fileOptionsList.length}張照片`,
-        icon: <ExclamationCircleOutlined />,
-        content: `是否要前往活動頁面？`,
-        okText: "確認",
-        cancelText: "取消",
-        onOk: () => {
-          window.location.href = `/events/${eventId.value}`;
-        },
-        onCancel: () => {},
-      });
-    });
+  const onConfirmLeave = () => {
+    message.destroy();
   };
 
   const currentStep =
-    detectCount > 0
+    completeCount < fileOptionsList.length
+      ? 0
+      : detectCount > 0
       ? detectCount === fileOptionsList.length
         ? 2
         : 1
@@ -389,16 +302,17 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
     {
       title: "上傳中",
       description: "照片上傳中",
-      subTitle: `剩餘時間: ${
-        Math.ceil((fileOptionsList.length - completeCount) * 3) / 60 < 1
-          ? Math.ceil((fileOptionsList.length - completeCount) * 3) + "秒"
-          : Math.ceil((fileOptionsList.length - completeCount) * 3) / 60 + "分"
-      }
-   `,
+      subTitle: `${completeCount}/${fileOptionsList.length}張照片`,
+      // subTitle: `剩餘時間: ${
+      //   Math.ceil((fileOptionsList.length - completeCount) * 3) / 60 < 1
+      //     ? Math.ceil((fileOptionsList.length - completeCount) * 3) + "秒"
+      //     : Math.ceil((fileOptionsList.length - completeCount) * 3) / 60 + "分"
+      // }
     },
     {
       title: "偵測中",
       description: "號碼布偵測中",
+      subTitle: `${detectCount}/${fileOptionsList.length}張照片`,
     },
     {
       title: "完成",
@@ -407,7 +321,6 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
         <SmileOutlined style={currentStep === 2 ? { color: "#ffd700" } : {}} />
       ),
       status: currentStep === 2 ? "finish" : "wait",
-      subTitle: `${completeCount}/${fileOptionsList.length}張照片`,
     },
   ] as any;
 
@@ -480,20 +393,14 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
   ];
 
   return (
-    <>
-      <div className="mt-24 text-center">
-        <div className="my-4">
-          <Select
-            labelInValue
-            placeholder="請選擇活動"
-            className="w-1/3 "
-            onChange={handleSelected}
-            options={eventOption.map((event: any) => ({
-              label: event.eventName,
-              value: event.eventId,
-            }))}
-            disabled={loading}
-          />
+    <div className="mt-24 container mx-auto px-4">
+      <UploadBreadcrumb />
+      <UploadPrompt isUploading={loading} onConfirmLeave={onConfirmLeave} />
+      <div className="text-center">
+        <div className="my-8">
+          <h2 className="max-w-[400px] mx-auto text-lg text-[color:var(--main-color-dark)]">
+            {eventName}
+          </h2>
         </div>
         <div>
           <Input
@@ -523,8 +430,10 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
           loading={loading}
         />
         <Button
-          //TODO: disabled={fileOptionsList.length === 0 || loading}
-          disabled={fileOptionsList.length === 0}
+          disabled={
+            fileOptionsList.filter((file: any) => file.type).length === 0 ||
+            loading
+          }
           onClick={handleUpload}
         >
           確定上傳
@@ -568,7 +477,7 @@ const UploadImages = ({ eventOption }: { eventOption: Event[] }) => {
       )}
 
       {contextHolder}
-    </>
+    </div>
   );
 };
 

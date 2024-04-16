@@ -1,30 +1,12 @@
-import getSignedMultipleUploadURL from "@/lib/upload/getSignedMultipleUploadURL";
-
-const handleMultipleStartUpload = async (file: File, eventId: string) => {
-  const fileName = file.name;
-  const path = `/${eventId}/`;
-  //1. start-upload
-  return await getSignedMultipleUploadURL(path, fileName);
-};
-
 const parallelUploadWithLimit = async (
-  eventId: string,
-  fileOptionsList: any[],
-  toBeUploadList: any[],
+  fileList: File[],
   groupLimit: number,
-  chunkFileAndUpload: (file: any, uploadId: string, key: string) => Promise<any>
+  chunkFileAndUpload: (file: any) => any
 ) => {
   const promisesArray = [] as any;
-  for (let index = 0; index < toBeUploadList.length; index++) {
-    const file = fileOptionsList.find(
-      (file: any) => file.path === toBeUploadList[index].path
-    );
+  for (let index = 0; index < fileList.length; index++) {
+    const file = fileList[index];
     if (!file) return;
-    //start upload
-    const { uploadId, key } = await handleMultipleStartUpload(file, eventId);
-    //upload
-    const promise = chunkFileAndUpload(file, uploadId, key);
-    promisesArray.push(promise);
 
     // if index is multiple of groupLimit, wait for all promises to resolve
     if (index % groupLimit === 0) {
@@ -33,12 +15,15 @@ const parallelUploadWithLimit = async (
       });
     }
 
-    // if it's the last item, wait for all promises to resolve
-    if (index === toBeUploadList.length - 1) {
+    // if all files are uploaded, wait for all promises to resolve
+    if (index === fileList.length - 1) {
       await Promise.all(promisesArray).then(() => {
         promisesArray.length = 0;
       });
     }
+
+    const promise = chunkFileAndUpload(file);
+    promisesArray.push(promise);
   }
 };
 export default parallelUploadWithLimit;

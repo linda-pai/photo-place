@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Table, Space, Button, Tag, Modal, message, Input } from "antd";
+import { Table, Space, Button, Tag, Modal, message, Spin } from "antd";
 import {
   ExclamationCircleOutlined,
   CopyOutlined,
@@ -14,7 +14,11 @@ import tableConfig from "./tableConfig";
 import dynamic from "next/dynamic";
 
 const ImageDetail = dynamic(() => import("./ImageDetail"), {
-  loading: () => <div>Loading...</div>,
+  loading: () => <Spin />,
+});
+
+const Editable = dynamic(() => import("@/components/cms/Editable"), {
+  loading: () => <Spin />,
 });
 
 const OrderList = ({ orders }: OrderListProps) => {
@@ -97,19 +101,13 @@ const OrderList = ({ orders }: OrderListProps) => {
     },
     remark: {
       render: (text: string, record: Order) => (
-        <div>
-          {/* 可編輯 */}
-          <EditOutlined onClick={() => toggle(record.orderId)} />
-          {editing[record.orderId] ? (
-            <Input
-              value={text}
-              onChange={(e) => handleRemarkChange(e, record)}
-              onPressEnter={() => handleInputConfirm(record.orderId, text)}
-            />
-          ) : (
-            <p>{text}</p>
-          )}
-        </div>
+        <Editable
+          item={record}
+          targetId={record.orderId}
+          text={text}
+          updateFunction={handleInputConfirm}
+          handleRemarkChange={handleRemarkChange}
+        />
       ),
     },
     action: {

@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
-import { message, Button, Tag, Spin, Pagination } from "antd";
+import { useEffect, useState, useMemo } from "react";
+import { message, Button, Spin, Radio, Select } from "antd";
 import { setCookie, getCookie } from "cookies-next";
-import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
 import dynamic from "next/dynamic";
 import Head from "next/head";
-import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
 import { searchTracking } from "@/lib/gtag";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
+import { IMAGE_STATUS, SITE_NAME } from "@/constants";
+import LastElement from "@/components/LastElement";
 
 const SearchWrapper = dynamic(() => import("@/components/SearchWrapper"), {
   loading: () => <Spin />,
@@ -24,79 +26,152 @@ const NotifyForm = dynamic(() => import("@/components/NotifyForm"), {
 // Post component
 export default function EventSearchPage({
   eventInfo,
-  imageList,
-  commonImages,
   navBarRef,
   bib,
-  page,
-  imageListTotal,
+  imagesInfo,
+  photographerOptions,
 }: any) {
-  const { data: session }: any = useSession();
+  const pageSize = 15;
+  const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
+  const { eventId, eventName, coverImg, description } = eventInfo;
+
+  const { data: session }: any = useSession();
   const router = useRouter();
 
-  const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const [search, setSearch] = useState(bib || "");
-  const [images, setImages] = useState([] as ImageItemProps[]);
-  const [showModal, setShowModal] = useState(false);
+  const [isSearched, setIsSearched] = useState(false);
+  const [images, setImages] = useState({
+    [IMAGE_STATUS.IDENTIFYED]: imagesInfo.images as ImageItemProps[],
+    // [IMAGE_STATUS.UNIDENTIFYED]: unIdentifyInfo.images as ImageItemProps[],
+  });
+
+  const [loadedCount, setLoadedCount] = useState({
+    [IMAGE_STATUS.IDENTIFYED]: 0,
+    // [IMAGE_STATUS.UNIDENTIFYED]: 0,
+  });
+
+  const [category, setCategory] = useState(IMAGE_STATUS.IDENTIFYED);
+  const [author, setAuthor] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
-  const [showImageViewerCommon, setShowImageViewerCommon] = useState(false);
   const [currImgIndex, setCurrImgIndex] = useState(0); // [0, images.length - 1
-  const [currCommonImgIndex, setCurrCommonImgIndex] = useState(0); // [0, images.length - 1
-  const [curPage, setCurPage] = useState(page || 1);
-  const [total, setTotal] = useState(imageListTotal);
+  const [curPage, setCurPage] = useState({
+    [IMAGE_STATUS.IDENTIFYED]: 1,
+    // [IMAGE_STATUS.UNIDENTIFYED]: 1,
+  });
 
-  //id as evetId
-  const { eventId, eventName, coverImg } = eventInfo;
+  const [total, setTotal] = useState({
+    [IMAGE_STATUS.IDENTIFYED]: imagesInfo.totalCount,
+    // [IMAGE_STATUS.UNIDENTIFYED]: unIdentifyInfo.totalCount,
+  });
+
+  const lastPage = {
+    [IMAGE_STATUS.IDENTIFYED]: Math.ceil(
+      total[IMAGE_STATUS.IDENTIFYED] / pageSize
+    ),
+    // [IMAGE_STATUS.UNIDENTIFYED]: Math.ceil(
+    //   total[IMAGE_STATUS.UNIDENTIFYED] / pageSize
+    // ),
+  };
 
   useEffect(() => {
-    setImages(imageList);
-  }, []);
-
-  useEffect(() => {
-    const dataLength = search ? images.length : imageListTotal;
-    setTotal(dataLength);
-  }, [images]);
-
-  useEffect(() => {
-    if (curPage) onSearch();
+    if (curPage[category]) {
+      onSearch();
+    }
   }, [curPage]);
 
-  const handleOnChange = (e: any) => {
+  useEffect(() => {
+    if (search && isSearched) {
+      setCurPage({
+        [IMAGE_STATUS.IDENTIFYED]: 1,
+        // [IMAGE_STATUS.UNIDENTIFYED]: 1,
+      });
+      setCategory(IMAGE_STATUS.IDENTIFYED);
+    }
+  }, [search, isSearched]);
+
+  const identify = useMemo(() => {
+    return {
+      images: images[IMAGE_STATUS.IDENTIFYED],
+      curPage: curPage[IMAGE_STATUS.IDENTIFYED],
+    };
+  }, [images]);
+
+  const handleOnChangeSearch = (e: any) => {
     setSearch(e.target.value.trim());
-    setShowModal(false);
+    if (e.target.value.trim() === "") {
+      resetImages();
+    }
+    setIsSearched(false);
+  };
+
+  const handleOnChangeCategory = (e: any) => setCategory(e.target.value);
+
+  const resetImages = () => {
+    setCurPage({
+      [IMAGE_STATUS.IDENTIFYED]: 1,
+      // [IMAGE_STATUS.UNIDENTIFYED]: 1,
+    });
+    setImages({
+      [IMAGE_STATUS.IDENTIFYED]: images[IMAGE_STATUS.IDENTIFYED],
+      // [IMAGE_STATUS.UNIDENTIFYED]: images[IMAGE_STATUS.UNIDENTIFYED],
+    });
   };
 
   const onSearch = () => {
+    setIsLoading(true);
     if (search !== "" && search.match(/^[0-9]+$/) == null)
       return message.error("請輸入正確的號碼布");
 
-    const searchPage = search ? 1 : curPage;
+    const searchValue =
+      category === IMAGE_STATUS.IDENTIFYED ? search : "unIdentify";
+
     router.push(
       {
         pathname: `/events/${eventId}`,
-        query: { bib: search, page: searchPage },
+        query: { bib: search },
       },
       undefined,
       { shallow: true }
     );
-    const searchValue = search || "all";
+
     fetch(
-      `${domain}/api/images/getByPathAndEventId/${eventId}/${searchValue}?page=${searchPage}`
+      `${domain}/api/images/getByPathAndEventId/${eventId}?path=${searchValue}&page=${curPage[category]}&author=${author}`
     )
       .then((res) => res.json())
       .then((data) => {
-        setImages(data);
-        setShowModal(true);
+        setImages((prev) => {
+          return {
+            ...prev,
+            [category]:
+              curPage[category] === 1
+                ? data.images
+                : [...prev[category], ...data.images],
+          };
+        });
 
-        scrollIntoViewWithOffset("#result-container", 100);
+        setTotal((prev) => {
+          return {
+            ...prev,
+            [category]: data.totalCount,
+          };
+        });
+
+        // set more to true if nextPage exists
+        setIsLoading(false);
+        search && setIsSearched(true);
+
+        curPage[category] === 1 &&
+          scrollIntoViewWithOffset("#result-container", 100);
+
         //埋點
         searchTracking({
           event_category: "event",
           event_label: eventName,
           search_term: search,
           number_of_results: data.length,
-          user_id: session?.id,
+          user_id: session?.id || "",
         });
       });
   };
@@ -117,28 +192,38 @@ export default function EventSearchPage({
 
   const handleClickImg = (id: string) => {
     setShowImageViewer(true);
-    setCurrImgIndex(images.findIndex((item: ImageItemProps) => item.id === id));
-  };
-
-  const handleClickImgCommon = (id: string) => {
-    setShowImageViewerCommon(true);
-    setCurrCommonImgIndex(
-      commonImages.findIndex((item: ImageItemProps) => item.id === id)
+    setCurrImgIndex(
+      images[category].findIndex((item: ImageItemProps) => item.id === id)
     );
   };
-
-  const gotoPreviousCommon = () =>
-    currCommonImgIndex > 0 && setCurrCommonImgIndex(currCommonImgIndex - 1);
-
-  const gotoNextCommon = () =>
-    currCommonImgIndex + 1 < commonImages.length &&
-    setCurrCommonImgIndex(currCommonImgIndex + 1);
 
   const gotoPrevious = () =>
     currImgIndex > 0 && setCurrImgIndex(currImgIndex - 1);
 
   const gotoNext = () =>
-    currImgIndex + 1 < images.length && setCurrImgIndex(currImgIndex + 1);
+    currImgIndex + 1 < images[category].length &&
+    setCurrImgIndex(currImgIndex + 1);
+
+  const handleOnLoad = () => {
+    setLoadedCount((prev) => {
+      if (prev[category] >= images[category].length)
+        return { ...prev, [category]: images[category].length };
+      return {
+        ...prev,
+        [category]: prev[category] + 1,
+      };
+    });
+  };
+
+  const handleOnChangePhotographer = (value: string) => {
+    if (value === "請選擇攝影師") return;
+    setCurPage({
+      [IMAGE_STATUS.IDENTIFYED]: 1,
+      // [IMAGE_STATUS.UNIDENTIFYED]: 1,
+    });
+    setCategory(IMAGE_STATUS.IDENTIFYED);
+    setAuthor(value);
+  };
 
   return (
     <>
@@ -148,10 +233,17 @@ export default function EventSearchPage({
           property="og:title"
           content={`${eventName} | 號碼布搜尋照片 | Photo Pacer 攝影小隊`}
         />
-        <meta name="description" content={`號碼布辨識系統，快入找到賽事相片`} />
+        <meta
+          name="description"
+          content={`${
+            description || SITE_NAME
+          } - 號碼布辨識系統，快入找到賽事相片`}
+        />
         <meta
           property="og:description"
-          content={`號碼布辨識系統，快入找到賽事相片`}
+          content={`${
+            description || SITE_NAME
+          } - 號碼布辨識系統，快入找到賽事相片`}
         />
         <meta property="og:image" content={coverImg} />
         <meta
@@ -169,7 +261,7 @@ export default function EventSearchPage({
       </Head>
       <div ref={navBarRef}>
         <SearchWrapper
-          handleOnChange={handleOnChange}
+          handleOnChange={handleOnChangeSearch}
           onSearch={onSearch}
           eventName={eventName}
           search={search}
@@ -184,7 +276,7 @@ export default function EventSearchPage({
           <div className="container mx-auto sm:my-10 my-4">
             <div
               className={
-                showModal && search
+                isSearched
                   ? "visible text-center sm:m-10 m-4 text-[color:var(--main-color-dark)]"
                   : "invisible h-0"
               }
@@ -193,8 +285,8 @@ export default function EventSearchPage({
               {
                 <>
                   <p>{`號碼布: ${search}`}</p>
-                  <p>{`找到 ${images.length} 張照片，${
-                    images.length == 0
+                  <p>{`找到 ${total[category]} 張照片，${
+                    images[category].length == 0
                       ? "我們未來會努力增加攝影師的💪"
                       : "太有緣份了！"
                   }`}</p>
@@ -203,59 +295,78 @@ export default function EventSearchPage({
               {/* <p>不囉唆⚡全面 65 折優惠</p> */}
             </div>
 
-            {images.length > 0 && (
+            {images[category].length > 0 && (
               <>
-                <div className="my-2 mx-3 text-[color:var(--main-color-dark)] text-sm">
-                  <Tag color="#B0B97A">已完成辨識號碼布</Tag>
-                </div>
-                <ImageList
-                  images={images}
-                  isOpen={showImageViewer}
-                  curIndex={currImgIndex}
-                  onClose={() => setShowImageViewer(false)}
-                  onPrev={gotoPrevious}
-                  onNext={gotoNext}
-                  handleClickImg={handleClickImg}
-                  eventId={eventId}
-                  eventName={eventName}
-                />
-
-                <div className="text-center my-10">
-                  <Pagination
-                    defaultCurrent={curPage}
-                    onChange={setCurPage}
-                    total={total}
-                    pageSize={40}
-                    showSizeChanger={false}
-                    current={curPage}
+                {!search && !isSearched && (
+                  <div className="flex items-center">
+                    <div className="my-4 mx-1 text-[color:var(--main-color-dark)] text-sm">
+                      <Radio.Group
+                        defaultValue={IMAGE_STATUS.IDENTIFYED}
+                        buttonStyle="solid"
+                        onChange={handleOnChangeCategory}
+                        value={category}
+                      >
+                        <Radio.Button value={IMAGE_STATUS.IDENTIFYED}>
+                          精選照片
+                        </Radio.Button>
+                        {/* <Radio.Button value={IMAGE_STATUS.UNIDENTIFYED}>
+                          未成功辨識號碼布
+                        </Radio.Button> */}
+                      </Radio.Group>
+                    </div>
+                    <Select
+                      defaultValue="請選擇攝影師"
+                      className="w-1/6 mx-1"
+                      options={[
+                        { label: "全部", value: "" },
+                        ...photographerOptions,
+                      ]}
+                      onChange={handleOnChangePhotographer}
+                    />
+                  </div>
+                )}
+                {/* add transition */}
+                <div className="transition-all duration-500">
+                  <ImageList
+                    images={identify.images}
+                    isOpen={showImageViewer}
+                    curIndex={currImgIndex}
+                    onClose={() => setShowImageViewer(false)}
+                    onPrev={gotoPrevious}
+                    onNext={gotoNext}
+                    handleClickImg={handleClickImg}
+                    eventId={eventId}
+                    eventName={eventName}
+                    onLoad={handleOnLoad}
                   />
                 </div>
-              </>
-            )}
-            {commonImages.length > 0 && !search && (
-              <>
-                <div className="my-2 mt-16 mb-4 text-[color:var(--main-color-dark)] text-sm">
-                  <Tag>未成功辨識號碼布</Tag>
-                </div>
-                <ImageList
-                  images={commonImages}
-                  isOpen={showImageViewerCommon}
-                  curIndex={currCommonImgIndex}
-                  onClose={() => setShowImageViewerCommon(false)}
-                  onPrev={gotoPreviousCommon}
-                  onNext={gotoNextCommon}
-                  handleClickImg={handleClickImgCommon}
-                  eventId={eventId}
-                  eventName={eventName}
-                />
+                {lastPage[category] > curPage[category] &&
+                  loadedCount[category] === images[category].length && (
+                    <LastElement
+                      key={category}
+                      isLoading={isLoading}
+                      intersectionFunc={() =>
+                        setCurPage((prev) => {
+                          return {
+                            ...prev,
+                            [category]: prev[category] + 1,
+                          };
+                        })
+                      }
+                    />
+                  )}
               </>
             )}
             <div>
-              {images.length > 0 && search && (
+              {images[category].length > 0 && search && (
                 <Button
                   onClick={() => {
-                    images.map((item: ImageItemProps) => pushToCart(item.id));
-                    message.success(`已將 ${images.length} 張照片加入購物車`);
+                    images[category].map((item: ImageItemProps) =>
+                      pushToCart(item.id)
+                    );
+                    message.success(
+                      `已將 ${images[category].length} 張照片加入購物車`
+                    );
                   }}
                   className="mx-auto block my-10"
                 >
@@ -274,25 +385,34 @@ export async function getServerSideProps(context: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const eventId = context.params.id;
   const bib = context.query.bib || "";
-  const page = Number(context.query.page);
 
-  const imageList = await fetch(
-    `${domain}/api/images/getByPathAndEventId/${eventId}/all`
+  const imagesInfo = await fetch(
+    `${domain}/api/images/getByPathAndEventId/${eventId}`
   ).then((res) => res.json());
-
-  const commonImages = await fetch(
-    `${domain}/api/images/getByPathAndEventId/${eventId}/common`
-  ).then((res) => res.json());
-
-  const imageListTotal = await fetch(`${domain}/api/images/getCount/${eventId}`)
-    .then((res) => res.json())
-    .then((data) => data.count - commonImages.length);
 
   const eventInfo = await fetch(`${domain}/api/events/getBy/${eventId}`).then(
     (res) => res.json()
   );
 
+  const photographerOptions = await fetch(
+    `${domain}/api/images/getPhotographers/${eventId}`
+  )
+    .then((res) => res.json())
+    .then((data) => {
+      return data.map((item: any) => {
+        return {
+          label: item.name,
+          value: item.author,
+        };
+      });
+    });
+
   return {
-    props: { imageList, commonImages, eventInfo, bib, page, imageListTotal },
+    props: {
+      eventInfo,
+      bib,
+      imagesInfo,
+      photographerOptions,
+    },
   };
 }

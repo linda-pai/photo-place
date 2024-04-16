@@ -5,7 +5,7 @@ import Link from "next/link";
 const Footer = () => {
   return (
     <footer className="bg-[color:var(--main-color-lighter)] py-16">
-      <div className="container mx-auto px-10">
+      <div className="container mx-auto px-4">
         <div className="flex flex-wrap justify-between sm:gap-0 gap-6">
           <div className="w-full lg:w-1/4">
             <h6 className="text-[color:var(--main-color-dark)] text-lg font-bold mb-5">

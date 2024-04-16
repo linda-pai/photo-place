@@ -2,15 +2,20 @@ import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { Pagination, Radio, Spin } from "antd";
+import { Button, Pagination, Radio, Spin, message } from "antd";
+import { DeleteOutlined, StarOutlined } from "@ant-design/icons";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import ImageLightBox from "@/components/image/ImageLightBox";
+import userPermission from "@/hooks/usePermission";
+import featureImg from "@/lib/featured/featureImg";
 
 const AddableTags = dynamic(() => import("@/components/AddableTags"), {
   loading: () => <Spin />,
 });
 
 export default function CheckBibs({ eventId }: { eventId: string }) {
+  const isAllowed = userPermission();
+
   const { data: session }: any = useSession();
 
   const [images, setImages] = useState([] as ImageItemProps[]);
@@ -22,6 +27,7 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
   const [curPage, setCurPage] = useState(1);
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
+  const pageSize = 15;
 
   useEffect(() => {
     if (!session) return;
@@ -30,12 +36,9 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
     )
       .then((res) => res.json())
       .then((data) => {
-        setImages(data);
+        setImages(data.images);
+        setTotal(data.totalCount);
       });
-
-    fetch(`${domain}/api/images/getByAuthorCount/${eventId}/${session.id}`)
-      .then((res) => res.json())
-      .then((data) => setTotal(data.count));
   }, [session, sortBy, curPage]);
 
   const gotoPrevious = () =>
@@ -50,7 +53,6 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
   };
 
   const updateBibs = (newTags: string[], id: string) => {
-    if (newTags.length === 0) return;
     fetch(`${domain}/api/images/updateBibs`, {
       method: "POST",
       headers: {
@@ -60,11 +62,50 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
     });
   };
 
-  return (
+  const handleDeleteImg = (id: string, e: any) => {
+    e.stopPropagation();
+
+    fetch(`${domain}/api/images/delete/${eventId}/${id}/${session.id}`, {
+      method: "POST",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === "success") {
+          message.success("刪除成功");
+          setImages(images.filter((item) => item.id !== id));
+        } else {
+          message.error("刪除失敗");
+        }
+      });
+  };
+
+  const handleFeatureImg = (id: string, isFeatured: boolean, e: any) => {
+    e.stopPropagation();
+
+    featureImg({
+      eventId,
+      id,
+      author: session.id,
+      isFeatured,
+    }).then((data) => {
+      if (data.status === "success") {
+        setImages(
+          images.map((item) => {
+            if (item.id === id) {
+              return { ...item, isFeatured: !item.isFeatured };
+            }
+            return item;
+          })
+        );
+      }
+    });
+  };
+
+  return isAllowed ? (
     <>
       <div className="text-center mt-24 text-[color:var(--main-color-dark)]">
         <p>號碼布檢查</p>
-        <p>共 {images.length} 張照片</p>
+        <p>共 {total} 張照片</p>
       </div>
       {images.length > 0 && (
         <div className="container mx-auto sm:my-10 my-4">
@@ -81,21 +122,49 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
           </div>
           <div className="masonry">
             {images.map((item: any, key: number) => (
-              <div>
+              <div
+                key={key}
+                className="sm:basis-[calc(20%_-_16px)] basis-[calc(33%_-_16px)] relative"
+              >
                 <div
-                  className="sm:basis-[calc(20%_-_16px)] basis-[calc(33%_-_16px)] cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
-                  key={item.id}
+                  className="cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
                   onClick={() => handleClickImg(item.id)}
                 >
                   <Image
-                    className="item__content"
+                    className="item__content w-full h-auto"
                     src={item.watermarkedUrl}
                     alt={item.watermarkedUrl}
-                    width={240}
-                    height={320}
+                    width="0"
+                    height="0"
+                    sizes="100vw"
                     quality={30}
-                    style={{ width: "100%", height: "auto" }}
                   />
+                  <div className="group-hover:flex gap-2 py-6 justify-evenly items-center hidden bg-[#fff] bg-opacity-40 absolute top-0 w-full sm:h-[10%] h-[18%] min-h-[28px] max-h-[34px] group hover:bg-opacity-80 transition-all duration-300">
+                    <p className="text-[color:var(--main-color-dark)] mx-1 text-sm">
+                      {item.fileName}
+                    </p>
+                    <div className="flex justify-end">
+                      <Button
+                        onClick={(e) => handleDeleteImg(item.id, e)}
+                        className="flex items-center justify-center mr-2"
+                        danger
+                      >
+                        <DeleteOutlined />
+                      </Button>
+                      <Button
+                        onClick={(e) =>
+                          handleFeatureImg(item.id, item.isFeatured, e)
+                        }
+                        className={`flex items-center justify-center mr-2 ${
+                          item.isFeatured
+                            ? "text-[color:var(--main-color)] border border-[#fff] bg-[color:var(--main-color)] text-[#fff]"
+                            : "text-[color:var(--main-color-dark)] bg-[#fff] border border-[color:var(--main-color-dark)] bg-transparent"
+                        }`}
+                      >
+                        <StarOutlined />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
                 <AddableTags
                   key={images[key].path}
@@ -122,6 +191,7 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
                     handleUpdateBibs={(newTags: string[]) =>
                       updateBibs(newTags, images[currImgIndex].id)
                     }
+                    key={images[currImgIndex].path}
                   />
                 </div>
               }
@@ -133,7 +203,7 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
               defaultCurrent={curPage}
               onChange={setCurPage}
               total={total}
-              pageSize={40}
+              pageSize={pageSize}
               showSizeChanger={false}
               current={curPage}
             />
@@ -141,6 +211,8 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
         </div>
       )}
     </>
+  ) : (
+    <Spin className="mx-auto my-[40vh] w-full" size="large" />
   );
 }
 

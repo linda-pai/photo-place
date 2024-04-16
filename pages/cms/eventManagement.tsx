@@ -2,31 +2,52 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import usePermission from "@/hooks/usePermission";
 import { EventProps } from "@/types/interfaces/EventProps";
-import { Table, Switch, Button, Modal, message } from "antd";
+import { Table, Switch, Button, Modal, message, Spin } from "antd";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
+import { DEFAULT_COVER_IMG } from "@/constants";
+import dynamic from "next/dynamic";
 
-const EventManagement = ({ events }: { events: EventProps[] }) => {
+const Editable = dynamic(() => import("@/components/cms/Editable"), {
+  loading: () => <Spin />,
+});
+
+const EventManagement = ({
+  events,
+}: {
+  events: EventProps[];
+  reviewingEvents: EventProps[];
+}) => {
   const isAllowed = usePermission();
   const [isShow, setIsShow] = useState<{ [key: string]: boolean }>({});
   const [isCompleteUpload, setIsCompleteUpload] = useState<{
     [key: string]: boolean;
   }>({});
+  const [isReviewd, setIsReviewd] = useState<{ [key: string]: boolean }>({});
+
+  const [eventData, setEventData] = useState<EventProps[]>(events);
+
   const [modal, contextHolder] = Modal.useModal();
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
   useEffect(() => {
     setIsShow(
-      events.reduce((acc, curr) => {
+      eventData.reduce((acc, curr) => {
         return { ...acc, [curr.eventId]: curr.isShow };
       }, {})
     );
     setIsCompleteUpload(
-      events.reduce((acc, curr) => {
+      eventData.reduce((acc, curr) => {
         return { ...acc, [curr.eventId]: curr.isCompleteUpload };
       }, {})
     );
-  }, [events]);
+
+    setIsReviewd(
+      eventData.reduce((acc, curr) => {
+        return { ...acc, [curr.eventId]: curr.isReviewd };
+      }, {})
+    );
+  }, [eventData]);
 
   const updateEvent = (id: string, reqBody: any) => {
     fetch(`${domain}/api/events/update/${id}`, {
@@ -35,7 +56,11 @@ const EventManagement = ({ events }: { events: EventProps[] }) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(reqBody),
-    });
+    })
+      .then((res) => res.json())
+      .then(() => {
+        message.success("更新成功");
+      });
   };
 
   const handleOnChange = (checked: boolean, eventId: string, key: string) => {
@@ -46,6 +71,9 @@ const EventManagement = ({ events }: { events: EventProps[] }) => {
         break;
       case "isCompleteUpload":
         setIsCompleteUpload({ ...isCompleteUpload, [eventId]: checked });
+        break;
+      case "isReviewd":
+        setIsReviewd({ ...isReviewd, [eventId]: checked });
         break;
     }
     updateEvent(eventId, reqBody);
@@ -73,27 +101,63 @@ const EventManagement = ({ events }: { events: EventProps[] }) => {
     });
   };
 
+  const handleRemarkChange = (e: any, record: EventProps) => {
+    const newEvents = eventData.map((event) => {
+      if (event.eventId === record.eventId) {
+        return { ...event, description: e.target.value };
+      }
+      return event;
+    });
+
+    setEventData(newEvents);
+  };
+
   const columns = [
     {
       title: "賽事名稱",
       dataIndex: "eventName",
       key: "eventName",
+      width: 360,
     },
     {
       title: "日期",
       dataIndex: "date",
       key: "date",
+      sorter: (a: EventProps, b: EventProps) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return dateA.getTime() - dateB.getTime();
+      },
     },
     {
       title: "封面圖",
       dataIndex: "coverImg",
       key: "coverImg",
       render: (coverImg: string) => (
-        <Image src={coverImg} width={80} height={80} alt="coverImg" />
+        <Image
+          src={coverImg || DEFAULT_COVER_IMG}
+          width={80}
+          height={80}
+          alt="coverImg"
+        />
       ),
     },
     {
-      title: "是否顯示在首頁",
+      title: `審核 (${eventData.filter((event) => !event.isReviewd).length} )`,
+      dataIndex: "eventId",
+      key: "isReviewd",
+      render: (eventId: string) => (
+        <Switch
+          checked={isReviewd[eventId]}
+          onChange={(checked) => handleOnChange(checked, eventId, "isReviewd")}
+        />
+      ),
+      sorter: (a: EventProps, b: EventProps) => {
+        return a.isReviewd === b.isReviewd ? 0 : a.isReviewd ? -1 : 1;
+      },
+    },
+    {
+      title: "顯示在首頁",
       dataIndex: "eventId",
       key: "isShow",
       render: (eventId: string) => (
@@ -104,7 +168,7 @@ const EventManagement = ({ events }: { events: EventProps[] }) => {
       ),
     },
     {
-      title: "是否完成上傳",
+      title: "完成上傳",
       dataIndex: "eventId",
       key: "isCompleteUpload",
       render: (eventId: string) => (
@@ -113,6 +177,22 @@ const EventManagement = ({ events }: { events: EventProps[] }) => {
           onChange={(checked) =>
             handleOnChange(checked, eventId, "isCompleteUpload")
           }
+        />
+      ),
+    },
+    {
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
+      render: (text: string, record: EventProps) => (
+        <Editable
+          item={record}
+          targetId={record.eventId}
+          text={text}
+          updateFunction={() =>
+            updateEvent(record.eventId, { description: text })
+          }
+          handleRemarkChange={handleRemarkChange}
         />
       ),
     },
@@ -131,7 +211,7 @@ const EventManagement = ({ events }: { events: EventProps[] }) => {
   return isAllowed ? (
     <div className="container mx-auto my-24 text-slate-600">
       <h1 className="text-center text-2xl mb-10">賽事管理中心</h1>
-      <Table dataSource={events} columns={columns} />
+      <Table dataSource={eventData} columns={columns} />
       {contextHolder}
     </div>
   ) : (
@@ -146,8 +226,9 @@ export default EventManagement;
 export async function getServerSideProps() {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   // Fetch data from external API
-  const res = await fetch(`${domain}/api/events`);
-  const events = await res.json();
+  const events = await fetch(`${domain}/api/events?sort=asc`).then((res) =>
+    res.json()
+  );
 
   // Pass data to the page via props
   return { props: { events } };

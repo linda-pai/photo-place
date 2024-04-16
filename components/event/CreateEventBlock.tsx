@@ -3,6 +3,7 @@ import { useSession } from "next-auth/react";
 import { Input, Button, DatePicker, Image, Spin, message } from "antd";
 import type { DatePickerProps } from "antd";
 import dynamic from "next/dynamic";
+import dayjs from "dayjs";
 
 const Uploader = dynamic(() => import("@/components/upload/Uploader"), {
   loading: () => <Spin />,
@@ -10,8 +11,10 @@ const Uploader = dynamic(() => import("@/components/upload/Uploader"), {
 
 const CreateEventBlock = ({
   handleOnSuccess,
+  isShowImageUpload,
 }: {
   handleOnSuccess: () => void;
+  isShowImageUpload: boolean;
 }) => {
   const { data: session }: any = useSession();
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
@@ -56,6 +59,7 @@ const CreateEventBlock = ({
       eventName,
       coverImg,
       userId,
+      isReviewed: userId === process.env.NEXT_PUBLIC_ADMIN_ID ? true : false,
     };
 
     await fetch(`${domain}/api/events/add`, {
@@ -68,6 +72,9 @@ const CreateEventBlock = ({
       .then((res) => res.json())
       .then(() => {
         message.success("活動新增成功");
+        // 清空表單
+        setDate("");
+        setEventName("");
         handleOnSuccess();
       })
       .catch((err) => {
@@ -76,7 +83,7 @@ const CreateEventBlock = ({
   };
 
   const onDateChange: DatePickerProps["onChange"] = (date, dateString) => {
-    setDate(dateString);
+    setDate(dateString as string);
   };
 
   const onEventNameChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -85,20 +92,23 @@ const CreateEventBlock = ({
 
   return (
     <>
-      <h1 className="text-center text-[color:var(--main-color-dark)]">
-        新增活動
-      </h1>
       <div className="m-4 text-center">
-        <DatePicker onChange={onDateChange} />
+        <DatePicker
+          onChange={onDateChange}
+          value={date !== "" ? dayjs(date) : null}
+        />
         <Input
           placeholder="活動名稱"
           onChange={onEventNameChange}
           className="w-[40%] m-2"
+          value={eventName}
         />
       </div>
-      <div className="mx-auto">
-        <Uploader onChange={handleUpload} filesList={imageFile} />
-      </div>
+      {isShowImageUpload && (
+        <div className="mx-auto">
+          <Uploader onChange={handleUpload} filesList={imageFile} />
+        </div>
+      )}
       {imageFile.length > 0 && (
         <div className="flex justify-center">
           <Image
@@ -110,13 +120,23 @@ const CreateEventBlock = ({
         </div>
       )}
       <div className="text-center my-5">
-        <Button
-          onClick={handleUploadEvent}
-          disabled={!Boolean(coverImg && eventName && date)}
-          className="bg-white text-[color:var(--main-color-dark)]"
-        >
-          上傳活動
-        </Button>
+        {isShowImageUpload ? (
+          <Button
+            onClick={handleUploadEvent}
+            disabled={!Boolean(coverImg && eventName && date)}
+            className="bg-white text-[color:var(--main-color-dark)]"
+          >
+            上傳活動
+          </Button>
+        ) : (
+          <Button
+            onClick={handleUploadEvent}
+            disabled={!Boolean(eventName && date)}
+            className="bg-white text-[color:var(--main-color-dark)]"
+          >
+            提交
+          </Button>
+        )}
       </div>
     </>
   );

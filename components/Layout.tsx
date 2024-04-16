@@ -2,20 +2,10 @@ import Navbar from "./Navbar";
 import Footer from "./Footer";
 import Head from "next/head";
 
-export const metadata = {
-  title: "Photo Pacer 攝影小隊 - 馬拉松照片",
-  description:
-    "在您參與的馬拉松、自行車賽，或是其他各種運動活動中，Photo Pacer 攝影小隊將會在現場捕捉到最令人難忘的瞬間。我們的目標是透過專業攝影的照片，讓您的運動經歷得以永久保存，同時也讓其他熱愛運動的人們分享您的榮耀時刻。",
-};
-
 export default function Layout({ children, navBarRef }: any) {
   return (
     <div className="flex flex-col min-h-screen">
       <Head>
-        <title>{metadata.title}</title>
-        <meta name="description" content={metadata.description} />
-        <meta property="og:title" content={metadata.title} />
-        <meta property="og:description" content={metadata.description} />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Photo Pacer 攝影小隊" />
         <meta
@@ -54,7 +44,6 @@ export default function Layout({ children, navBarRef }: any) {
         <meta name="spiders" content="all" />
         <meta name="webcrawlers" content="all" />
         <meta name="rating" content="general" />
-        <meta name="abstract" content={metadata.description} />
         <meta name="reply-to" content="photopacer@gmail.com" />
         <meta name="contact" content="photopacer@gmail.com" />
         <meta itemProp="name" content="Photo Pacer 攝影小隊 / 照片平台" />
@@ -64,7 +53,7 @@ export default function Layout({ children, navBarRef }: any) {
         />
       </Head>
       <Navbar navBarRef={navBarRef} />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 h-screen">{children}</main>
       <Footer />
     </div>
   );

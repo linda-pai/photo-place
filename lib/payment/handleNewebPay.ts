@@ -1,3 +1,4 @@
+import { CartDataProps } from "@/types/interfaces/CartDataProps";
 //藍新金流
 const handleNewebPay = async ({
   orderId,
@@ -8,11 +9,12 @@ const handleNewebPay = async ({
 }: {
   orderId: string;
   totalAmount: number;
-  items: any[];
+  items: CartDataProps[];
   email: string;
   orderBy: string;
 }) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
+  const TimeStamp = Math.round(new Date().getTime() / 1000);
 
   const newebpayRes = await fetch(`${domain}/api/newebpay/request`, {
     method: "POST",
@@ -22,6 +24,7 @@ const handleNewebPay = async ({
       items,
       Email: email,
       orderBy,
+      MerchantOrderNo: TimeStamp,
     }),
     headers: {
       "Content-Type": "application/json",
@@ -51,11 +54,8 @@ const handleNewebPay = async ({
     } catch (err) {
       console.error(err);
     }
-  } else if (newebpayData.status === "paid") {
-    //已經付款過
-    return {
-      status: "paid",
-    };
+  } else {
+    return newebpayData;
   }
 };
 

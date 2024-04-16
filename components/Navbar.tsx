@@ -9,6 +9,7 @@ import {
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { useSession, signOut } from "next-auth/react";
+import { ROLE_PHOTOGRAPHER } from "@/lib/roles";
 
 const Nav = ({ navBarRef }: any) => {
   const router = useRouter();
@@ -44,7 +45,7 @@ const Nav = ({ navBarRef }: any) => {
   };
 
   const photographerItems: any = session
-    ? session.id === process.env.NEXT_PUBLIC_ADMIN_ID && [
+    ? ROLE_PHOTOGRAPHER.includes(session.id) && [
         {
           key: "4",
           label: "攝影師上傳紀錄",
@@ -56,7 +57,7 @@ const Nav = ({ navBarRef }: any) => {
           key: "5",
           label: "上傳照片",
           onClick: () => {
-            router.push("/upload");
+            router.push("/uploadService");
           },
         },
       ]
@@ -107,15 +108,12 @@ const Nav = ({ navBarRef }: any) => {
   return (
     <nav
       className={
-        `${
-          showLightColor
-            ? "text-white"
-            : "bg-[#ffffffa7] text-[color:var(--main-color)]"
-        }` + " h-16 fixed top-0 z-10 w-full shadow-sm flex items-center"
+        `${showLightColor ? "text-white" : "text-[color:var(--main-color)]"}` +
+        " h-16 fixed top-0 z-10 w-full shadow-sm flex items-center"
       }
     >
       <div
-        className="container mx-auto sm:px-0 px-4 flex justify-between items-center font-mono"
+        className="container mx-auto px-4 flex justify-between items-center font-mono"
         role="navigation"
       >
         <Link href="/" className="w-[12%] min-w-[100px]">

@@ -14,8 +14,8 @@ export default async function confirm(
   ).then((res) => res.json());
 
   if (decryptData.Status === "SUCCESS") {
-    res.redirect(302, `/user/succeed?orderStatus=SUCCESS`);
+    res.redirect(302, `/user/orders?orderStatus=SUCCESS`);
   } else {
-    res.redirect(`/user/succeed?orderStatus=FAIL`);
+    res.redirect(`/user/orders?orderStatus=FAIL`);
   }
 }

@@ -4,24 +4,46 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { message } from "antd";
+import useAuth from "@/hooks/useAuth";
+import { ROLE_PHOTOGRAPHER } from "@/lib/roles";
 
 function usePermission(): boolean {
+  const isLogin = useAuth();
+
   const [isAllowed, setIsAllowed] = useState(false);
   const router = useRouter();
   const { data: session }: any = useSession();
 
-  const permissionByPage: { [key: string]: any[] } = {
-    "/cms/orderList": [process.env.NEXT_PUBLIC_ADMIN_ID],
-    "/cms/notify": [process.env.NEXT_PUBLIC_ADMIN_ID],
-    "/cms/eventManagement": [process.env.NEXT_PUBLIC_ADMIN_ID],
-    "/upload": [process.env.NEXT_PUBLIC_ADMIN_ID],
-    "/createEvent": [process.env.NEXT_PUBLIC_ADMIN_ID],
-    "/uploadImagePage": [process.env.NEXT_PUBLIC_ADMIN_ID],
-  };
+  // path底下的路徑都需要的權限
+  const permissionByPath: any = [
+    {
+      path: "/cms",
+      allowedRoles: [process.env.NEXT_PUBLIC_ADMIN_ID],
+    },
+    {
+      path: "/uploadService",
+      allowedRoles: ROLE_PHOTOGRAPHER,
+    },
+    {
+      path: "/createEvent",
+      allowedRoles: [process.env.NEXT_PUBLIC_ADMIN_ID],
+    },
+    {
+      path: "/uploadImagePage",
+      allowedRoles: [process.env.NEXT_PUBLIC_ADMIN_ID],
+    },
+    {
+      path: "/photographer",
+      allowedRoles: ROLE_PHOTOGRAPHER,
+    },
+  ];
 
   useEffect(() => {
+    if (!isLogin) return;
     const userId = session?.id;
-    const allowedRoles = permissionByPage[router.pathname];
+    const allowedRoles = permissionByPath.find((item: any) =>
+      router.pathname.includes(item.path)
+    )?.allowedRoles;
 
     if (session !== undefined) {
       if (allowedRoles?.includes(userId)) {

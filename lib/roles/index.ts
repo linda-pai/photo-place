@@ -1,0 +1,3 @@
+const ROLE_PHOTOGRAPHER = [process.env.NEXT_PUBLIC_ADMIN_ID];
+
+export { ROLE_PHOTOGRAPHER };

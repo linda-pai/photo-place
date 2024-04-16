@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Form, Input, InputNumber, Button, message, Modal } from "antd";
+import { Form, Input, Button, message, Modal } from "antd";
 
 const NotifyForm = ({
   eventName,

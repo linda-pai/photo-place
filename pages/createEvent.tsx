@@ -19,7 +19,10 @@ const CreateEventPage: React.FC = () => {
 
   return isAllowed ? (
     <div className="container mx-auto h-[100vh] flex flex-col justify-center">
-      <CreateEventBlock handleOnSuccess={() => router.push("/")} />
+      <CreateEventBlock
+        handleOnSuccess={() => router.push("/")}
+        isShowImageUpload={true}
+      />
     </div>
   ) : (
     <Spin className="mx-auto my-[40vh] w-full" size="large" />

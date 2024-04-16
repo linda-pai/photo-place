@@ -3,7 +3,6 @@ const writeUploadInfo = async (reqBody: {
   eventName: string;
   author: string;
   name: string;
-  images: any[];
 }) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
@@ -21,7 +20,6 @@ const writeUploadInfo = async (reqBody: {
 const uploadUploadInfo = async (reqBody: {
   eventId: string;
   author: string;
-  images: any[];
 }) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 

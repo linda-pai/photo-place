@@ -4,7 +4,6 @@ import {
   Divider,
   RadioChangeEvent,
   Button,
-  message,
   Spin,
   Table,
   Tag,
@@ -12,13 +11,12 @@ import {
 } from "antd";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
-import { setCookie, getCookie, deleteCookie } from "cookies-next";
+import { getCookie } from "cookies-next";
 import { v4 as uuidv4 } from "uuid";
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import paymentOptions from "@/utils/paymentOptions";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import handleNewebPay from "@/lib/payment/handleNewebPay";
-import handleLinePay from "@/lib/payment/handleLinePay";
+import handlePayment from "@/lib/payment/handlePayment";
 import tableConfig from "./tableConfig";
 
 const ImageLightBox = dynamic(() => import("@/components/image/ImageLightBox"));
@@ -82,80 +80,18 @@ const Checkout = () => {
     setCurrImg(checkoutData.findIndex((item: any) => item.id === id));
   };
 
-  const removeFromCookieData = async () => {
-    const currentCart = JSON.parse(getCookie("cart") || "{}");
-    setCookie(
-      "cart",
-      JSON.stringify({
-        ...currentCart,
-        [checkoutData[0]?.eventId]: Object.values(currentCart)
-          .flat()
-          .filter(
-            (item: any) =>
-              !checkoutData.map((item: any) => item.id).includes(item)
-          ),
-      }),
-      {
-        expires: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-      }
-    );
-    deleteCookie("checkoutData");
-  };
-
   const gotoPayment = async () => {
     const orderId = "ord-" + uuidv4().substring(0, 12);
 
-    switch (paymentValue) {
-      case 2:
-        //  LinePay
-        const LineData = {
-          orderId,
-          totalAmount: total + fee,
-          items: checkoutData,
-          isMobile,
-          orderBy: session?.id,
-        };
-        const LineRes = await handleLinePay(LineData);
-        if (LineRes.status === "success") {
-          removeFromCookieData();
-          try {
-            if (isMobile) {
-              router.push(LineRes.result?.app);
-              // 手機版付款完成後回不來，所以1秒後導向成功頁
-              setTimeout(() => {
-                router.push("/user/succeed");
-              }, 1000);
-            } else {
-              router.push(LineRes.result?.web);
-            }
-          } catch (err) {
-            message.error("LinePay扣款失敗, 請稍後再試");
-          }
-        } else {
-          message.error("LinePay扣款失敗, 請稍後再試");
-        }
-        break;
-      case 3:
-        // 藍新金流
-        const orderData = {
-          orderId,
-          totalAmount: total + fee,
-          items: checkoutData,
-          email: session?.user.email,
-          orderBy: session?.id,
-        };
-        try {
-          const response = await handleNewebPay(orderData);
-          if (response?.status === "success") {
-            removeFromCookieData();
-          } else {
-            message.error("藍新金流扣款失敗, 請稍後再試");
-          }
-        } catch (err) {
-          message.error("藍新金流扣款失敗, 請稍後再試");
-        }
-        break;
-    }
+    await handlePayment({
+      paymentValue,
+      orderId,
+      totalAmount: total + fee,
+      items: checkoutData,
+      isMobile,
+      session,
+      router,
+    });
   };
 
   const showModal = () => {

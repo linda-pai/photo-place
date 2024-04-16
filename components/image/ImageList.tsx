@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import { setCookie, getCookie } from "cookies-next";
 import { useSession } from "next-auth/react";
 import { message } from "antd";
-import { clickAddToCart, removeAddToCart, searchTracking } from "@/lib/gtag";
+import { clickAddToCart, removeAddToCart } from "@/lib/gtag";
 import ImageItems from "./ImageItems";
 import ImageLightBox from "./ImageLightBox";
 
@@ -28,6 +28,7 @@ const ImageList = ({
   handleClickImg,
   eventId,
   eventName,
+  onLoad,
 }: {
   images: ImageItemProps[];
   isOpen: boolean;
@@ -38,9 +39,9 @@ const ImageList = ({
   handleClickImg?: (id: string) => void;
   eventId: string;
   eventName: string;
+  onLoad: () => void;
 }) => {
   const { data: session }: any = useSession();
-
   const [cartData, setCartData] = useState({} as any);
 
   useEffect(() => {
@@ -77,7 +78,7 @@ const ImageList = ({
         event_category: "event",
         event_label: eventName,
         image_id: id,
-        user_id: session.id,
+        user_id: session?.id || "",
       });
     } else {
       //從cookie移除
@@ -93,7 +94,7 @@ const ImageList = ({
         event_category: "event",
         event_label: eventName,
         image_id: id,
-        user_id: session.id,
+        user_id: session?.id || "",
       });
     }
   };
@@ -107,6 +108,7 @@ const ImageList = ({
           isExistInCart={isExistInCart}
           handleClickCart={handleClickCart}
           handleClickImg={handleClickImg}
+          onLoad={onLoad}
         />
       ))}
       <ImageLightBox

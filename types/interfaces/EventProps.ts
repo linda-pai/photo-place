@@ -5,5 +5,27 @@ export interface EventProps {
   userId: string;
   isShow: boolean;
   isCompleteUpload: boolean;
+  isReviewd: boolean;
   eventId: string;
+  date: string;
+  description?: string;
+}
+
+export interface EventOption {
+  eventName: string;
+  eventId: string;
+  date: string;
+  value: string;
+}
+
+export interface ChildOption {
+  value: string;
+  title: string;
+  date: string;
+}
+
+export interface ParentOption {
+  value: string;
+  title: string;
+  children: ChildOption[];
 }
