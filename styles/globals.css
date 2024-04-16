@@ -111,12 +111,12 @@ td {
     box-shadow: 0px 2px 0px rgba(50, 50, 50, 0.25);
   }
 } */
-.ant-ribbon-wrapper {
-  width: 100%;
-}
 
 .ant-ribbon.ant-ribbon-placement-end {
   top: 70%;
+}
+.ant-ribbon-wrapper {
+  width: 100%;
 }
 
 :where(.css-2rgkd4).ant-pagination .ant-pagination-item a {
