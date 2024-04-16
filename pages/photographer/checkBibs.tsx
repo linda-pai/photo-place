@@ -25,17 +25,20 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [currImgIndex, setCurrImgIndex] = useState(0); // [0, images.length - 1
   const [curPage, setCurPage] = useState(1);
+  const [loading, setLoading] = useState(true);
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const pageSize = 15;
 
   useEffect(() => {
     if (!session) return;
+    setLoading(true);
     fetch(
       `${domain}/api/images/getByAuthor/${eventId}/${session.id}/${sortBy}?page=${curPage}`
     )
       .then((res) => res.json())
       .then((data) => {
+        setLoading(false);
         setImages(data.images);
         setTotal(data.totalCount);
       });
@@ -121,62 +124,67 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
             </Radio.Group>
           </div>
           <div className="masonry">
-            {images.map((item: any, key: number) => (
-              <div
-                key={key}
-                className="sm:basis-[calc(20%_-_16px)] basis-[calc(33%_-_16px)] relative"
-              >
+            {!loading ? (
+              images.map((item: any, key: number) => (
                 <div
-                  className="cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
-                  onClick={() => handleClickImg(item.id)}
+                  key={key}
+                  className="sm:basis-[calc(20%_-_16px)] basis-[calc(33%_-_16px)] relative"
                 >
-                  <Image
-                    className="item__content w-full h-auto"
-                    src={item.watermarkedUrl}
-                    alt={item.watermarkedUrl}
-                    width="0"
-                    height="0"
-                    sizes="100vw"
-                    quality={30}
-                  />
-                  <div className="group-hover:flex gap-2 py-6 justify-evenly items-center hidden bg-[#fff] bg-opacity-40 absolute top-0 w-full sm:h-[10%] h-[18%] min-h-[28px] max-h-[34px] group hover:bg-opacity-80 transition-all duration-300">
-                    <p className="text-[color:var(--main-color-dark)] mx-1 text-sm">
-                      {item.fileName}
-                    </p>
-                    <div className="flex justify-end">
-                      <Button
-                        onClick={(e) => handleDeleteImg(item.id, e)}
-                        className="flex items-center justify-center mr-2"
-                        danger
-                      >
-                        <DeleteOutlined />
-                      </Button>
-                      <Button
-                        onClick={(e) =>
-                          handleFeatureImg(item.id, item.isFeatured, e)
-                        }
-                        className={`flex items-center justify-center mr-2 ${
-                          item.isFeatured
-                            ? "text-[color:var(--main-color)] border border-[#fff] bg-[color:var(--main-color)] text-[#fff]"
-                            : "text-[color:var(--main-color-dark)] bg-[#fff] border border-[color:var(--main-color-dark)] bg-transparent"
-                        }`}
-                      >
-                        <StarOutlined />
-                      </Button>
+                  <div
+                    className="cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
+                    onClick={() => handleClickImg(item.id)}
+                  >
+                    <Image
+                      className="item__content w-full h-auto"
+                      src={item.watermarkedUrl}
+                      alt={item.watermarkedUrl}
+                      width="0"
+                      height="0"
+                      sizes="100vw"
+                      quality={30}
+                    />
+                    <div className="group-hover:flex gap-2 py-6 justify-evenly items-center hidden bg-[#fff] bg-opacity-40 absolute top-0 w-full sm:h-[10%] h-[18%] min-h-[28px] max-h-[34px] group hover:bg-opacity-80 transition-all duration-300">
+                      <p className="text-[color:var(--main-color-dark)] mx-1 text-sm">
+                        {item.fileName}
+                      </p>
+                      <div className="flex justify-end">
+                        <Button
+                          onClick={(e) => handleDeleteImg(item.id, e)}
+                          className="flex items-center justify-center mr-2"
+                          danger
+                        >
+                          <DeleteOutlined />
+                        </Button>
+                        <Button
+                          onClick={(e) =>
+                            handleFeatureImg(item.id, item.isFeatured, e)
+                          }
+                          className={`flex items-center justify-center mr-2 ${
+                            item.isFeatured
+                              ? "text-[color:var(--main-color)] border border-[#fff] bg-[color:var(--main-color)] text-[#fff]"
+                              : "text-[color:var(--main-color-dark)] bg-[#fff] border border-[color:var(--main-color-dark)] bg-transparent"
+                          }`}
+                        >
+                          <StarOutlined />
+                        </Button>
+                      </div>
                     </div>
                   </div>
+                  <AddableTags
+                    key={images[key].path}
+                    bibs={item.path.map((tag: string) =>
+                      tag === "common" ? "" : tag
+                    )}
+                    handleUpdateBibs={(newTags: string[]) =>
+                      updateBibs(newTags, item.id)
+                    }
+                  />
                 </div>
-                <AddableTags
-                  key={images[key].path}
-                  bibs={item.path.map((tag: string) =>
-                    tag === "common" ? "" : tag
-                  )}
-                  handleUpdateBibs={(newTags: string[]) =>
-                    updateBibs(newTags, item.id)
-                  }
-                />
-              </div>
-            ))}
+              ))
+            ) : (
+              <Spin className="mx-auto my-[40vh] w-full" size="large" />
+            )}
+
             <ImageLightBox
               images={images}
               isOpen={showImageViewer}
