@@ -53,7 +53,7 @@ export default function Layout({ children, navBarRef }: any) {
         />
       </Head>
       <Navbar navBarRef={navBarRef} />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 h-screen">{children}</main>
       <Footer />
     </div>
   );

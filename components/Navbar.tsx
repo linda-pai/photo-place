@@ -108,11 +108,8 @@ const Nav = ({ navBarRef }: any) => {
   return (
     <nav
       className={
-        `${
-          showLightColor
-            ? "text-white"
-            : "bg-[#ffffffa7] text-[color:var(--main-color)]"
-        }` + " h-16 fixed top-0 z-10 w-full shadow-sm flex items-center"
+        `${showLightColor ? "text-white" : "text-[color:var(--main-color)]"}` +
+        " h-16 fixed top-0 z-10 w-full shadow-sm flex items-center"
       }
     >
       <div
