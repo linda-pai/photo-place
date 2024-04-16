@@ -170,8 +170,8 @@ export default function EventSearchPage({
           event_category: "event",
           event_label: eventName,
           search_term: search,
-          number_of_results: data.length,
-          user_id: session?.id || "",
+          number_of_results: String(data.length),
+          user_id_number: String(session?.id) || "",
         });
       });
   };
