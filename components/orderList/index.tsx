@@ -26,7 +26,6 @@ const OrderList = ({ orders }: OrderListProps) => {
 
   const [orderData, setOrderData] = useState<Order[]>(orders);
   const [loading, setLoading] = useState(false);
-  const [editing, setEditing] = useState<{ [key: string]: boolean }>({});
   const [modal, contextHolder] = Modal.useModal();
 
   const columnsRenderMap = {
@@ -129,8 +128,6 @@ const OrderList = ({ orders }: OrderListProps) => {
   };
 
   const handleInputConfirm = (orderId: string, text: string) => {
-    setEditing((prev) => ({ ...prev, [orderId]: false }));
-
     updateOrderData({
       remark: text,
       orderId: orderId,
@@ -145,13 +142,6 @@ const OrderList = ({ orders }: OrderListProps) => {
       return item;
     });
     setOrderData(newOrderData);
-  };
-
-  const toggle = (orderId: string) => {
-    setEditing((prevToggle) => ({
-      ...prevToggle,
-      [orderId]: !prevToggle[orderId],
-    }));
   };
 
   const columns = tableConfig(columnsRenderMap);

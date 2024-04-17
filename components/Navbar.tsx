@@ -104,6 +104,13 @@ const Nav = ({ navBarRef }: any) => {
             router.push("/cms/eventManagement");
           },
         },
+        {
+          key: "5",
+          label: "會員管理",
+          onClick: () => {
+            router.push("/cms/userManagement");
+          },
+        },
       ]
     : [];
 
