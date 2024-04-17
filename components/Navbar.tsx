@@ -9,7 +9,7 @@ import {
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { useSession, signOut } from "next-auth/react";
-import { ROLE_PHOTOGRAPHER } from "@/lib/roles";
+import { ROLE_PHOTOGRAPHER, ROLE_ADMIN } from "@/lib/roles";
 
 const Nav = ({ navBarRef }: any) => {
   const router = useRouter();
@@ -81,29 +81,31 @@ const Nav = ({ navBarRef }: any) => {
   //photographerItems ＋ basicItems
   const UserItems: MenuProps["items"] = basicItems.concat(photographerItems);
 
-  const adminItems: MenuProps["items"] = [
-    {
-      key: "2",
-      label: "訂單管理",
-      onClick: () => {
-        router.push("/cms/orderList");
-      },
-    },
-    {
-      key: "3",
-      label: "通知管理",
-      onClick: () => {
-        router.push("/cms/notify");
-      },
-    },
-    {
-      key: "4",
-      label: "賽事管理",
-      onClick: () => {
-        router.push("/cms/eventManagement");
-      },
-    },
-  ];
+  const adminItems: any = session
+    ? ROLE_ADMIN.includes(session.id) && [
+        {
+          key: "2",
+          label: "訂單管理",
+          onClick: () => {
+            router.push("/cms/orderList");
+          },
+        },
+        {
+          key: "3",
+          label: "通知管理",
+          onClick: () => {
+            router.push("/cms/notify");
+          },
+        },
+        {
+          key: "4",
+          label: "賽事管理",
+          onClick: () => {
+            router.push("/cms/eventManagement");
+          },
+        },
+      ]
+    : [];
 
   return (
     <nav
@@ -150,7 +152,7 @@ const Nav = ({ navBarRef }: any) => {
                   </div>
                 </Dropdown>
               </div>
-              {session.id == process.env.NEXT_PUBLIC_ADMIN_ID && (
+              {ROLE_ADMIN.includes(session.id) && (
                 <div className="cursor-pointer">
                   <Dropdown menu={{ items: adminItems }} placement="bottom">
                     <div className=" text-3xl hover:text-[#ca7c6f]">

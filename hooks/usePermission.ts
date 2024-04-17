@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { message } from "antd";
 import useAuth from "@/hooks/useAuth";
-import { ROLE_PHOTOGRAPHER } from "@/lib/roles";
+import { ROLE_PHOTOGRAPHER, ROLE_ADMIN } from "@/lib/roles";
 
 function usePermission(): boolean {
   const isLogin = useAuth();
@@ -18,7 +18,7 @@ function usePermission(): boolean {
   const permissionByPath: any = [
     {
       path: "/cms",
-      allowedRoles: [process.env.NEXT_PUBLIC_ADMIN_ID],
+      allowedRoles: ROLE_ADMIN,
     },
     {
       path: "/uploadService",
@@ -26,11 +26,11 @@ function usePermission(): boolean {
     },
     {
       path: "/createEvent",
-      allowedRoles: [process.env.NEXT_PUBLIC_ADMIN_ID],
+      allowedRoles: ROLE_ADMIN,
     },
     {
       path: "/uploadImagePage",
-      allowedRoles: [process.env.NEXT_PUBLIC_ADMIN_ID],
+      allowedRoles: ROLE_ADMIN,
     },
     {
       path: "/photographer",
