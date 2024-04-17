@@ -48,7 +48,7 @@ export default function Home({
           ref={navBarRef}
           className={`flex flex-col items-center justify-between my-24 container mx-auto ${inter.className}`}
         >
-          <h1 className=" mt-5 mb-16 border-b sm:text-3xl text-2xl text-[color:var(--main-color-dark)]">
+          <h1 className=" mt-5 mb-16 border-b sm:text-3xl text-2xl text-white">
             運動賽事相簿
           </h1>
           <div className="max-w-[1280px] flex flex-wrap justify-center w-[75%]">
