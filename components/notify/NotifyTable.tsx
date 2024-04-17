@@ -9,6 +9,7 @@ const NotifyTable = ({ tableData, eventId }: any) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
   const [data, setData] = useState<NotifyProps[]>(tableData);
+  const yetSend = data.filter((item) => item.status === "pending");
 
   useEffect(() => {
     setData(tableData);
@@ -126,7 +127,7 @@ const NotifyTable = ({ tableData, eventId }: any) => {
       });
   };
 
-  const sendAllEmail = async (eventId: string) => {
+  const sendAllEmail = async (eventId: string, isAll: boolean) => {
     setLoading(true);
 
     await fetch(`${domain}/api/imagesUploadComplete/sendAllEmail/${eventId}`, {
@@ -134,6 +135,9 @@ const NotifyTable = ({ tableData, eventId }: any) => {
       headers: {
         "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        isAll,
+      }),
     })
       .then((res) => res.json())
       .then(() => {
@@ -155,14 +159,27 @@ const NotifyTable = ({ tableData, eventId }: any) => {
       content: `確定要寄送 ${eventId} 所有通知嗎？`,
       okText: "確認",
       cancelText: "取消",
-      onOk: () => sendAllEmail(eventId),
+      onOk: () => sendAllEmail(eventId, true),
+    });
+  };
+
+  const handleClickSendNotYet = () => {
+    modal.confirm({
+      title: "一鍵寄送尚未寄出通知",
+      icon: <ExclamationCircleOutlined />,
+      content: `確定要寄送 ${eventId}尚未寄出通知共${yetSend.length}則嗎？`,
+      okText: "確認",
+      cancelText: "取消",
+      onOk: () => {
+        sendAllEmail(eventId, false);
+      },
     });
   };
 
   return (
     <div className="container mx-auto my-24 text-slate-600" id="notify-table">
       <h1 className="text-center text-2xl mb-10">上傳完成通知列表</h1>
-      <div className="w-full flex justify-end my-4">
+      <div className="w-full flex justify-end my-4 gap-1">
         <Button
           className=""
           danger
@@ -171,6 +188,16 @@ const NotifyTable = ({ tableData, eventId }: any) => {
         >
           一鍵寄送通知
         </Button>
+        {yetSend.length > 0 && (
+          <Button
+            className=""
+            danger
+            onClick={handleClickSendNotYet}
+            disabled={data.length === 0}
+          >
+            一鍵寄送尚未寄出通知
+          </Button>
+        )}
       </div>
       <div>
         <Table dataSource={data} columns={columns} loading={loading} />

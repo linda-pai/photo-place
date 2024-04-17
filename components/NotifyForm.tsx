@@ -52,6 +52,7 @@ const NotifyForm = ({
           notifyUrl,
           eventName,
           eventId,
+          status: "pending",
         }),
       }
     ).then((res) => res.json());
