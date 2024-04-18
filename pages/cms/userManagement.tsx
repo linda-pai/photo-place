@@ -1,3 +1,4 @@
+import Head from "next/head";
 import { Table } from "antd";
 import { CopyOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -55,18 +56,31 @@ const UserManagement = ({ userList }: { userList: UserProps[] }) => {
     },
   ];
 
-  return isAllowed ? (
-    <div className="container mx-auto my-24 text-slate-600">
-      <h1 className="text-center text-2xl mb-10">賽事管理中心</h1>
-      <div className="w-full flex justify-end my-4 gap-1">
-        共{userList.length}筆資料
-      </div>
-      <Table dataSource={userList} columns={columns} />
-    </div>
-  ) : (
-    <div>
-      <h1>Permission Denied</h1>
-    </div>
+  return (
+    <>
+      <Head>
+        <title>用戶管理</title>
+        <meta name="description" content="用戶管理" />
+        <link
+          rel="canonical"
+          href={`${process.env.NEXT_PUBLIC_APP_URL}/cms/userManagement`}
+        />
+      </Head>
+
+      {isAllowed ? (
+        <div className="container mx-auto my-24 text-slate-600">
+          <h1 className="text-center text-2xl mb-10">用戶管理</h1>
+          <div className="w-full flex justify-end my-4 gap-1">
+            共{userList.length}筆資料
+          </div>
+          <Table dataSource={userList} columns={columns} />
+        </div>
+      ) : (
+        <div>
+          <h1>Permission Denied</h1>
+        </div>
+      )}
+    </>
   );
 };
 export default UserManagement;

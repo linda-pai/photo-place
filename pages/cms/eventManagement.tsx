@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import Head from "next/head";
 import usePermission from "@/hooks/usePermission";
 import { EventProps } from "@/types/interfaces/EventProps";
 import { Table, Switch, Button, Modal, message, Spin } from "antd";
@@ -208,16 +209,29 @@ const EventManagement = ({
     },
   ];
 
-  return isAllowed ? (
-    <div className="container mx-auto my-24 text-slate-600">
-      <h1 className="text-center text-2xl mb-10">賽事管理中心</h1>
-      <Table dataSource={eventData} columns={columns} />
-      {contextHolder}
-    </div>
-  ) : (
-    <div>
-      <h1>Permission Denied</h1>
-    </div>
+  return (
+    <>
+      <Head>
+        <title>賽事管理 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <meta name="description" content="賽事管理" />
+        <link
+          rel="canonical"
+          href={`${process.env.NEXT_PUBLIC_APP_URL}/cms/eventManagement`}
+        />
+      </Head>
+
+      {isAllowed ? (
+        <div className="container mx-auto my-24 text-slate-600">
+          <h1 className="text-center text-2xl mb-10">賽事管理中心</h1>
+          <Table dataSource={eventData} columns={columns} />
+          {contextHolder}
+        </div>
+      ) : (
+        <div>
+          <h1>Permission Denied</h1>
+        </div>
+      )}
+    </>
   );
 };
 

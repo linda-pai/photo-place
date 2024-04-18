@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import Head from "next/head";
 import { Button, Pagination, Radio, Spin, message } from "antd";
 import { DeleteOutlined, StarOutlined } from "@ant-design/icons";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
@@ -104,123 +105,138 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
     });
   };
 
-  return isAllowed ? (
+  return (
     <>
-      <div className="text-center mt-24 text-[color:var(--main-color-dark)]">
-        <p>號碼布檢查</p>
-        <p>共 {total} 張照片</p>
-      </div>
-      {images.length > 0 && (
-        <div className="container mx-auto sm:my-10 my-4">
-          <div className="flex justify-end mx-4">
-            <Radio.Group
-              defaultValue="pathCount"
-              buttonStyle="solid"
-              onChange={(e) => setSortBy(e.target.value)}
-              className="mb-4"
-            >
-              <Radio.Button value="pathCount">按號碼布數量排序</Radio.Button>
-              <Radio.Button value="lastModified">按時間排序</Radio.Button>
-            </Radio.Group>
+      <Head>
+        <title>號碼布檢查</title>
+        <meta name="description" content="號碼布檢查" />
+        <link
+          rel="canonical"
+          href={`${process.env.NEXT_PUBLIC_APP_URL}/photographer/checkBibs`}
+        />
+      </Head>
+
+      {isAllowed ? (
+        <>
+          <div className="text-center mt-24 text-[color:var(--main-color-dark)]">
+            <p>號碼布檢查</p>
+            <p>共 {total} 張照片</p>
           </div>
-          <div className="masonry">
-            {!loading ? (
-              images.map((item: any, key: number) => (
-                <div
-                  key={key}
-                  className="sm:basis-[calc(20%_-_16px)] basis-[calc(33%_-_16px)] relative"
+          {images.length > 0 && (
+            <div className="container mx-auto sm:my-10 my-4">
+              <div className="flex justify-end mx-4">
+                <Radio.Group
+                  defaultValue="pathCount"
+                  buttonStyle="solid"
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="mb-4"
                 >
-                  <div
-                    className="cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
-                    onClick={() => handleClickImg(item.id)}
-                  >
-                    <Image
-                      className="item__content w-full h-auto"
-                      src={item.watermarkedUrl}
-                      alt={item.watermarkedUrl}
-                      width="0"
-                      height="0"
-                      sizes="100vw"
-                      quality={30}
-                    />
-                    <div className="group-hover:flex gap-2 py-6 justify-evenly items-center hidden bg-[#fff] bg-opacity-40 absolute top-0 w-full sm:h-[10%] h-[18%] min-h-[28px] max-h-[34px] group hover:bg-opacity-80 transition-all duration-300">
-                      <p className="text-[color:var(--main-color-dark)] mx-1 text-sm">
-                        {item.fileName}
-                      </p>
-                      <div className="flex justify-end">
-                        <Button
-                          onClick={(e) => handleDeleteImg(item.id, e)}
-                          className="flex items-center justify-center mr-2"
-                          danger
-                        >
-                          <DeleteOutlined />
-                        </Button>
-                        <Button
-                          onClick={(e) =>
-                            handleFeatureImg(item.id, item.isFeatured, e)
-                          }
-                          className={`flex items-center justify-center mr-2 ${
-                            item.isFeatured
-                              ? "text-[color:var(--main-color)] border border-[#fff] bg-[color:var(--main-color)] text-[#fff]"
-                              : "text-[color:var(--main-color-dark)] bg-[#fff] border border-[color:var(--main-color-dark)] bg-transparent"
-                          }`}
-                        >
-                          <StarOutlined />
-                        </Button>
+                  <Radio.Button value="pathCount">
+                    按號碼布數量排序
+                  </Radio.Button>
+                  <Radio.Button value="lastModified">按時間排序</Radio.Button>
+                </Radio.Group>
+              </div>
+              <div className="masonry">
+                {!loading ? (
+                  images.map((item: any, key: number) => (
+                    <div
+                      key={key}
+                      className="sm:basis-[calc(20%_-_16px)] basis-[calc(33%_-_16px)] relative"
+                    >
+                      <div
+                        className="cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
+                        onClick={() => handleClickImg(item.id)}
+                      >
+                        <Image
+                          className="item__content w-full h-auto"
+                          src={item.watermarkedUrl}
+                          alt={item.watermarkedUrl}
+                          width="0"
+                          height="0"
+                          sizes="100vw"
+                          quality={30}
+                        />
+                        <div className="group-hover:flex gap-2 py-6 justify-evenly items-center hidden bg-[#fff] bg-opacity-40 absolute top-0 w-full sm:h-[10%] h-[18%] min-h-[28px] max-h-[34px] group hover:bg-opacity-80 transition-all duration-300">
+                          <p className="text-[color:var(--main-color-dark)] mx-1 text-sm">
+                            {item.fileName}
+                          </p>
+                          <div className="flex justify-end">
+                            <Button
+                              onClick={(e) => handleDeleteImg(item.id, e)}
+                              className="flex items-center justify-center mr-2"
+                              danger
+                            >
+                              <DeleteOutlined />
+                            </Button>
+                            <Button
+                              onClick={(e) =>
+                                handleFeatureImg(item.id, item.isFeatured, e)
+                              }
+                              className={`flex items-center justify-center mr-2 ${
+                                item.isFeatured
+                                  ? "text-[color:var(--main-color)] border border-[#fff] bg-[color:var(--main-color)] text-[#fff]"
+                                  : "text-[color:var(--main-color-dark)] bg-[#fff] border border-[color:var(--main-color-dark)] bg-transparent"
+                              }`}
+                            >
+                              <StarOutlined />
+                            </Button>
+                          </div>
+                        </div>
                       </div>
+                      <AddableTags
+                        key={images[key].path}
+                        bibs={item.path.map((tag: string) =>
+                          tag === "common" ? "" : tag
+                        )}
+                        handleUpdateBibs={(newTags: string[]) =>
+                          updateBibs(newTags, item.id)
+                        }
+                      />
                     </div>
-                  </div>
-                  <AddableTags
-                    key={images[key].path}
-                    bibs={item.path.map((tag: string) =>
-                      tag === "common" ? "" : tag
-                    )}
-                    handleUpdateBibs={(newTags: string[]) =>
-                      updateBibs(newTags, item.id)
-                    }
-                  />
-                </div>
-              ))
-            ) : (
-              <Spin className="mx-auto my-[40vh] w-full" size="large" />
-            )}
+                  ))
+                ) : (
+                  <Spin className="mx-auto my-[40vh] w-full" size="large" />
+                )}
 
-            <ImageLightBox
-              images={images}
-              isOpen={showImageViewer}
-              curIndex={currImgIndex}
-              onClose={() => setShowImageViewer(false)}
-              onPrev={gotoPrevious}
-              onNext={gotoNext}
-              customFooter={
-                <div className="absolute bottom-[-20px] left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                  <AddableTags
-                    bibs={images[currImgIndex].path}
-                    handleUpdateBibs={(newTags: string[]) =>
-                      updateBibs(newTags, images[currImgIndex].id)
-                    }
-                    key={images[currImgIndex].path}
-                  />
-                </div>
-              }
-            />
-          </div>
+                <ImageLightBox
+                  images={images}
+                  isOpen={showImageViewer}
+                  curIndex={currImgIndex}
+                  onClose={() => setShowImageViewer(false)}
+                  onPrev={gotoPrevious}
+                  onNext={gotoNext}
+                  customFooter={
+                    <div className="absolute bottom-[-20px] left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                      <AddableTags
+                        bibs={images[currImgIndex].path}
+                        handleUpdateBibs={(newTags: string[]) =>
+                          updateBibs(newTags, images[currImgIndex].id)
+                        }
+                        key={images[currImgIndex].path}
+                      />
+                    </div>
+                  }
+                />
+              </div>
 
-          <div className="text-center my-10">
-            <Pagination
-              defaultCurrent={curPage}
-              onChange={setCurPage}
-              total={total}
-              pageSize={pageSize}
-              showSizeChanger={false}
-              current={curPage}
-            />
-          </div>
-        </div>
+              <div className="text-center my-10">
+                <Pagination
+                  defaultCurrent={curPage}
+                  onChange={setCurPage}
+                  total={total}
+                  pageSize={pageSize}
+                  showSizeChanger={false}
+                  current={curPage}
+                />
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <Spin className="mx-auto my-[40vh] w-full" size="large" />
       )}
     </>
-  ) : (
-    <Spin className="mx-auto my-[40vh] w-full" size="large" />
   );
 }
 

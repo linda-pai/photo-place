@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Head from "next/head";
 import { Spin } from "antd";
 import usePermission from "@/hooks/usePermission";
 import dynamic from "next/dynamic";
@@ -30,13 +31,26 @@ const Notify = ({
 
   const isAllowed = usePermission();
 
-  return isAllowed ? (
+  return (
     <>
-      <NotifyList events={events} />
-      <NotifyTable tableData={tableData} eventId={eventId} />
+      <Head>
+        <title>通知管理 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <meta name="description" content="通知管理" />
+        <link
+          rel="canonical"
+          href={`${process.env.NEXT_PUBLIC_APP_URL}/cms/notify`}
+        />
+      </Head>
+
+      {isAllowed ? (
+        <>
+          <NotifyList events={events} />
+          <NotifyTable tableData={tableData} eventId={eventId} />
+        </>
+      ) : (
+        <Spin className="mx-auto my-[40vh] w-full" size="large" />
+      )}
     </>
-  ) : (
-    <Spin className="mx-auto my-[40vh] w-full" size="large" />
   );
 };
 export default Notify;

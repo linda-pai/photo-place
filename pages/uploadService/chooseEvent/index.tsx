@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
+import Head from "next/head";
 import { TreeSelect, Button, Spin, Divider, message } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
 import dynamic from "next/dynamic";
@@ -43,60 +44,75 @@ const chooseEvent = ({ eventOption }: { eventOption: Event[] }) => {
     setEventOptions(formatted);
   };
 
-  return isAllowed ? (
-    <div className="mt-24 container mx-auto px-4">
-      <UploadBreadcrumb />
-      <div className="text-center mx-auto mt-32 max-w-[800px] min-h-[50vh] text-[var(--main-color-dark)] text-lg">
-        <h1>請選擇您拍攝的賽事相簿</h1>
-        <div className="my-4 flex">
-          <Button
-            onClick={fetchEventOptions}
-            className="flex items-center mx-1"
-          >
-            <ReloadOutlined />
-          </Button>
-          <TreeSelect
-            showSearch
-            style={{ width: "100%" }}
-            value={eventId}
-            dropdownStyle={{ maxHeight: 400, overflow: "auto" }}
-            treeData={eventOptions}
-            placeholder="請選擇賽事或搜尋"
-            allowClear
-            onChange={handleSelected}
-            filterTreeNode={(search, item: any) =>
-              item.title.toLowerCase().indexOf(search.toLowerCase()) >= 0
-            }
-            treeDefaultExpandAll
-          />
-        </div>
+  return (
+    <>
+      <Head>
+        <title>選擇賽事相簿 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <meta name="description" content="選擇賽事相簿" />
+        <link
+          rel="canonical"
+          href={`${process.env.NEXT_PUBLIC_APP_URL}/uploadService/chooseEvent`}
+        />
+      </Head>
 
-        <Button
-          onClick={() => {
-            router.push(`/uploadService/chooseEvent/upload?eventId=${eventId}`);
-          }}
-          className="my-10"
-          disabled={!eventId}
-        >
-          下一步
-        </Button>
-        <Divider />
-        <div className="my-16">
-          <div>
-            <p>找不到您所拍攝的賽事？創建一個賽事：</p>
-            <p className="text-sm text-[var(--main-color-light)]">
-              註：需等待管理員審核後才會顯示在列表中
-            </p>
-            <CreateEventBlock
-              handleOnSuccess={() => {}}
-              isShowImageUpload={false}
-            />
+      {isAllowed ? (
+        <div className="mt-24 container mx-auto px-4">
+          <UploadBreadcrumb />
+          <div className="text-center mx-auto mt-32 max-w-[800px] min-h-[50vh] text-[var(--main-color-dark)] text-lg">
+            <h1>請選擇您拍攝的賽事相簿</h1>
+            <div className="my-4 flex">
+              <Button
+                onClick={fetchEventOptions}
+                className="flex items-center mx-1"
+              >
+                <ReloadOutlined />
+              </Button>
+              <TreeSelect
+                showSearch
+                style={{ width: "100%" }}
+                value={eventId}
+                dropdownStyle={{ maxHeight: 400, overflow: "auto" }}
+                treeData={eventOptions}
+                placeholder="請選擇賽事或搜尋"
+                allowClear
+                onChange={handleSelected}
+                filterTreeNode={(search, item: any) =>
+                  item.title.toLowerCase().indexOf(search.toLowerCase()) >= 0
+                }
+                treeDefaultExpandAll
+              />
+            </div>
+
+            <Button
+              onClick={() => {
+                router.push(
+                  `/uploadService/chooseEvent/upload?eventId=${eventId}`
+                );
+              }}
+              className="my-10"
+              disabled={!eventId}
+            >
+              下一步
+            </Button>
+            <Divider />
+            <div className="my-16">
+              <div>
+                <p>找不到您所拍攝的賽事？創建一個賽事：</p>
+                <p className="text-sm text-[var(--main-color-light)]">
+                  註：需等待管理員審核後才會顯示在列表中
+                </p>
+                <CreateEventBlock
+                  handleOnSuccess={() => {}}
+                  isShowImageUpload={false}
+                />
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-  ) : (
-    <Spin className="mx-auto my-[40vh] w-full" size="large" />
+      ) : (
+        <Spin className="mx-auto my-[40vh] w-full" size="large" />
+      )}
+    </>
   );
 };
 
