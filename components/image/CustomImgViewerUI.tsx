@@ -34,7 +34,7 @@ const customImgViewerUI = ({ image, isExistInCart, handleClickCart }: any) => {
       <div>
         {image?.authorName && (
           <p className="text-xs text-[#8f8f8f] m-2">
-            photo by {image?.photographer}
+            photo by {image?.authorName}
           </p>
         )}
         {image.lastModified && (

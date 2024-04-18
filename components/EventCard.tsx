@@ -6,7 +6,7 @@ import { VerticalTimelineElement } from "react-vertical-timeline-component";
 const EventCard = ({ event }: any) => {
   const { eventId, eventName, date } = event || {};
 
-  const isNew = dayjs().diff(dayjs(date), "day") < 4;
+  const isNew = dayjs().diff(dayjs(date), "day") < 7;
 
   return (
     <VerticalTimelineElement

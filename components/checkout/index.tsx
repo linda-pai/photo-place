@@ -129,8 +129,7 @@ const Checkout = () => {
   };
 
   return (
-    <div className="container sm:px-4 px-0 mx-auto my-24 text-[color:var(--main-color-dark)] sm:w-[70%] w-[90%]">
-      <h1 className="text-center text-2xl mb-10">訂單明細</h1>
+    <div className="container sm:px-4 px-0 mx-auto my-10 text-[color:var(--main-color-dark)] sm:w-[70%] w-[90%]">
       <h3 className="text-end my-4 text-sm">
         訂單狀態： <Tag color="gold">尚未建立</Tag>
       </h3>

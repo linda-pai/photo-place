@@ -119,6 +119,10 @@ td {
   width: 100%;
 }
 
+.ant-ribbon-wrapper a:hover {
+  color: var(--main-color-dark) !important;
+}
+
 :where(.css-2rgkd4).ant-pagination .ant-pagination-item a {
   color: var(--main-color-light) !important;
 }
