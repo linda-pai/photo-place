@@ -52,50 +52,48 @@ export default function UploadPreview({
   return (
     <>
       {allImages.length > 0 && toggle["ALL"] && (
-        <div className="text-center mt-24 text-[color:var(--main-color-dark)]">
-          <div className="container mx-auto sm:my-10 my-4">
-            <div className="masonry">
-              {allImages.map((item: any, key: number) => (
-                <div
-                  className="sm:basis-[calc(20%_-_16px)] basis-[calc(33%_-_16px)] cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
-                  key={item.id}
-                  onClick={() => handleClickImg(item.id)}
-                >
-                  <Image
-                    className="item__content"
-                    src={item.watermarkedUrl}
-                    alt={item.watermarkedUrl}
-                    width={300}
-                    height={400}
-                    quality={30}
-                  />
-                  <div className="absolute bottom-0 text-start text-sm text-[color:var(--main-color-dark)] p-1 bg-[#fff] bg-opacity-70">
-                    <p>{item.fileName}</p>
-                    <p>{dayjs(item.lastModified).format("YYYY/MM/DD HH:mm")}</p>
-                  </div>
+        <div className="container mx-auto sm:my-10 my-4">
+          <div className="masonry">
+            {allImages.map((item: any, key: number) => (
+              <div
+                className="sm:basis-[calc(20%_-_16px)] basis-[calc(33%_-_16px)] cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
+                key={item.id}
+                onClick={() => handleClickImg(item.id)}
+              >
+                <Image
+                  className="item__content"
+                  src={item.watermarkedUrl}
+                  alt={item.watermarkedUrl}
+                  width={300}
+                  height={400}
+                  quality={30}
+                />
+                <div className="absolute bottom-0 text-start text-sm text-[color:var(--main-color-dark)] p-1 bg-[#fff] bg-opacity-70">
+                  <p>{item.fileName}</p>
+                  <p>{dayjs(item.lastModified).format("YYYY/MM/DD HH:mm")}</p>
                 </div>
-              ))}
-              <ImageLightBox
-                images={allImages}
-                isOpen={showImageViewer}
-                curIndex={currImgIndex}
-                onClose={() => setShowImageViewer(false)}
-                onPrev={gotoPrevious}
-                onNext={gotoNext}
-                customFooter={null}
-              />
-            </div>
+              </div>
+            ))}
+            <ImageLightBox
+              images={allImages}
+              isOpen={showImageViewer}
+              curIndex={currImgIndex}
+              onClose={() => setShowImageViewer(false)}
+              onPrev={gotoPrevious}
+              onNext={gotoNext}
+              customFooter={null}
+            />
+          </div>
 
-            <div className="text-center my-10">
-              <Pagination
-                defaultCurrent={curPage}
-                onChange={setCurPage}
-                total={allImagesCount}
-                pageSize={pageSize}
-                showSizeChanger={false}
-                current={curPage}
-              />
-            </div>
+          <div className="text-center my-10">
+            <Pagination
+              defaultCurrent={curPage}
+              onChange={setCurPage}
+              total={allImagesCount}
+              pageSize={pageSize}
+              showSizeChanger={false}
+              current={curPage}
+            />
           </div>
         </div>
       )}

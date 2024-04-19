@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Collapse } from "antd";
+import { Carousel, Image, Space } from "antd";
+import { ZoomInOutlined, ZoomOutOutlined } from "@ant-design/icons";
 
-const ImageDetail = ({ index, items, handleImageClick }: any) => {
+const ImageDetail = ({ index, items }: any) => {
   const [toggle, setToggle] = useState<{ [key: number]: boolean }>({});
 
   const handleOnToggle = (index: number) => {
@@ -21,24 +22,35 @@ const ImageDetail = ({ index, items, handleImageClick }: any) => {
       </div>
 
       {toggle[index] && (
-        <Collapse
-          items={items.map((item: any, key: number) => ({
-            key: item.id,
-            label: item.id,
-            children: (
-              <>
-                <p>TWD {item.price} 元</p>
-                <img
-                  onClick={() => handleImageClick(key)}
-                  src={item.watermarkedUrl}
-                  alt={item.watermarkedUrl}
-                />
-              </>
-            ),
-          }))}
-          ghost
-          className="truncate"
-        />
+        <Carousel className="my-2">
+          {items.map((item: any, key: number) => (
+            <div key={key}>
+              <Image
+                src={item.watermarkedUrl}
+                alt={item.watermarkedUrl}
+                preview={{
+                  toolbarRender: (
+                    _,
+                    { transform: { scale }, actions: { onZoomOut, onZoomIn } }
+                  ) => (
+                    <Space size={60} className="toolbar-wrapper">
+                      <ZoomOutOutlined
+                        disabled={scale === 1}
+                        onClick={onZoomOut}
+                        className="scale-[2.5]"
+                      />
+                      <ZoomInOutlined
+                        disabled={scale === 50}
+                        className="scale-[2.5]"
+                        onClick={onZoomIn}
+                      />
+                    </Space>
+                  ),
+                }}
+              />
+            </div>
+          ))}
+        </Carousel>
       )}
     </div>
   );
