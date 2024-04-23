@@ -20,3 +20,24 @@ export interface Order {
 export interface OrderListProps {
   orders: Order[];
 }
+
+export interface SoldItemProps {
+  id: string;
+  watermarkedUrl: string;
+  price: string;
+  fileName: string;
+  author: string;
+}
+
+export interface SoldImagesProps {
+  orderId: string;
+  images: SoldItemProps[];
+  soldAt: string;
+}
+
+export interface SoldImageItemProps {
+  eventName: string;
+  eventId: string;
+  date: string;
+  soldImages: SoldImagesProps[];
+}
