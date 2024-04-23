@@ -13,8 +13,8 @@ const records = () => {
   return (
     <>
       <Head>
-        <title>攝影師上傳紀錄 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
-        <meta name="description" content="攝影師上傳紀錄" />
+        <title>攝影師成就 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <meta name="description" content="攝影師成就" />
         <link
           rel="canonical"
           href={`${process.env.NEXT_PUBLIC_APP_URL}/photographer/records`}
@@ -23,7 +23,7 @@ const records = () => {
 
       {isAllowed ? (
         <div className="container mx-auto text-slate-600 my-24 overflow-hidden">
-          <h1 className="text-center text-2xl mb-8">攝影師上傳紀錄</h1>
+          <h1 className="text-center text-2xl mb-8">攝影師成就</h1>
           <RecordOfUploadProps />
         </div>
       ) : (
