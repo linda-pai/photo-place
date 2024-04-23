@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
-import { setCookie, getCookie } from "cookies-next";
+import { setCookie, getCookie, deleteCookie } from "cookies-next";
 import {
   Input,
   InputNumber,
@@ -55,12 +55,25 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
   const [authorName, setAuthorName] = useState(session?.user?.name || "");
   const [price, setPrice] = useState(159);
   const [eventName, setEventName] = useState("");
+  const [isUploadable, setIsUploadable] = useState(true);
 
   const msgKey = Math.random().toString();
 
   useEffect(() => {
     setAuthorName(session?.user?.name || "");
   }, []);
+
+  useEffect(() => {
+    if (!eventId) return handleEventIdError();
+    fetch(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/events/checkUploadable/${eventId}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setIsUploadable(data.isUploadable);
+        if (!data.isUploadable) handleNotUploadable();
+      });
+  }, [eventId]);
 
   useEffect(() => {
     if (!eventId) return handleEventIdError();
@@ -74,7 +87,7 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
   }, [eventId]);
 
   useEffect(() => {
-    const uploadData = JSON.parse(getCookie("uploadInfo") || "[]");
+    const uploadData = JSON.parse(getCookie(`uploadInfo-${eventId}`) || "[]");
     setFileOptionsList(uploadData);
     setCompleteCount(
       uploadData.filter((file: any) => file.uploaded).length || 0
@@ -85,7 +98,14 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
   const handleEventIdError = () => {
     message.error("請選擇活動");
     setTimeout(() => {
-      router.push("/photographer/chooseEvent");
+      router.push("/uploadService/chooseEvent");
+    }, 1000);
+  };
+
+  const handleNotUploadable = () => {
+    message.error("此活動已關閉上傳功能");
+    setTimeout(() => {
+      router.push("/uploadService/chooseEvent");
     }, 1000);
   };
 
@@ -121,11 +141,12 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
     setFileOptionsList(newFileOptionsList);
 
     //set in cookie
-    setCookie("uploadInfo", JSON.stringify(newFileOptionsList));
+    setCookie(`uploadInfo-${eventId}`, JSON.stringify(newFileOptionsList));
   };
 
   const handleOnFinishAll = async () => {
     console.timeEnd("upload");
+    deleteCookie(`uploadInfo-${eventId}`);
 
     setLoading(false);
     message.success("全部上傳完成🎉🎉");
@@ -134,13 +155,9 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
     modal.confirm({
       title: `已上傳完成${fileOptionsList.length}張照片`,
       icon: <ExclamationCircleOutlined />,
-      okText: "去檢查號碼布",
-      cancelText: "前往上傳紀錄頁",
+      okText: "編輯照片",
       onOk: () => {
         router.push(`/photographer/checkBibs?eventId=${eventId}`);
-      },
-      onCancel: () => {
-        router.push("/photographer/records");
       },
     });
   };
@@ -170,7 +187,10 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
               ? { ...item, detected: true }
               : item
           );
-          setCookie("uploadInfo", JSON.stringify(newFileOptionsList));
+          setCookie(
+            `uploadInfo-${eventId}`,
+            JSON.stringify(newFileOptionsList)
+          );
           return newFileOptionsList;
         });
 
@@ -202,7 +222,10 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
               ? { ...item, uploaded: true }
               : item
           );
-          setCookie("uploadInfo", JSON.stringify(newFileOptionsList));
+          setCookie(
+            `uploadInfo-${eventId}`,
+            JSON.stringify(newFileOptionsList)
+          );
           return newFileOptionsList;
         });
 
@@ -379,7 +402,10 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
                 (file: any) => file.path !== record.path
               );
               setFileOptionsList(newFileOptionsList);
-              setCookie("uploadInfo", JSON.stringify(newFileOptionsList));
+              setCookie(
+                `uploadInfo-${eventId}`,
+                JSON.stringify(newFileOptionsList)
+              );
             }}
             className="flex items-center"
             disabled={record.uploaded}
@@ -395,84 +421,88 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
   return (
     <div className="mt-24 container mx-auto px-4">
       <UploadBreadcrumb />
-      <UploadPrompt isUploading={loading} onConfirmLeave={onConfirmLeave} />
-      <div className="text-center">
-        <div className="my-8">
-          <h2 className="max-w-[400px] mx-auto text-lg text-[color:var(--main-color-dark)]">
-            {eventName}
-          </h2>
-        </div>
-        <div>
-          <Input
-            placeholder="攝影師名稱"
-            className="w-1/3"
-            onChange={handleChangeAuthorName}
-            value={authorName}
-            defaultValue={authorName || ""}
-            addonBefore="攝影師名稱"
-          />
-        </div>
-        <div>
-          <InputNumber
-            placeholder="照片價格"
-            className="w-1/3 my-2"
-            onChange={handleChangePrice}
-            value={price}
-            defaultValue={price || ""}
-            addonBefore="照片價格"
-          />
-        </div>
-      </div>
-      <div className="text-center mx-auto my-10  max-w-[800px] min-h-[30vh]">
-        <Uploader
-          onChange={handleOnUploaderChange}
-          filesList={fileOptionsList}
-          loading={loading}
-        />
-        <Button
-          disabled={
-            fileOptionsList.filter((file: any) => file.type).length === 0 ||
-            loading
-          }
-          onClick={handleUpload}
-        >
-          確定上傳
-        </Button>
-      </div>
-
-      {fileOptionsList.length > 0 && (
+      {isUploadable && (
         <>
-          <div className="text-center text-[color:var(--main-color-dark)]">
-            <Steps
-              current={currentStep}
-              className="w-4/5 mx-auto"
-              percent={currentPercent}
-              items={steps}
-            />
-
-            <Table
-              dataSource={fileOptionsList
-                .map((file: any, key: number) => {
-                  return {
-                    path: file.path,
-                    key,
-                    uploaded: file.uploaded,
-                    type: file.type,
-                  };
-                })
-                // .sort((a: any, b: any) => a.uploaded?.localeCompare(b.uploaded))}
-                .sort((a: any, b: any) =>
-                  a.uploaded ? 1 : b.uploaded ? -1 : 0
-                )}
-              columns={columns}
-              pagination={{
-                defaultPageSize: 50,
-                pageSizeOptions: ["50", "100", "200", "500", "1000"],
-                position: ["bottomCenter"],
-              }}
-              className="w-2/3 mx-auto my-10 max-h-[50vh] overflow-y-auto"
-            />
+          <UploadPrompt isUploading={loading} onConfirmLeave={onConfirmLeave} />
+          <div className="text-center">
+            <div className="my-8">
+              <h2 className="max-w-[400px] mx-auto text-lg text-[color:var(--main-color-dark)]">
+                {eventName}
+              </h2>
+            </div>
+            <div>
+              <Input
+                placeholder="攝影師名稱"
+                className="w-1/3"
+                onChange={handleChangeAuthorName}
+                value={authorName}
+                defaultValue={authorName || ""}
+                addonBefore="攝影師名稱"
+              />
+            </div>
+            <div>
+              <InputNumber
+                placeholder="照片價格"
+                className="w-1/3 my-2"
+                onChange={handleChangePrice}
+                value={price}
+                defaultValue={price || ""}
+                addonBefore="照片價格"
+              />
+            </div>
           </div>
+          <div className="text-center mx-auto my-10  max-w-[800px] min-h-[30vh]">
+            <Uploader
+              onChange={handleOnUploaderChange}
+              filesList={fileOptionsList}
+              loading={loading}
+            />
+            <Button
+              disabled={
+                fileOptionsList.filter((file: any) => file.type).length === 0 ||
+                loading
+              }
+              onClick={handleUpload}
+            >
+              確定上傳
+            </Button>
+          </div>
+
+          {fileOptionsList.length > 0 && (
+            <>
+              <div className="text-center text-[color:var(--main-color-dark)]">
+                <Steps
+                  current={currentStep}
+                  className="w-4/5 mx-auto"
+                  percent={currentPercent}
+                  items={steps}
+                />
+
+                <Table
+                  dataSource={fileOptionsList
+                    .map((file: any, key: number) => {
+                      return {
+                        path: file.path,
+                        key,
+                        uploaded: file.uploaded,
+                        type: file.type,
+                      };
+                    })
+                    // .sort((a: any, b: any) => a.uploaded?.localeCompare(b.uploaded))}
+                    .sort((a: any, b: any) =>
+                      a.uploaded ? 1 : b.uploaded ? -1 : 0
+                    )}
+                  columns={columns}
+                  pagination={{
+                    defaultPageSize: 50,
+                    pageSizeOptions: ["50", "100", "200", "500", "1000"],
+                    position: ["bottomCenter"],
+                  }}
+                  className="w-2/3 mx-auto my-10 max-h-[50vh] overflow-y-auto"
+                />
+              </div>
+            </>
+          )}
         </>
       )}
 
