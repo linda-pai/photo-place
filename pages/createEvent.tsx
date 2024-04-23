@@ -32,7 +32,7 @@ const CreateEventPage: React.FC = () => {
         <div className="container mx-auto h-[100vh] flex flex-col justify-center">
           <CreateEventBlock
             handleOnSuccess={() => router.push("/")}
-            isShowImageUpload={true}
+            isShowImageUpload={false}
           />
         </div>
       ) : (

@@ -76,7 +76,7 @@ const uploadService = () => {
                   <b className="text-xl">四、已上傳照片</b>
                   <ul className="pl-8">
                     <li className="before:content-['•'] before:mr-4 flex">
-                      您可以到「攝影師上傳紀錄」查看已上傳的照片，並可進行檢查號碼布、加入精選或刪除等操作。
+                      您可以到「攝影師成就」查看已上傳的照片，並可進行檢查號碼布、加入精選或刪除等操作。
                     </li>
                   </ul>
                   <b className="text-xl">五、照片保存期限</b>

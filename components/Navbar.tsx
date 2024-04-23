@@ -48,7 +48,7 @@ const Nav = ({ navBarRef }: any) => {
     ? ROLE_PHOTOGRAPHER.includes(session.id) && [
         {
           key: "4",
-          label: "攝影師上傳紀錄",
+          label: "攝影師成就",
           onClick: () => {
             router.push("/photographer/records");
           },

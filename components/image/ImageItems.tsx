@@ -13,12 +13,11 @@ const ImageItems = ({
 
   return (
     <div
-      className="sm:basis-[calc(20%_-_16px)] basis-[calc(33%_-_16px)] cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
+      className="masonry-item h-fit cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
       key={id}
       onClick={() => handleClickImg(id)}
     >
       <Image
-        className="item__content"
         src={watermarkedUrl}
         alt={watermarkedUrl}
         width={300}

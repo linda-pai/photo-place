@@ -101,7 +101,7 @@ const ImageList = ({
 
   return (
     <div className="masonry">
-      {images.map((item: any, key: number) => (
+      {images?.map((item: any, key: number) => (
         <ImageItems
           key={key}
           item={item}
