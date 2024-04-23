@@ -31,7 +31,7 @@ export default function EventSearchPage({
   imagesInfo,
   photographerOptions,
 }: any) {
-  const pageSize = 15;
+  const pageSize = 20;
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
   const { eventId, eventName, coverImg, description } = eventInfo;
@@ -43,12 +43,15 @@ export default function EventSearchPage({
   const [isSearched, setIsSearched] = useState(false);
   const [images, setImages] = useState({
     [IMAGE_STATUS.IDENTIFYED]: imagesInfo.images as ImageItemProps[],
-    // [IMAGE_STATUS.UNIDENTIFYED]: unIdentifyInfo.images as ImageItemProps[],
+    [IMAGE_STATUS.MORE]: [] as ImageItemProps[],
   });
+
+  const [isGetMore, setIsGetMore] = useState(false);
+  const [isGetMoreLoading, setIsGetMoreLoading] = useState(false);
 
   const [loadedCount, setLoadedCount] = useState({
     [IMAGE_STATUS.IDENTIFYED]: 0,
-    // [IMAGE_STATUS.UNIDENTIFYED]: 0,
+    [IMAGE_STATUS.MORE]: 0,
   });
 
   const [category, setCategory] = useState(IMAGE_STATUS.IDENTIFYED);
@@ -58,21 +61,19 @@ export default function EventSearchPage({
   const [currImgIndex, setCurrImgIndex] = useState(0); // [0, images.length - 1
   const [curPage, setCurPage] = useState({
     [IMAGE_STATUS.IDENTIFYED]: 1,
-    // [IMAGE_STATUS.UNIDENTIFYED]: 1,
+    [IMAGE_STATUS.MORE]: 1,
   });
 
   const [total, setTotal] = useState({
     [IMAGE_STATUS.IDENTIFYED]: imagesInfo.totalCount,
-    // [IMAGE_STATUS.UNIDENTIFYED]: unIdentifyInfo.totalCount,
+    [IMAGE_STATUS.MORE]: 0,
   });
 
   const lastPage = {
     [IMAGE_STATUS.IDENTIFYED]: Math.ceil(
       total[IMAGE_STATUS.IDENTIFYED] / pageSize
     ),
-    // [IMAGE_STATUS.UNIDENTIFYED]: Math.ceil(
-    //   total[IMAGE_STATUS.UNIDENTIFYED] / pageSize
-    // ),
+    [IMAGE_STATUS.MORE]: Math.ceil(total[IMAGE_STATUS.MORE] / pageSize),
   };
 
   useEffect(() => {
@@ -98,12 +99,21 @@ export default function EventSearchPage({
     };
   }, [images]);
 
+  const more = useMemo(() => {
+    return {
+      images: images[IMAGE_STATUS.MORE],
+      curPage: curPage[IMAGE_STATUS.MORE],
+    };
+  }, [images]);
+
   const handleOnChangeSearch = (e: any) => {
     setSearch(e.target.value.trim());
     if (e.target.value.trim() === "") {
       resetImages();
     }
     setIsSearched(false);
+    setIsGetMore(false);
+    setCategory(IMAGE_STATUS.IDENTIFYED);
   };
 
   const handleOnChangeCategory = (e: any) => setCategory(e.target.value);
@@ -111,11 +121,15 @@ export default function EventSearchPage({
   const resetImages = () => {
     setCurPage({
       [IMAGE_STATUS.IDENTIFYED]: 1,
-      // [IMAGE_STATUS.UNIDENTIFYED]: 1,
+      [IMAGE_STATUS.MORE]: 1,
     });
     setImages({
       [IMAGE_STATUS.IDENTIFYED]: images[IMAGE_STATUS.IDENTIFYED],
-      // [IMAGE_STATUS.UNIDENTIFYED]: images[IMAGE_STATUS.UNIDENTIFYED],
+      [IMAGE_STATUS.MORE]: [],
+    });
+    setTotal({
+      [IMAGE_STATUS.IDENTIFYED]: total[IMAGE_STATUS.IDENTIFYED],
+      [IMAGE_STATUS.MORE]: 0,
     });
   };
 
@@ -195,6 +209,70 @@ export default function EventSearchPage({
     setCurrImgIndex(
       images[category].findIndex((item: ImageItemProps) => item.id === id)
     );
+  };
+
+  const getMoreImages = () => {
+    setIsGetMoreLoading(true);
+    //相同 author且 依據lastModified 排序，差距在20000ms以內的視為同一組
+    const groupedImages = images[category].reduce((acc: any, curr: any) => {
+      const lastGroup = acc[acc.length - 1];
+      if (
+        lastGroup &&
+        lastGroup[lastGroup.length - 1].author === curr.author &&
+        new Date(curr.lastModified).getTime() -
+          new Date(lastGroup[lastGroup.length - 1].lastModified).getTime() <
+          20000
+      ) {
+        lastGroup.push(curr);
+      } else {
+        acc.push([curr]);
+      }
+      return acc;
+    }, []);
+
+    groupedImages.forEach((group: any) => {
+      const firstImage = group[0];
+      const lastImage = group[group.length - 1];
+
+      //TODO: 加入頁碼
+      fetch(
+        `${domain}/api/images/getByLastModified/${eventId}?page=${curPage[category]}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            author: firstImage.author,
+            lastModified: firstImage.lastModified,
+            lastModifiedEnd: lastImage.lastModified,
+          }),
+        }
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("data", data);
+          setImages((prev) => {
+            return {
+              ...prev,
+              [IMAGE_STATUS.MORE]:
+                curPage[IMAGE_STATUS.MORE] === 1
+                  ? data
+                  : [...prev[IMAGE_STATUS.MORE], ...data],
+            };
+          });
+
+          setTotal((prev) => {
+            return {
+              ...prev,
+              [IMAGE_STATUS.MORE]: prev[IMAGE_STATUS.MORE] + data.length,
+            };
+          });
+
+          setCategory(IMAGE_STATUS.MORE);
+          setIsGetMoreLoading(false);
+        });
+    });
   };
 
   const gotoPrevious = () =>
@@ -285,20 +363,38 @@ export default function EventSearchPage({
               {
                 <>
                   <p>{`號碼布: ${search}`}</p>
-                  <p>{`找到 ${total[category]} 張照片，${
-                    images[category].length == 0
+                  <p>{`找到 ${
+                    isGetMore
+                      ? total[IMAGE_STATUS.MORE]
+                      : total[IMAGE_STATUS.IDENTIFYED]
+                  } 張照片，${
+                    images?.[category]?.length < 0
                       ? "我們未來會努力增加攝影師的💪"
                       : "太有緣份了！"
                   }`}</p>
                 </>
               }
               {/* <p>不囉唆⚡全面 65 折優惠</p> */}
+              {identify.images.length > 0 && (
+                <div
+                  className="my-4 flex justify-center gap-3"
+                  onClick={getMoreImages}
+                >
+                  <p>號碼布可能被擋到了...</p>
+                  <Button
+                    onClick={() => setIsGetMore((prev) => !prev)}
+                    loading={isGetMoreLoading}
+                  >
+                    {isGetMore ? "返回" : "顯示前後5秒內的照片"}
+                  </Button>
+                </div>
+              )}
             </div>
 
-            {images[category].length > 0 && (
+            {images[category]?.length > 0 && (
               <>
                 {!search && !isSearched && (
-                  <div className="flex items-center">
+                  <div className="flex items-center mx-3">
                     <div className="my-4 mx-1 text-[color:var(--main-color-dark)] text-sm">
                       <Radio.Group
                         defaultValue={IMAGE_STATUS.IDENTIFYED}
@@ -316,7 +412,7 @@ export default function EventSearchPage({
                     </div>
                     <Select
                       defaultValue="請選擇攝影師"
-                      className="w-1/6 mx-1"
+                      className="w-1/6 mx-1 w-fit"
                       options={[
                         { label: "全部", value: "" },
                         ...photographerOptions,
@@ -326,9 +422,9 @@ export default function EventSearchPage({
                   </div>
                 )}
                 {/* add transition */}
-                <div className="transition-all duration-500">
+                <div className="transition-all duration-500 mx-2">
                   <ImageList
-                    images={identify.images}
+                    images={isGetMore ? more.images : identify.images}
                     isOpen={showImageViewer}
                     curIndex={currImgIndex}
                     onClose={() => setShowImageViewer(false)}
