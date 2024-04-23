@@ -6,7 +6,6 @@ interface RecordOfUploadProps {
   eventId: string;
   eventName: string;
   imagesCount: number;
-  chargeAt: string;
   uploadId: string;
 }
 
@@ -16,34 +15,34 @@ const tableConfig = (columnsRenderMap: any) => {
       title: "活動名稱",
       dataIndex: "eventName",
       key: "eventName",
+      width: 220,
     },
     {
-      title: "上傳時間",
-      dataIndex: "createAt",
-      key: "createAt",
-      ...columnsRenderMap.createAt,
+      title: "活動日期",
+      dataIndex: "date",
+      key: "date",
+      width: 130,
+      ...columnsRenderMap.date,
     },
     {
-      title: "售出張數",
+      title: "最後上傳時間",
+      dataIndex: "lastEditTime",
+      key: "lastEditTime",
+      ...columnsRenderMap.lastEditTime,
+    },
+    {
+      title: "照片數量資訊",
       dataIndex: "soldCount",
       key: "soldCount",
-      width: 120,
+      width: 400,
       ...columnsRenderMap.soldCount,
     },
     {
-      title: "售出資訊",
-      dataIndex: "sellInfo",
-      key: "sellInfo",
-      width: 200,
-      ...columnsRenderMap.sellInfo,
+      title: "收入試算",
+      key: "soldCount",
+      width: 130,
+      ...columnsRenderMap.earning,
     },
-    {
-      title: "攝影師名稱",
-      dataIndex: "name",
-      key: "name",
-      ...columnsRenderMap.name,
-    },
-
     {
       title: "Action",
       key: "action",
