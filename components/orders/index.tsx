@@ -3,7 +3,7 @@ import { useSession } from "next-auth/react";
 import { Table, Spin, Space, Button, Tag, Modal, message } from "antd";
 import {
   DownloadOutlined,
-  InfoCircleOutlined,
+  CreditCardOutlined,
   CopyOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
@@ -101,16 +101,8 @@ const Orders = () => {
           {text ? (
             <Tag color="#B0B97A">已付款</Tag>
           ) : (
-            <div
-              onClick={() => {
-                if (orderInfo.paidAt) return;
-                showModal();
-                setCurrentOrder(orderInfo);
-              }}
-              className="hover:cursor-pointer"
-            >
+            <div>
               <Tag color="#f0cf02">未付款</Tag>
-              <InfoCircleOutlined style={{ color: "#f0cf02" }} />
             </div>
           )}
         </div>
@@ -124,20 +116,38 @@ const Orders = () => {
       ),
     },
     action: {
-      render: (_: any, record: any, key: number) => (
+      render: (_: any, orderInfo: any, key: number) => (
         <>
-          <Space size="small" key={key}>
-            <Button
-              onClick={() => getImagesZip(record)}
-              className="flex items-center"
-              disabled={!record.paidAt}
-            >
-              <div className="sm:block hidden">
-                <DownloadOutlined />
-              </div>
-              下載全部
-            </Button>
-          </Space>
+          {orderInfo.paidAt ? (
+            <Space size="small" key={key}>
+              <Button
+                onClick={() => getImagesZip(orderInfo)}
+                className="flex items-center"
+                disabled={!orderInfo.paidAt}
+              >
+                <div className="sm:block hidden">
+                  <DownloadOutlined />
+                </div>
+                下載全部
+              </Button>
+            </Space>
+          ) : (
+            <Space size="small" key={key}>
+              <Button
+                onClick={() => {
+                  if (orderInfo.paidAt) return;
+                  showModal();
+                  setCurrentOrder(orderInfo);
+                }}
+                className="flex items-center bg-[color:var(--main-color-dark)] text-white"
+              >
+                <div className="sm:block hidden mr-1">
+                  <CreditCardOutlined />
+                </div>
+                前往付款
+              </Button>
+            </Space>
+          )}
         </>
       ),
     },
