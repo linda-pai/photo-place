@@ -22,7 +22,7 @@ export default function UploadPreview({
   const [allImages, setAllImages] = useState([] as ImageItemProps[]);
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-  const pageSize = 15;
+  const pageSize = 20;
 
   useEffect(() => {
     if (!session) return;
@@ -56,12 +56,11 @@ export default function UploadPreview({
           <div className="masonry">
             {allImages.map((item: any, key: number) => (
               <div
-                className="sm:basis-[calc(20%_-_16px)] basis-[calc(33%_-_16px)] cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
+                className="masonry-item h-fit cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
                 key={item.id}
                 onClick={() => handleClickImg(item.id)}
               >
                 <Image
-                  className="item__content"
                   src={item.watermarkedUrl}
                   alt={item.watermarkedUrl}
                   width={300}
