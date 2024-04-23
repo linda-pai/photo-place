@@ -10,9 +10,11 @@ import userPermission from "@/hooks/usePermission";
 const uploadDetail = ({
   eventId,
   record,
+  status,
 }: {
   eventId: string;
   record: any;
+  status: any;
 }) => {
   const isAllowed = userPermission();
 
@@ -24,8 +26,7 @@ const uploadDetail = ({
     featuredLength: 0,
   });
   const [toggle, setToggle] = useState({
-    ALL: false,
-    FEATURED: false,
+    ALL: status === "ALL" ? true : false,
   });
 
   useEffect(() => {
@@ -45,8 +46,8 @@ const uploadDetail = ({
   return (
     <>
       <Head>
-        <title>攝影師上傳紀錄詳情</title>
-        <meta name="description" content="攝影師上傳紀錄詳情" />
+        <title>攝影師成就詳情</title>
+        <meta name="description" content="攝影師成就詳情" />
         <link
           rel="canonical"
           href={`${process.env.NEXT_PUBLIC_APP_URL}/photographer/uploadDetail`}
@@ -55,7 +56,7 @@ const uploadDetail = ({
 
       {isAllowed ? (
         <div className="container mx-auto text-slate-600 my-24 overflow-hidden">
-          <h1 className="text-center text-2xl mb-8">攝影師上傳紀錄詳情</h1>
+          <h1 className="text-center text-2xl mb-8">攝影師成就詳情</h1>
           <Descriptions bordered column={2} size="small">
             <Descriptions.Item label="賽事名稱">
               {record.eventName}
@@ -65,11 +66,6 @@ const uploadDetail = ({
               {dayjs(record.createAt).format("YYYY-MM-DD HH:mm:ss")}
             </Descriptions.Item>
 
-            <Descriptions.Item label="Charge At">
-              {record.chargeAt
-                ? dayjs(record.chargeAt).format("YYYY-MM-DD HH:mm:ss")
-                : "-"}
-            </Descriptions.Item>
             <Descriptions.Item label="已上傳照片">
               <div className="flex items-center">
                 <Tag color="green">{imageLength.allImageLength}張</Tag>
@@ -107,12 +103,13 @@ const uploadDetail = ({
 export default uploadDetail;
 
 export async function getServerSideProps(context: any) {
-  const eventId = context.query.eventId;
+  const { eventId, status } = context.query;
   const record = JSON.parse(context.query.record);
 
   return {
     props: {
       eventId,
+      status: status || "",
       record,
     },
   };
