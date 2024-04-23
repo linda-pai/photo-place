@@ -21,7 +21,7 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
 
   const [images, setImages] = useState([] as ImageItemProps[]);
   const [total, setTotal] = useState(0);
-  const [sortBy, setSortBy] = useState("pathCount"); //  pathCount or lastModified
+  const [sortBy, setSortBy] = useState("lastModified"); //  pathCount or lastModified
 
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [currImgIndex, setCurrImgIndex] = useState(0); // [0, images.length - 1
@@ -29,7 +29,7 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
   const [loading, setLoading] = useState(true);
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-  const pageSize = 15;
+  const pageSize = 20;
 
   useEffect(() => {
     if (!session) return;
@@ -66,17 +66,28 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
     });
   };
 
-  const handleDeleteImg = (id: string, e: any) => {
+  const handleDeleteImg = (id: string, isRemoved: boolean, e: any) => {
     e.stopPropagation();
 
     fetch(`${domain}/api/images/delete/${eventId}/${id}/${session.id}`, {
-      method: "POST",
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ isRemoved: !isRemoved }),
     })
       .then((res) => res.json())
       .then((data) => {
         if (data.status === "success") {
-          message.success("刪除成功");
-          setImages(images.filter((item) => item.id !== id));
+          message.success(isRemoved ? "恢復成功" : "移除成功");
+          setImages(
+            images.map((item) => {
+              if (item.id === id) {
+                return { ...item, isRemoved: !item.isRemoved };
+              }
+              return item;
+            })
+          );
         } else {
           message.error("刪除失敗");
         }
@@ -108,8 +119,8 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
   return (
     <>
       <Head>
-        <title>號碼布檢查</title>
-        <meta name="description" content="號碼布檢查" />
+        <title>編輯照片</title>
+        <meta name="description" content="編輯照片" />
         <link
           rel="canonical"
           href={`${process.env.NEXT_PUBLIC_APP_URL}/photographer/checkBibs`}
@@ -119,14 +130,15 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
       {isAllowed ? (
         <>
           <div className="text-center mt-24 text-[color:var(--main-color-dark)]">
-            <p>號碼布檢查</p>
+            <p>編輯照片</p>
+            <p>您可以在這裡為照片檢查號碼布、選擇精選、從相簿移除照片</p>
             <p>共 {total} 張照片</p>
           </div>
           {images.length > 0 && (
             <div className="container mx-auto sm:my-10 my-4">
               <div className="flex justify-end mx-4">
                 <Radio.Group
-                  defaultValue="pathCount"
+                  defaultValue="lastModified"
                   buttonStyle="solid"
                   onChange={(e) => setSortBy(e.target.value)}
                   className="mb-4"
@@ -140,16 +152,13 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
               <div className="masonry">
                 {!loading ? (
                   images.map((item: any, key: number) => (
-                    <div
-                      key={key}
-                      className="sm:basis-[calc(20%_-_16px)] basis-[calc(33%_-_16px)] relative"
-                    >
+                    <div key={key} className="relative">
                       <div
-                        className="cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
+                        className="masonry-item h-fit cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
                         onClick={() => handleClickImg(item.id)}
                       >
                         <Image
-                          className="item__content w-full h-auto"
+                          className="w-full h-auto"
                           src={item.watermarkedUrl}
                           alt={item.watermarkedUrl}
                           width="0"
@@ -157,15 +166,20 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
                           sizes="100vw"
                           quality={30}
                         />
-                        <div className="group-hover:flex gap-2 py-6 justify-evenly items-center hidden bg-[#fff] bg-opacity-40 absolute top-0 w-full sm:h-[10%] h-[18%] min-h-[28px] max-h-[34px] group hover:bg-opacity-80 transition-all duration-300">
-                          <p className="text-[color:var(--main-color-dark)] mx-1 text-sm">
+                        <div className="flex gap-2 py-5 px-1 justify-between items-center bg-[#404040] bg-opacity-40 absolute top-0 w-full sm:h-[10%] h-[18%] min-h-[28px] max-h-[34px] group hover:bg-opacity-80 transition-all duration-300">
+                          <p className="text-white mx-1 text-sm">
                             {item.fileName}
                           </p>
                           <div className="flex justify-end">
                             <Button
-                              onClick={(e) => handleDeleteImg(item.id, e)}
-                              className="flex items-center justify-center mr-2"
-                              danger
+                              onClick={(e) =>
+                                handleDeleteImg(item.id, item.isRemoved, e)
+                              }
+                              className={`flex items-center justify-center mr-2 ${
+                                item.isRemoved
+                                  ? "text-white border border-[#fff] bg-[#ef4444]"
+                                  : "text-white border border-white bg-transparent"
+                              }`}
                             >
                               <DeleteOutlined />
                             </Button>
@@ -175,8 +189,8 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
                               }
                               className={`flex items-center justify-center mr-2 ${
                                 item.isFeatured
-                                  ? "text-[color:var(--main-color)] border border-[#fff] bg-[color:var(--main-color)] text-[#fff]"
-                                  : "text-[color:var(--main-color-dark)] bg-[#fff] border border-[color:var(--main-color-dark)] bg-transparent"
+                                  ? "text-white border border-[#fff] bg-[color:var(--main-color)] text-[#fff]"
+                                  : "text-white bg-[#fff] border border-white bg-transparent"
                               }`}
                             >
                               <StarOutlined />
