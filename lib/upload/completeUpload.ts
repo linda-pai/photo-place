@@ -1,12 +1,12 @@
 const completeUpload = async (
-  key: string,
+  uploadData: string,
   uploadPartsArray: any[],
   uploadId: string
 ) => {
   return await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/complete-upload`, {
     method: "POST",
     body: JSON.stringify({
-      key,
+      uploadData,
       parts: uploadPartsArray,
       uploadId,
     }),

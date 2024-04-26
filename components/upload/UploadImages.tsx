@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import { setCookie, getCookie, deleteCookie } from "cookies-next";
@@ -20,7 +20,7 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 import parallelUploadWithLimit from "@/utils/parallelUploadWithLimit";
-import addWatermark from "@/lib/upload/addWatermark";
+import addWaterMarkAndDetect from "@/lib/upload/addWaterMarkAndDetect";
 import { writeUploadInfo } from "@/lib/upload/writeUploadInfo";
 import UploadQueue from "@/lib/upload/uploadQueue";
 import completeUpload from "@/lib/upload/completeUpload";
@@ -49,7 +49,7 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
   const [loading, setLoading] = useState(false);
   const [fileOptionsList, setFileOptionsList] = useState([] as any);
   const [completeCount, setCompleteCount] = useState(0);
-  const [detectCount, setDetectCount] = useState(0);
+  const [prepareCount, setPrepareCount] = useState(0);
 
   const [modal, contextHolder] = Modal.useModal();
   const [authorName, setAuthorName] = useState(session?.user?.name || "");
@@ -92,7 +92,9 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
     setCompleteCount(
       uploadData.filter((file: any) => file.uploaded).length || 0
     );
-    setDetectCount(uploadData.filter((file: any) => file.detected).length || 0);
+    setPrepareCount(
+      uploadData.filter((file: any) => file.detected).length || 0
+    );
   }, []);
 
   const handleEventIdError = () => {
@@ -146,93 +148,63 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
 
   const handleOnFinishAll = async () => {
     console.timeEnd("upload");
-    deleteCookie(`uploadInfo-${eventId}`);
 
     setLoading(false);
     message.success("全部上傳完成🎉🎉");
     message.destroy(msgKey);
 
+    addWaterMarkAndDetect({
+      eventId,
+      author: session.id,
+      isAll: false,
+    });
+
     modal.confirm({
       title: `已上傳完成${fileOptionsList.length}張照片`,
       icon: <ExclamationCircleOutlined />,
+      content:
+        "提醒您：相簿僅會顯示精選照片，預設為您上傳照片排序前50張， \n 如要變更，再請到編輯設定精選照片歐～",
       okText: "編輯照片",
       onOk: () => {
+        deleteCookie(`uploadInfo-${eventId}`);
         router.push(`/photographer/checkBibs?eventId=${eventId}`);
       },
+      cancelText: "繼續上傳",
     });
   };
 
-  //add watermark and upload after detect text
-  const handleAddWatermarkandUpload = async (key: string, file: File) => {
-    const reqBody = {
-      key,
-      eventId,
-      eventName,
-      fileName: file.name,
-      lastModified: file.lastModified,
-      author: session.id,
-      authorName,
-      price,
-    };
-    const addWaterMarkFunction = async () =>
-      await addWatermark(reqBody).then((res) => {
-        if (res.error) {
-          message.error(res.error);
-          return;
-        }
-
-        setFileOptionsList((prev: any) => {
-          const newFileOptionsList = prev.map((item: any) =>
-            item.path && item.path === file.name
-              ? { ...item, detected: true }
-              : item
-          );
-          setCookie(
-            `uploadInfo-${eventId}`,
-            JSON.stringify(newFileOptionsList)
-          );
-          return newFileOptionsList;
-        });
-
-        setDetectCount((prev) => {
-          if (prev + 1 === fileOptionsList.length) handleOnFinishAll();
-          return prev + 1;
-        });
-      });
-
-    const uploadQueue = new UploadQueue("addWaterMark", addWaterMarkFunction);
-    uploadQueue.enqueue([file]);
-  };
-
   const handleCompleteUpload = async (
-    key: string,
+    uploadData: any,
     file: File,
     uploadPartsArray: any[],
     uploadId: string
   ) => {
     const completeFunction = async () =>
-      await completeUpload(key, uploadPartsArray, uploadId).then((res) => {
-        if (res.error) {
-          message.error(res.error);
-          return;
+      await completeUpload(uploadData, uploadPartsArray, uploadId).then(
+        (res) => {
+          if (res.error) {
+            message.error(res.error);
+            return;
+          }
+          setFileOptionsList((prev: any) => {
+            const newFileOptionsList = prev.map((item: any) =>
+              item.name && item.name === file.name
+                ? { ...item, uploaded: true }
+                : item
+            );
+            setCookie(
+              `uploadInfo-${eventId}`,
+              JSON.stringify(newFileOptionsList)
+            );
+            return newFileOptionsList;
+          });
+
+          setCompleteCount((prev) => {
+            if (prev + 1 === fileOptionsList.length) handleOnFinishAll();
+            return prev + 1;
+          });
         }
-        setFileOptionsList((prev: any) => {
-          const newFileOptionsList = prev.map((item: any) =>
-            item.name && item.name === file.name
-              ? { ...item, uploaded: true }
-              : item
-          );
-          setCookie(
-            `uploadInfo-${eventId}`,
-            JSON.stringify(newFileOptionsList)
-          );
-          return newFileOptionsList;
-        });
-
-        setCompleteCount((prev) => prev + 1);
-
-        handleAddWatermarkandUpload(key, file);
-      });
+      );
 
     const uploadQueue = new UploadQueue("complete", completeFunction);
     uploadQueue.enqueue([file]);
@@ -246,7 +218,23 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
     //2. chunk image withe each 5MB and upload
     const uploadPartsArray = await chunkFileAndPutS3(file, uploadId, key);
     //complete-upload - s3 multipart upload requires complete upload
-    return await handleCompleteUpload(key, file, uploadPartsArray, uploadId);
+
+    const uploadData = {
+      key,
+      eventId,
+      eventName,
+      author: session.id,
+      authorName,
+      price,
+      fileName: file.name,
+      lastModified: file.lastModified,
+    };
+    return await handleCompleteUpload(
+      uploadData,
+      file,
+      uploadPartsArray,
+      uploadId
+    );
   };
 
   const chunkFileAndUpload = async (file: File) => {
@@ -257,7 +245,14 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
       const { key, uploadId } = await getStartMultipartUploadURL(
         path,
         fileName
-      );
+      ).then((res) => {
+        if (res.error) {
+          message.error(res.error);
+          return;
+        }
+        setPrepareCount((prev) => prev + 1);
+        return res;
+      });
       await handleChunkFileAndUpload(file, uploadId, key);
     };
 
@@ -313,15 +308,20 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
   };
 
   const currentStep =
-    completeCount < fileOptionsList.length
+    prepareCount < fileOptionsList.length
       ? 0
-      : detectCount > 0
-      ? detectCount === fileOptionsList.length
+      : completeCount > 0
+      ? completeCount === fileOptionsList.length
         ? 2
         : 1
       : (0 as 0 | 1 | 2 | undefined);
 
   const steps = [
+    {
+      title: "準備中",
+      description: "照片準備中",
+      subTitle: `${prepareCount}/${fileOptionsList.length}張照片`,
+    },
     {
       title: "上傳中",
       description: "照片上傳中",
@@ -331,11 +331,6 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
       //     ? Math.ceil((fileOptionsList.length - completeCount) * 3) + "秒"
       //     : Math.ceil((fileOptionsList.length - completeCount) * 3) / 60 + "分"
       // }
-    },
-    {
-      title: "偵測中",
-      description: "號碼布偵測中",
-      subTitle: `${detectCount}/${fileOptionsList.length}張照片`,
     },
     {
       title: "完成",
@@ -349,9 +344,9 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
 
   const currentPercent = Math.ceil(
     ((currentStep === 0
-      ? completeCount
+      ? prepareCount
       : currentStep === 1
-      ? detectCount
+      ? completeCount
       : fileOptionsList.length) /
       fileOptionsList.length) *
       100
