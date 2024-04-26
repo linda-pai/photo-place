@@ -35,6 +35,7 @@ export default function EventSearchPage({
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
   const { eventId, eventName, coverImg, description } = eventInfo;
+  const title = `${eventName} | 號碼布搜尋照片 | Photo Pacer 攝影小隊`;
 
   const { data: session }: any = useSession();
   const router = useRouter();
@@ -251,7 +252,6 @@ export default function EventSearchPage({
       )
         .then((res) => res.json())
         .then((data) => {
-          console.log("data", data);
           setImages((prev) => {
             return {
               ...prev,
@@ -306,7 +306,7 @@ export default function EventSearchPage({
   return (
     <>
       <Head>
-        <title>{`${eventName} | 號碼布搜尋照片 | Photo Pacer 攝影小隊`}</title>
+        <title>{title}</title>
         <meta
           property="og:title"
           content={`${eventName} | 號碼布搜尋照片 | Photo Pacer 攝影小隊`}
@@ -489,6 +489,29 @@ export async function getServerSideProps(context: any) {
   const eventInfo = await fetch(`${domain}/api/events/getBy/${eventId}`).then(
     (res) => res.json()
   );
+
+  const isCompleteUpload = eventInfo.isCompleteUpload;
+
+  if (!isCompleteUpload) {
+    const pageSize = 24;
+    //問是否有精選照片，有超過24張精選照片就更新 event isCompleteUpload = true
+    const featuredImages = imagesInfo.images.filter(
+      (item: ImageItemProps) => item?.isFeatured || false
+    );
+    if (featuredImages.length > pageSize) {
+      eventInfo.isCompleteUpload = true;
+      //update event
+      await fetch(`${domain}/api/events/update/${eventId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          isCompleteUpload: true,
+        }),
+      }).then((res) => res.json());
+    }
+  }
 
   const photographerOptions = await fetch(
     `${domain}/api/images/getPhotographers/${eventId}`
