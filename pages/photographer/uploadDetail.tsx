@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { Descriptions, Tag, Spin } from "antd";
+import { Descriptions, Spin } from "antd";
 import dayjs from "dayjs";
 import UploadPreview from "@/components/image/UploadPreview";
 import userPermission from "@/hooks/usePermission";
