@@ -1,49 +1,31 @@
-import { useEffect, useMemo, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Spin, Table, Button, Tag, Statistic, Col, Modal } from "antd";
-import { InfoCircleOutlined } from "@ant-design/icons";
-import dynamic from "next/dynamic";
-import dayjs from "dayjs";
+import { Table, Button, Tag, Statistic, Col, Modal, Progress } from "antd";
+import { InfoCircleOutlined, ReloadOutlined } from "@ant-design/icons";
 import tableConfig from "./tableConfig";
+import addWaterMarkAndDetect from "@/lib/upload/addWaterMarkAndDetect";
+import debounce from "@/utils/debounce";
+import { RecordOfUploadProps } from "@/types/interfaces/UploadProps";
 
-const ImageLightBox = dynamic(
-  () => import("@/components/image/ImageLightBox"),
-  {
-    loading: () => <Spin />,
-  }
-);
-
-interface RecordOfUploadProps {
-  author: string;
-  createAt: string;
-  eventId: string;
-  eventName: string;
-  images: any[];
-  uploadId: string;
-  date: string;
-}
-
-const RecordOfUpload = () => {
-  const { data: session }: any = useSession();
-
+const RecordOfUpload = ({
+  uploadData,
+  showHeader = true,
+}: {
+  uploadData: RecordOfUploadProps[];
+  showHeader?: boolean;
+}) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-
-  const [uploadDetail, setUploadDetail] = useState([] as RecordOfUploadProps[]);
-  const [loading, setLoading] = useState(true);
-  const [lengthInfo, setLengthInfo] = useState<{
-    [key: string]: {
-      allImageLength: number;
-      featuredLength: number;
-      removeImageLength: number;
-    };
-  }>({});
+  const [uploadDetail, setUploadDetail] = useState(
+    uploadData as RecordOfUploadProps[]
+  );
 
   const [isModalOpen, setModalOpen] = useState<{
     [key: string]: boolean;
   }>({});
 
-  //TODO:跳窗 ：目前預設精選照片為時間排序前20張，再請編輯要顯示在首頁的精選照片歐
+  useEffect(() => {
+    setUploadDetail(uploadData);
+  }, [uploadData]);
 
   const columnsRenderMap = {
     date: {
@@ -54,10 +36,39 @@ const RecordOfUpload = () => {
         return dateA.getTime() - dateB.getTime();
       },
     },
-    lastEditTime: {
-      render: (text: string, _: any, key: number) => (
-        <p key={key}>{text ? dayjs(text).format("YYYY-MM-DD HH:mm") : "-"}</p>
-      ),
+    detectProcess: {
+      render: (text: string, record: RecordOfUploadProps) => {
+        const isProcessing =
+          record?.detectedImageLength !== record?.allImageLength;
+        return (
+          <div className="flex items-center">
+            {isProcessing && (
+              <Button
+                onClick={() => handleReloadDetectProcess(record)}
+                className="flex items-center mx-1"
+                size="small"
+              >
+                <ReloadOutlined />
+              </Button>
+            )}
+            <Progress
+              percent={
+                Math.round(
+                  (record?.detectedImageLength / record?.allImageLength) * 100
+                ) || 0
+              }
+              status={
+                isProcessing
+                  ? "active"
+                  : record?.detectedImageLength === 0
+                  ? "active"
+                  : "success"
+              }
+              className="w-[80%]"
+            />
+          </div>
+        );
+      },
     },
     soldCount: {
       render: (text: number, record: RecordOfUploadProps) => (
@@ -70,20 +81,18 @@ const RecordOfUpload = () => {
           >
             <Statistic
               title="已上傳"
-              value={length[record.eventId]?.allImageLength || 0}
+              value={record?.allImageLength || 0}
               valueStyle={{ color: "#78350f" }}
               className="cursor-pointer"
             />
           </Link>
           <Link
-            href={`/photographer/uploadDetail?eventId=${
-              record.eventId
-            }&status=ALL&record=${JSON.stringify(record)}`}
+            href={`/photographer/checkBibs?eventId=${record.eventId}`}
             className="hover:bg-[#e7e5e4] p-2 rounded-md cursor-pointer"
           >
             <Statistic
               title="從相簿移除"
-              value={length[record.eventId]?.removeImageLength || 0}
+              value={record?.removeImageLength || 0}
               valueStyle={{ color: "#9ca3af" }}
               className="cursor-pointer"
             />
@@ -105,7 +114,7 @@ const RecordOfUpload = () => {
           >
             <Statistic
               title="精選照片"
-              value={length[record.eventId]?.featuredLength || 0}
+              value={record?.featuredLength || 0}
               className="cursor-pointer"
               valueStyle={{ color: "#fb923c" }}
             />
@@ -115,7 +124,7 @@ const RecordOfUpload = () => {
     },
     earning: {
       render: ({ soldImages }: any, record: any) => {
-        const allImageLength = length[record.eventId]?.allImageLength || 0;
+        const allImageLength = record?.allImageLength || 0;
         const fee = (allImageLength * 0.2).toFixed(2);
 
         const flattenSoldImages = soldImages?.reduce((acc: any, cur: any) => {
@@ -139,7 +148,7 @@ const RecordOfUpload = () => {
                 <div>
                   <p>照片收益</p>
                   <p className="font-normal text-[#a3a3a3] text-xs">
-                    賣出 {flattenSoldImages?.length} 張
+                    賣出 {flattenSoldImages?.length || 0} 張
                   </p>
                 </div>
               );
@@ -149,7 +158,7 @@ const RecordOfUpload = () => {
             width: 90,
             render: () => (
               <div>
-                <p>{revenue} 元</p>
+                <p>{revenue || 0} 元</p>
               </div>
             ),
           },
@@ -174,14 +183,14 @@ const RecordOfUpload = () => {
                 <div>
                   <p>第三方金流手續費</p>
                   <p className="font-normal text-[#a3a3a3] text-xs">
-                    賣出 {revenue} 元 x 3%
+                    賣出 {revenue || 0} 元 x 3%
                   </p>
                 </div>
               );
             },
             dataIndex: "thirdPartyFee",
             key: "thirdPartyFee",
-            render: () => <div>{thirdPartyFee} 元</div>,
+            render: () => <div>{thirdPartyFee || 0} 元</div>,
           },
         ];
 
@@ -244,70 +253,54 @@ const RecordOfUpload = () => {
         );
       },
     },
-    action: {
-      render: (_: string, record: RecordOfUploadProps) => (
-        <div className="flex gap-1" key={record.eventId}>
-          <Link
-            href={`/photographer/uploadDetail?eventId=${
-              record.eventId
-            }&record=${JSON.stringify(record)}`}
-          >
-            <Button>詳情</Button>
-          </Link>
-          <Link href={`/photographer/checkBibs?eventId=${record.eventId}`}>
-            <Button>編輯照片</Button>
-          </Link>
-        </div>
-      ),
-    },
+    ...(showHeader && {
+      action: {
+        render: (_: string, record: RecordOfUploadProps) => (
+          <div className="flex gap-1" key={record.eventId}>
+            <Link href={`/photographer/checkBibs?eventId=${record.eventId}`}>
+              <Button>編輯照片</Button>
+            </Link>
+          </div>
+        ),
+      },
+    }),
   };
 
   const columns = tableConfig(columnsRenderMap);
 
-  useEffect(() => {
-    if (session) getUploadLength();
-  }, [session, uploadDetail]);
-  useEffect(() => {
-    if (session) getUploadDetail();
-  }, [session]);
-
-  const length = useMemo(() => {
-    return {
-      ...lengthInfo,
-    };
-  }, [lengthInfo]);
-
-  const getUploadLength = () => {
-    uploadDetail.forEach((record) => {
-      fetch(
-        `${domain}/api/images/getUploadImgDetail/${record.eventId}/${session.id}`
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          setLengthInfo((prev) => ({
-            ...prev,
-            [record.eventId]: data,
-          }));
-        });
-    });
-  };
-
-  const getUploadDetail = async () => {
-    fetch(`${domain}/api/images/getUploadInfo/${session.id}`)
+  const getDetectProcess = debounce((record: RecordOfUploadProps) => {
+    const { eventId, author } = record;
+    fetch(`${domain}/api/images/getDetectedImageLength/${eventId}/${author}`)
       .then((res) => res.json())
       .then((data) => {
-        setUploadDetail(data);
-        setLoading(false);
+        setUploadDetail((prev) =>
+          prev.map((item) =>
+            item.eventId === eventId
+              ? { ...item, detectedImageLength: data.detectedImageLength }
+              : item
+          )
+        );
       });
+  });
+
+  const handleReloadDetectProcess = async (record: RecordOfUploadProps) => {
+    const { eventId, author } = record;
+    addWaterMarkAndDetect({
+      eventId,
+      author,
+      isAll: false,
+    });
+    getDetectProcess(record);
   };
 
-  return !loading ? (
+  return (
     <div>
-      <Table columns={columns as any} dataSource={uploadDetail} />
-    </div>
-  ) : (
-    <div className="flex justify-center items-center h-[80vh]">
-      <Spin />
+      <Table
+        columns={columns as any}
+        dataSource={uploadDetail}
+        showHeader={showHeader}
+        pagination={showHeader ? { pageSize: 5 } : false}
+      />
     </div>
   );
 };
