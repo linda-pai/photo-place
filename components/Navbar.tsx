@@ -111,6 +111,13 @@ const Nav = ({ navBarRef }: any) => {
             router.push("/cms/userManagement");
           },
         },
+        {
+          key: "6",
+          label: "攝影師上傳管理",
+          onClick: () => {
+            router.push("/cms/uploadManagement");
+          },
+        },
       ]
     : [];
 
