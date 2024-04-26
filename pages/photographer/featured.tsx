@@ -10,6 +10,7 @@ import ImageLightBox from "@/components/image/ImageLightBox";
 import userPermission from "@/hooks/usePermission";
 import featureImg from "@/lib/featured/featureImg";
 import dynamic from "next/dynamic";
+import { DETECTING_IMG } from "@/constants";
 
 const WatermarkModal = dynamic(
   () => import("@/components/addWatermark/WatermarkModal"),
@@ -32,7 +33,7 @@ export default function Featured({ eventId }: { eventId: string }) {
   const [totalFeatured, setTotalFeatured] = useState(0);
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-  const pageSize = 20;
+  const pageSize = 24;
 
   useEffect(() => {
     if (!session) return;
@@ -62,6 +63,7 @@ export default function Featured({ eventId }: { eventId: string }) {
   };
 
   const handleFeatureImg = (id: string, isFeatured: boolean, e: any) => {
+    if (!session) return;
     e.stopPropagation();
 
     featureImg({
@@ -75,7 +77,7 @@ export default function Featured({ eventId }: { eventId: string }) {
   return (
     <>
       <Head>
-        <title>精選照片</title>
+        <title>精選照片 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
         <meta name="description" content="精選照片" />
         <link
           rel="canonical"
@@ -102,8 +104,8 @@ export default function Featured({ eventId }: { eventId: string }) {
                       onClick={() => handleClickImg(item.id)}
                     >
                       <Image
-                        src={item.url}
-                        alt={item.url}
+                        src={item.url || DETECTING_IMG}
+                        alt={item.url || DETECTING_IMG}
                         width={300}
                         height={400}
                         quality={30}

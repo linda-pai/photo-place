@@ -3,12 +3,18 @@ import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Head from "next/head";
-import { Button, Pagination, Radio, Spin, message } from "antd";
-import { DeleteOutlined, StarOutlined } from "@ant-design/icons";
+import { Button, Pagination, Radio, Spin, message, Progress } from "antd";
+import {
+  DeleteOutlined,
+  StarOutlined,
+  ReloadOutlined,
+} from "@ant-design/icons";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import ImageLightBox from "@/components/image/ImageLightBox";
 import userPermission from "@/hooks/usePermission";
 import featureImg from "@/lib/featured/featureImg";
+import { DETECTING_IMG } from "@/constants";
+import debounce from "@/utils/debounce";
 
 const AddableTags = dynamic(() => import("@/components/AddableTags"), {
   loading: () => <Spin />,
@@ -28,8 +34,10 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
   const [curPage, setCurPage] = useState(1);
   const [loading, setLoading] = useState(true);
 
+  const [detectLength, setDetectLength] = useState(0);
+
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-  const pageSize = 20;
+  const pageSize = 24;
 
   useEffect(() => {
     if (!session) return;
@@ -43,7 +51,12 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
         setImages(data.images);
         setTotal(data.totalCount);
       });
-  }, [session, sortBy, curPage]);
+  }, [session, sortBy, curPage, detectLength]);
+
+  useEffect(() => {
+    if (!session) return;
+    getDetectedImageLength();
+  }, [session]);
 
   const gotoPrevious = () =>
     currImgIndex > 0 && setCurrImgIndex(currImgIndex - 1);
@@ -64,6 +77,15 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
       },
       body: JSON.stringify({ bibs: newTags, imageId: id, eventId }),
     });
+
+    setImages((prev) =>
+      prev.map((item) => {
+        if (item.id === id) {
+          return { ...item, path: newTags };
+        }
+        return item;
+      })
+    );
   };
 
   const handleDeleteImg = (id: string, isRemoved: boolean, e: any) => {
@@ -79,7 +101,7 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
       .then((res) => res.json())
       .then((data) => {
         if (data.status === "success") {
-          message.success(isRemoved ? "恢復成功" : "移除成功");
+          message.success(isRemoved ? "恢復成功" : "從相簿移除成功");
           setImages(
             images.map((item) => {
               if (item.id === id) {
@@ -116,10 +138,23 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
     });
   };
 
+  //debounce
+  const getDetectedImageLength = debounce(() => {
+    fetch(
+      `${domain}/api/images/getDetectedImageLength/${eventId}/${session.id}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setDetectLength(data.detectedImageLength);
+      });
+  });
+
+  const isProcessing = detectLength !== total;
+
   return (
     <>
       <Head>
-        <title>編輯照片</title>
+        <title>編輯照片 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
         <meta name="description" content="編輯照片" />
         <link
           rel="canonical"
@@ -130,13 +165,39 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
       {isAllowed ? (
         <>
           <div className="text-center mt-24 text-[color:var(--main-color-dark)]">
-            <p>編輯照片</p>
-            <p>您可以在這裡為照片檢查號碼布、選擇精選、從相簿移除照片</p>
-            <p>共 {total} 張照片</p>
+            <h1 className="text-center text-2xl mb-2">編輯照片</h1>
+            <p className="text-[#9ca3af]">
+              您可以在這裡為照片檢查號碼布、選擇精選、從相簿移除照片
+            </p>
+            <div className="my-4">
+              <p>號碼布辨識進度 {detectLength + " / " + total}</p>
+              <div className="flex justify-center mx-auto items-center w-80">
+                {isProcessing && (
+                  <Button
+                    onClick={getDetectedImageLength}
+                    className="flex items-center mx-1"
+                    size="small"
+                  >
+                    <ReloadOutlined />
+                  </Button>
+                )}
+                <Progress
+                  percent={Math.round((detectLength / total) * 100) || 0}
+                  status={
+                    isProcessing
+                      ? "active"
+                      : detectLength === 0
+                      ? "active"
+                      : "success"
+                  }
+                  className="w-[80%]"
+                />
+              </div>
+            </div>
           </div>
           {images.length > 0 && (
             <div className="container mx-auto sm:my-10 my-4">
-              <div className="flex justify-end mx-4">
+              <div className="flex mx-2">
                 <Radio.Group
                   defaultValue="lastModified"
                   buttonStyle="solid"
@@ -152,61 +213,63 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
               <div className="masonry">
                 {!loading ? (
                   images.map((item: any, key: number) => (
-                    <div key={key} className="relative">
-                      <div
-                        className="masonry-item h-fit cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
-                        onClick={() => handleClickImg(item.id)}
-                      >
-                        <Image
-                          className="w-full h-auto"
-                          src={item.watermarkedUrl}
-                          alt={item.watermarkedUrl}
-                          width="0"
-                          height="0"
-                          sizes="100vw"
-                          quality={30}
-                        />
-                        <div className="flex gap-2 py-5 px-1 justify-between items-center bg-[#404040] bg-opacity-40 absolute top-0 w-full sm:h-[10%] h-[18%] min-h-[28px] max-h-[34px] group hover:bg-opacity-80 transition-all duration-300">
-                          <p className="text-white mx-1 text-sm">
-                            {item.fileName}
-                          </p>
-                          <div className="flex justify-end">
-                            <Button
-                              onClick={(e) =>
-                                handleDeleteImg(item.id, item.isRemoved, e)
-                              }
-                              className={`flex items-center justify-center mr-2 ${
-                                item.isRemoved
-                                  ? "text-white border border-[#fff] bg-[#ef4444]"
-                                  : "text-white border border-white bg-transparent"
-                              }`}
-                            >
-                              <DeleteOutlined />
-                            </Button>
-                            <Button
-                              onClick={(e) =>
-                                handleFeatureImg(item.id, item.isFeatured, e)
-                              }
-                              className={`flex items-center justify-center mr-2 ${
-                                item.isFeatured
-                                  ? "text-white border border-[#fff] bg-[color:var(--main-color)] text-[#fff]"
-                                  : "text-white bg-[#fff] border border-white bg-transparent"
-                              }`}
-                            >
-                              <StarOutlined />
-                            </Button>
-                          </div>
+                    <div
+                      className="relative masonry-item h-fit cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
+                      onClick={() => handleClickImg(item.id)}
+                    >
+                      <Image
+                        className="w-full h-auto"
+                        src={item.watermarkedUrl || DETECTING_IMG}
+                        alt={item.watermarkedUrl || DETECTING_IMG}
+                        width="0"
+                        height="0"
+                        sizes="100vw"
+                        quality={30}
+                      />
+                      <div className="flex gap-2 py-5 px-1 justify-between items-center bg-[#404040] bg-opacity-40 absolute top-0 w-full sm:h-[10%] h-[18%] min-h-[28px] max-h-[34px] group hover:bg-opacity-80 transition-all duration-300">
+                        <p className="text-white mx-1 text-sm">
+                          {item.fileName}
+                        </p>
+                        <div className="flex justify-end">
+                          <Button
+                            onClick={(e) =>
+                              handleDeleteImg(item.id, item.isRemoved, e)
+                            }
+                            className={`flex items-center justify-center mr-2 ${
+                              item.isRemoved
+                                ? "text-white border border-[#fff] bg-[#ef4444]"
+                                : "text-white border border-white bg-transparent"
+                            }`}
+                            size="small"
+                          >
+                            <DeleteOutlined />
+                          </Button>
+                          <Button
+                            onClick={(e) =>
+                              handleFeatureImg(item.id, item.isFeatured, e)
+                            }
+                            className={`flex items-center justify-center mr-2 ${
+                              item.isFeatured
+                                ? "text-white border border-[#fff] bg-[color:var(--main-color)] text-[#fff]"
+                                : "text-white bg-[#fff] border border-white bg-transparent"
+                            }`}
+                            size="small"
+                          >
+                            <StarOutlined />
+                          </Button>
                         </div>
                       </div>
-                      <AddableTags
-                        key={images[key].path}
-                        bibs={item.path.map((tag: string) =>
-                          tag === "common" ? "" : tag
-                        )}
-                        handleUpdateBibs={(newTags: string[]) =>
-                          updateBibs(newTags, item.id)
-                        }
-                      />
+                      <div className="absolute bottom-0">
+                        <AddableTags
+                          key={images[key].path}
+                          bibs={item.path.map((tag: string) =>
+                            tag === "common" ? "" : tag
+                          )}
+                          handleUpdateBibs={(newTags: string[]) =>
+                            updateBibs(newTags, item.id)
+                          }
+                        />
+                      </div>
                     </div>
                   ))
                 ) : (
