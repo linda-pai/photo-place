@@ -292,7 +292,7 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
         //寫入上傳資訊
         //50張一組，完成後再上傳下一組
         console.time("upload");
-        const groupLimit = 50;
+        const groupLimit = 100;
         parallelUploadWithLimit(
           tobeUploadedList,
           groupLimit,
