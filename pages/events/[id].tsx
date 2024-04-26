@@ -31,7 +31,7 @@ export default function EventSearchPage({
   imagesInfo,
   photographerOptions,
 }: any) {
-  const pageSize = 20;
+  const pageSize = 24;
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
   const { eventId, eventName, coverImg, description } = eventInfo;

@@ -4,6 +4,7 @@ import { Input, Button, DatePicker, Image, Spin, message } from "antd";
 import type { DatePickerProps } from "antd";
 import dynamic from "next/dynamic";
 import dayjs from "dayjs";
+import { ROLE_ADMIN } from "@/lib/roles";
 
 const Uploader = dynamic(() => import("@/components/upload/Uploader"), {
   loading: () => <Spin />,
@@ -59,7 +60,7 @@ const CreateEventBlock = ({
       eventName,
       coverImg,
       userId,
-      isReviewed: userId === process.env.NEXT_PUBLIC_ADMIN_ID ? true : false,
+      isReviewed: ROLE_ADMIN.includes(userId), // 管理員自動審核通過
     };
 
     await fetch(`${domain}/api/events/add`, {

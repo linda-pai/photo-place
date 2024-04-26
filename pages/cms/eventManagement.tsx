@@ -23,7 +23,7 @@ const EventManagement = ({
   const [isCompleteUpload, setIsCompleteUpload] = useState<{
     [key: string]: boolean;
   }>({});
-  const [isReviewd, setIsReviewd] = useState<{ [key: string]: boolean }>({});
+  const [isReviewed, setIsReviewed] = useState<{ [key: string]: boolean }>({});
 
   const [eventData, setEventData] = useState<EventProps[]>(events);
 
@@ -43,9 +43,9 @@ const EventManagement = ({
       }, {})
     );
 
-    setIsReviewd(
+    setIsReviewed(
       eventData.reduce((acc, curr) => {
-        return { ...acc, [curr.eventId]: curr.isReviewd };
+        return { ...acc, [curr.eventId]: curr.isReviewed };
       }, {})
     );
   }, [eventData]);
@@ -73,8 +73,8 @@ const EventManagement = ({
       case "isCompleteUpload":
         setIsCompleteUpload({ ...isCompleteUpload, [eventId]: checked });
         break;
-      case "isReviewd":
-        setIsReviewd({ ...isReviewd, [eventId]: checked });
+      case "isReviewed":
+        setIsReviewed({ ...isReviewed, [eventId]: checked });
         break;
     }
     updateEvent(eventId, reqBody);
@@ -144,17 +144,17 @@ const EventManagement = ({
       ),
     },
     {
-      title: `審核 (${eventData.filter((event) => !event.isReviewd).length} )`,
+      title: `審核 (${eventData.filter((event) => !event.isReviewed).length} )`,
       dataIndex: "eventId",
-      key: "isReviewd",
+      key: "isReviewed",
       render: (eventId: string) => (
         <Switch
-          checked={isReviewd[eventId]}
-          onChange={(checked) => handleOnChange(checked, eventId, "isReviewd")}
+          checked={isReviewed[eventId]}
+          onChange={(checked) => handleOnChange(checked, eventId, "isReviewed")}
         />
       ),
       sorter: (a: EventProps, b: EventProps) => {
-        return a.isReviewd === b.isReviewd ? 0 : a.isReviewd ? -1 : 1;
+        return a.isReviewed === b.isReviewed ? 0 : a.isReviewed ? -1 : 1;
       },
     },
     {

@@ -59,7 +59,7 @@ const UserManagement = ({ userList }: { userList: UserProps[] }) => {
   return (
     <>
       <Head>
-        <title>用戶管理</title>
+        <title>用戶管理 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
         <meta name="description" content="用戶管理" />
         <link
           rel="canonical"

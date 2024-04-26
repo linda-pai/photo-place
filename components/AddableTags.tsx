@@ -32,11 +32,13 @@ const AddableTags = ({
     setTags(newTags);
   };
 
-  const showInput = () => {
+  const showInput = (e: any) => {
+    e.stopPropagation();
     setInputVisible(true);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation();
     setInputValue(e.target.value);
   };
 

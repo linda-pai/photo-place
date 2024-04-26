@@ -6,13 +6,7 @@ import dayjs from "dayjs";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import ImageLightBox from "@/components/image/ImageLightBox";
 
-export default function UploadPreview({
-  eventId,
-  toggle,
-}: {
-  eventId: string;
-  toggle: any;
-}) {
+export default function UploadPreview({ eventId }: { eventId: string }) {
   const { data: session }: any = useSession();
 
   const [showImageViewer, setShowImageViewer] = useState(false);
@@ -22,7 +16,7 @@ export default function UploadPreview({
   const [allImages, setAllImages] = useState([] as ImageItemProps[]);
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-  const pageSize = 20;
+  const pageSize = 24;
 
   useEffect(() => {
     if (!session) return;
@@ -51,7 +45,7 @@ export default function UploadPreview({
 
   return (
     <>
-      {allImages.length > 0 && toggle["ALL"] && (
+      {allImages.length > 0 && (
         <div className="container mx-auto sm:my-10 my-4">
           <div className="masonry">
             {allImages.map((item: any, key: number) => (
@@ -61,6 +55,7 @@ export default function UploadPreview({
                 onClick={() => handleClickImg(item.id)}
               >
                 <Image
+                  className="item__content"
                   src={item.watermarkedUrl}
                   alt={item.watermarkedUrl}
                   width={300}

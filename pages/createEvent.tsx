@@ -21,7 +21,7 @@ const CreateEventPage: React.FC = () => {
   return (
     <>
       <Head>
-        <title>新增活動</title>
+        <title>新增活動 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
         <meta name="description" content="新增活動" />
         <link
           rel="canonical"
