@@ -11,6 +11,7 @@ const RecordOfUpload = dynamic(() => import("@/components/records"), {
   loading: () => <Spin />,
 });
 const records = () => {
+  const title = "攝影師成就 - " + process.env.NEXT_PUBLIC_APP_NAME;
   const isAllowed = usePermission();
   const { data: session }: any = useSession();
 
@@ -34,7 +35,7 @@ const records = () => {
   return (
     <>
       <Head>
-        <title>攝影師成就 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <title>{title}</title>
         <meta name="description" content="攝影師成就" />
         <link
           rel="canonical"

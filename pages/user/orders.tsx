@@ -8,12 +8,13 @@ const Orders = dynamic(() => import("@/components/orders"), {
 });
 
 const orders = () => {
+  const title = "訂單查詢 - " + process.env.NEXT_PUBLIC_APP_NAME;
   const isLogin = useAuth();
 
   return (
     <>
       <Head>
-        <title>訂單查詢 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <title>{title}</title>
         <meta name="description" content="訂單查詢" />
         <link
           rel="canonical"

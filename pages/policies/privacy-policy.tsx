@@ -1,10 +1,11 @@
 import Head from "next/head";
 
 const PrivacyPolicy = () => {
+  const title = "隱私權政策 - " + process.env.NEXT_PUBLIC_APP_NAME;
   return (
     <>
       <Head>
-        <title>隱私權政策 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <title>{title}</title>
         <meta name="description" content="隱私權政策" />
         <link
           rel="canonical"

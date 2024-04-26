@@ -13,12 +13,13 @@ const SoldList = dynamic(() => import("@/components/soldList"), {
 const soldList: React.FC<{ soldData: SoldItemProps[] }> = ({
   eventId,
 }: any) => {
+  const title = "售出照片列表 - " + process.env.NEXT_PUBLIC_APP_NAME;
   const isAllowed = usePermission();
 
   return (
     <>
       <Head>
-        <title>售出照片列表 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <title>{title}</title>
         <meta name="description" content="售出照片列表" />
         <link
           rel="canonical"

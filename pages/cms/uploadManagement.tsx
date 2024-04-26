@@ -26,6 +26,7 @@ const UploadManagement = ({
   uploadData: any;
   eventId: string;
 }) => {
+  const title = "攝影師上傳管理 - " + process.env.NEXT_PUBLIC_APP_NAME;
   const [tableData, setTableData] = useState<NotifyProps[]>(uploadData);
 
   useEffect(() => {
@@ -37,7 +38,7 @@ const UploadManagement = ({
   return (
     <>
       <Head>
-        <title>攝影師上傳管理 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <title>{title}</title>
         <meta name="description" content="攝影師上傳管理" />
         <link
           rel="canonical"

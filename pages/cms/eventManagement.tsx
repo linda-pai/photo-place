@@ -18,6 +18,7 @@ const EventManagement = ({
   events: EventProps[];
   reviewingEvents: EventProps[];
 }) => {
+  const title = "賽事管理 - " + process.env.NEXT_PUBLIC_APP_NAME;
   const isAllowed = usePermission();
   const [isShow, setIsShow] = useState<{ [key: string]: boolean }>({});
   const [isCompleteUpload, setIsCompleteUpload] = useState<{
@@ -212,7 +213,7 @@ const EventManagement = ({
   return (
     <>
       <Head>
-        <title>賽事管理 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <title>{title}</title>
         <meta name="description" content="賽事管理" />
         <link
           rel="canonical"

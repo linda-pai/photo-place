@@ -14,6 +14,7 @@ const CreateEventBlock = dynamic(
 );
 
 const CreateEventPage: React.FC = () => {
+  const title = "新增活動 - " + process.env.NEXT_PUBLIC_APP_NAME;
   const isAllowed = userPermission();
 
   const router = useRouter();
@@ -21,7 +22,7 @@ const CreateEventPage: React.FC = () => {
   return (
     <>
       <Head>
-        <title>新增活動 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <title>{title}</title>
         <meta name="description" content="新增活動" />
         <link
           rel="canonical"

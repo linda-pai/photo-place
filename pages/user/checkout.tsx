@@ -9,12 +9,13 @@ const Checkout = dynamic(() => import("@/components/checkout"), {
 });
 
 const checkout = () => {
+  const title = "訂單明細 - " + process.env.NEXT_PUBLIC_APP_NAME;
   const isLogin = useAuth();
 
   return (
     <>
       <Head>
-        <title>訂單明細 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <title>{title}</title>
         <meta name="description" content="訂單明細" />
         <link
           rel="canonical"

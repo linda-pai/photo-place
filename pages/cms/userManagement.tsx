@@ -7,6 +7,7 @@ import copyToClipboard from "@/utils/copyToClipboard";
 import { UserProps } from "@/types/interfaces/UserProps";
 
 const UserManagement = ({ userList }: { userList: UserProps[] }) => {
+  const title = "用戶管理 - " + process.env.NEXT_PUBLIC_APP_NAME;
   const isAllowed = usePermission();
 
   const columns = [
@@ -59,7 +60,7 @@ const UserManagement = ({ userList }: { userList: UserProps[] }) => {
   return (
     <>
       <Head>
-        <title>用戶管理 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <title>{title}</title>
         <meta name="description" content="用戶管理" />
         <link
           rel="canonical"

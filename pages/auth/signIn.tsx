@@ -10,6 +10,8 @@ const SignInPage = ({
   providers,
   previousUrl,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+  const title = "登入 - " + process.env.NEXT_PUBLIC_APP_NAME;
+
   const buttonStyle = {
     google: {
       style: "bg-[#4285f4]",
@@ -24,7 +26,7 @@ const SignInPage = ({
   return (
     <>
       <Head>
-        <title>登入 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <title>{title}</title>
         <meta name="description" content="登入 Photo Pacer" />
         <link
           rel="canonical"

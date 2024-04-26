@@ -2,10 +2,11 @@ import Link from "next/link";
 import Head from "next/head";
 
 const TermOfUse = () => {
+  const title = "使用者條款 - " + process.env.NEXT_PUBLIC_APP_NAME;
   return (
     <>
       <Head>
-        <title>使用者條款 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <title>{title}</title>
         <meta name="description" content="使用者條款" />
         <link
           rel="canonical"

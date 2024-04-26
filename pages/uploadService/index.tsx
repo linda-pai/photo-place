@@ -14,6 +14,7 @@ const UploadBreadcrumb = dynamic(
 );
 
 const uploadService = () => {
+  const title = "上傳服務說明 - " + process.env.NEXT_PUBLIC_APP_NAME;
   const isAllowed = userPermission();
   const [checked, setChecked] = useState(false);
 
@@ -26,7 +27,7 @@ const uploadService = () => {
   return (
     <>
       <Head>
-        <title>上傳服務說明 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <title>{title}</title>
         <meta name="description" content="上傳服務說明" />
         <link
           rel="canonical"

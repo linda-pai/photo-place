@@ -10,12 +10,13 @@ const OrderList = dynamic(() => import("@/components/orderList"), {
 });
 
 const orderList: React.FC<{ orders: Order[] }> = ({ orders }) => {
+  const title = "訂單列表 - " + process.env.NEXT_PUBLIC_APP_NAME;
   const isAllowed = usePermission();
 
   return (
     <>
       <Head>
-        <title>訂單列表 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <title>{title}</title>
         <meta name="description" content="訂單列表" />
         <link
           rel="canonical"

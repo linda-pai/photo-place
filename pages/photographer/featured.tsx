@@ -20,6 +20,7 @@ const WatermarkModal = dynamic(
 );
 
 export default function Featured({ eventId }: { eventId: string }) {
+  const title = "精選照片 - " + process.env.NEXT_PUBLIC_APP_NAME;
   const isAllowed = userPermission();
 
   const { data: session }: any = useSession();
@@ -77,7 +78,7 @@ export default function Featured({ eventId }: { eventId: string }) {
   return (
     <>
       <Head>
-        <title>精選照片 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <title>{title}</title>
         <meta name="description" content="精選照片" />
         <link
           rel="canonical"

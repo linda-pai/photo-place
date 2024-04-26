@@ -22,6 +22,7 @@ const CreateEventBlock = dynamic(
 );
 
 const chooseEvent = ({ eventOption }: { eventOption: Event[] }) => {
+  const title = "選擇賽事相簿 - " + process.env.NEXT_PUBLIC_APP_NAME;
   const isAllowed = userPermission();
 
   const router = useRouter();
@@ -47,7 +48,7 @@ const chooseEvent = ({ eventOption }: { eventOption: Event[] }) => {
   return (
     <>
       <Head>
-        <title>選擇賽事相簿 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <title>{title}</title>
         <meta name="description" content="選擇賽事相簿" />
         <link
           rel="canonical"

@@ -23,6 +23,7 @@ const Notify = ({
   notifyData: any;
   eventId: string;
 }) => {
+  const title = "通知管理 - " + process.env.NEXT_PUBLIC_APP_NAME;
   const [tableData, setTableData] = useState<NotifyProps[]>(notifyData);
 
   useEffect(() => {
@@ -34,7 +35,7 @@ const Notify = ({
   return (
     <>
       <Head>
-        <title>通知管理 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <title>{title}</title>
         <meta name="description" content="通知管理" />
         <link
           rel="canonical"

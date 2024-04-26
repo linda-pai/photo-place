@@ -6,12 +6,13 @@ import useAuth from "@/hooks/useAuth";
 const ShoppingCart = dynamic(() => import("@/components/shoppingCart"));
 
 const shoppingCart = () => {
+  const title = "購物車 - " + process.env.NEXT_PUBLIC_APP_NAME;
   const isLogin = useAuth();
 
   return (
     <>
       <Head>
-        <title>購物車 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <title>{title}</title>
         <meta name="description" content="購物車" />
         <link
           rel="canonical"

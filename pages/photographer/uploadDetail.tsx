@@ -11,12 +11,13 @@ const uploadDetail = ({
   eventId: string;
   record: any;
 }) => {
+  const title = "攝影師成就詳情 - " + process.env.NEXT_PUBLIC_APP_NAME;
   const isAllowed = userPermission();
 
   return (
     <>
       <Head>
-        <title>攝影師成就詳情 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <title>{title}</title>
         <meta name="description" content="攝影師成就詳情" />
         <link
           rel="canonical"

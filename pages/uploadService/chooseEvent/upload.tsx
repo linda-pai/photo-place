@@ -9,12 +9,14 @@ const UploadImages = dynamic(() => import("@/components/upload/UploadImages"), {
 });
 
 const UploadPage: React.FC<{ eventId: string }> = ({ eventId }) => {
+  const title = "上傳照片 - " + process.env.NEXT_PUBLIC_APP_NAME;
+
   const isAllowed = userPermission();
 
   return (
     <>
       <Head>
-        <title>上傳照片 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
+        <title>{title}</title>
         <meta name="description" content="上傳照片" />
         <link
           rel="canonical"
