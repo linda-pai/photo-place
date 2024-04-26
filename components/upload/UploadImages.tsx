@@ -290,7 +290,7 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
         };
         message.open({ ...loadingMsgConfig, type: "loading" });
         //寫入上傳資訊
-        //50張一組，完成後再上傳下一組
+        //100張一組，完成後再上傳下一組
         console.time("upload");
         const groupLimit = 100;
         parallelUploadWithLimit(
