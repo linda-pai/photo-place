@@ -8,7 +8,7 @@ import copyToClipboard from "@/utils/copyToClipboard";
 import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
 import addWaterMarkAndDetect from "@/lib/upload/addWaterMarkAndDetect";
 
-const RecordOfUploadProps = dynamic(() => import("@/components/records"), {
+const RecordOfUpload = dynamic(() => import("@/components/records"), {
   loading: () => <Spin />,
 });
 
@@ -88,7 +88,7 @@ const UploadTable = ({ tableData, eventId }: any) => {
       render: (text: string) => {
         return (
           uploadData[currAuthor] && (
-            <RecordOfUploadProps
+            <RecordOfUpload
               uploadData={[uploadData[currAuthor]]}
               key={currAuthor}
               showHeader={false}

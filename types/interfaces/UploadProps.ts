@@ -7,3 +7,17 @@ export interface UploadProps {
   imagesCount: number;
   soldCount: number;
 }
+
+export interface RecordOfUploadProps {
+  author: string;
+  createAt: string;
+  eventId: string;
+  eventName: string;
+  images: any[];
+  uploadId: string;
+  date: string;
+  allImageLength: number;
+  featuredLength: number;
+  removeImageLength: number;
+  detectedImageLength: number;
+}

@@ -1,13 +1,5 @@
 import type { ColumnsType } from "antd/es/table";
-
-interface RecordOfUploadProps {
-  author: string;
-  createAt: string;
-  eventId: string;
-  eventName: string;
-  imagesCount: number;
-  uploadId: string;
-}
+import { RecordOfUploadProps } from "@/types/interfaces/UploadProps";
 
 const tableConfig = (columnsRenderMap: any) => {
   const columns: ColumnsType<RecordOfUploadProps> = [
@@ -25,10 +17,10 @@ const tableConfig = (columnsRenderMap: any) => {
       ...columnsRenderMap.date,
     },
     {
-      title: "最後上傳時間",
-      dataIndex: "lastEditTime",
-      key: "lastEditTime",
-      ...columnsRenderMap.lastEditTime,
+      title: "號碼布辨識進度",
+      dataIndex: "imagesCount",
+      key: "imagesCount",
+      ...columnsRenderMap.detectProcess,
     },
     {
       title: "照片數量資訊",
