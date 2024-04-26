@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, Checkbox } from "antd";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import Head from "next/head";
 import dynamic from "next/dynamic";
 import { Spin } from "antd";

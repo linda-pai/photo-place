@@ -14,7 +14,7 @@ const UploadPage: React.FC<{ eventId: string }> = ({ eventId }) => {
   return (
     <>
       <Head>
-        <title>上傳照片</title>
+        <title>上傳照片 - {process.env.NEXT_PUBLIC_APP_NAME}</title>
         <meta name="description" content="上傳照片" />
         <link
           rel="canonical"

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import Head from "next/head";
 import { TreeSelect, Button, Spin, Divider, message } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
