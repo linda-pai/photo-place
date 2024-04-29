@@ -1,10 +1,16 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Table, Button, Tag, Statistic, Col, Modal, Progress } from "antd";
-import { InfoCircleOutlined, ReloadOutlined } from "@ant-design/icons";
+import {
+  InfoCircleOutlined,
+  ReloadOutlined,
+  EditOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 import tableConfig from "./tableConfig";
 import addWaterMarkAndDetect from "@/lib/upload/addWaterMarkAndDetect";
 import debounce from "@/utils/debounce";
+import isUploadable from "@/utils/isUploadable";
 import { RecordOfUploadProps } from "@/types/interfaces/UploadProps";
 
 const RecordOfUpload = ({
@@ -87,8 +93,10 @@ const RecordOfUpload = ({
             />
           </Link>
           <Link
-            href={`/photographer/checkBibs?eventId=${record.eventId}`}
-            className="hover:bg-[#e7e5e4] p-2 rounded-md cursor-pointer"
+            href={`/photographer/removed?eventId=${record.eventId}`}
+            className={`hover:bg-[#e7e5e4] p-2 rounded-md cursor-pointer ${
+              record.allImageLength > 0 ? "" : "pointer-events-none"
+            }`}
           >
             <Statistic
               title="從相簿移除"
@@ -99,7 +107,9 @@ const RecordOfUpload = ({
           </Link>
           <Link
             href={`/photographer/soldList?eventId=${record.eventId}`}
-            className="hover:bg-[#e7e5e4] p-2 rounded-md cursor-pointer"
+            className={`hover:bg-[#e7e5e4] p-2 rounded-md cursor-pointer ${
+              record.allImageLength > 0 ? "" : "pointer-events-none"
+            }`}
           >
             <Statistic
               title="售出張數"
@@ -110,7 +120,9 @@ const RecordOfUpload = ({
           </Link>
           <Link
             href={`/photographer/featured?eventId=${record.eventId}`}
-            className="hover:bg-[#e7e5e4] p-2 rounded-md cursor-pointer"
+            className={`hover:bg-[#e7e5e4] p-2 rounded-md cursor-pointer ${
+              record.allImageLength > 0 ? "" : "pointer-events-none"
+            }`}
           >
             <Statistic
               title="精選照片"
@@ -256,9 +268,31 @@ const RecordOfUpload = ({
     ...(showHeader && {
       action: {
         render: (_: string, record: RecordOfUploadProps) => (
-          <div className="flex gap-1" key={record.eventId}>
-            <Link href={`/photographer/checkBibs?eventId=${record.eventId}`}>
-              <Button>編輯照片</Button>
+          <div key={record.eventId}>
+            <Link
+              href={`/photographer/checkBibs?eventId=${record.eventId}&date=${record.date}`}
+              className={`${
+                record.allImageLength > 0 ? "" : "pointer-events-none"
+              }`}
+            >
+              <Button
+                disabled={record.allImageLength === 0}
+                className="flex items-center my-1"
+              >
+                <EditOutlined />
+                編輯照片
+              </Button>
+            </Link>
+            <Link
+              href={`/uploadService/chooseEvent/upload?eventId=${record.eventId}`}
+            >
+              <Button
+                disabled={!isUploadable(record.date)}
+                className="flex items-center my-1"
+              >
+                <UploadOutlined />
+                上傳照片
+              </Button>
             </Link>
           </div>
         ),
