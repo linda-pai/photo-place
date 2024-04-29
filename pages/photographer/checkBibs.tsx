@@ -2,12 +2,15 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import Link from "next/link";
 import Head from "next/head";
 import { Button, Pagination, Radio, Spin, message, Progress } from "antd";
 import {
   DeleteOutlined,
   StarOutlined,
   ReloadOutlined,
+  BookOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import ImageLightBox from "@/components/image/ImageLightBox";
@@ -15,12 +18,19 @@ import userPermission from "@/hooks/usePermission";
 import featureImg from "@/lib/featured/featureImg";
 import { DETECTING_IMG } from "@/constants";
 import debounce from "@/utils/debounce";
+import isUploadable from "@/utils/isUploadable";
 
 const AddableTags = dynamic(() => import("@/components/AddableTags"), {
   loading: () => <Spin />,
 });
 
-export default function CheckBibs({ eventId }: { eventId: string }) {
+export default function CheckBibs({
+  eventId,
+  date,
+}: {
+  eventId: string;
+  date: string;
+}) {
   const title = "編輯照片 - " + process.env.NEXT_PUBLIC_APP_NAME;
   const isAllowed = userPermission();
 
@@ -197,7 +207,7 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
           </div>
           {memoImages.length > 0 && (
             <div className="container mx-auto sm:my-10 my-4">
-              <div className="flex mx-2">
+              <div className="flex justify-between mx-2">
                 <Radio.Group
                   defaultValue="lastModified"
                   buttonStyle="solid"
@@ -209,11 +219,32 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
                   </Radio.Button>
                   <Radio.Button value="lastModified">按時間排序</Radio.Button>
                 </Radio.Group>
+                <div className="flex items-center gap-2">
+                  <Link href={`/events/${eventId}?bib=`} passHref>
+                    <Button className="flex items-center">
+                      <BookOutlined />
+                      賽事相簿
+                    </Button>
+                  </Link>
+                  <Link
+                    href={`/uploadService/chooseEvent/upload?eventId=${eventId}`}
+                    passHref
+                  >
+                    <Button
+                      className="flex items-center"
+                      disabled={!isUploadable(date)}
+                    >
+                      <UploadOutlined />
+                      上傳照片
+                    </Button>
+                  </Link>
+                </div>
               </div>
               <div className="masonry">
                 {!loading ? (
                   memoImages.map((item: any, key: number) => (
                     <div
+                      key={key}
                       className="relative masonry-item h-fit cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
                       onClick={() => handleClickImg(item.id)}
                     >
@@ -227,7 +258,7 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
                         quality={30}
                       />
                       <div className="flex gap-2 py-5 px-1 justify-between items-center bg-[#404040] bg-opacity-40 absolute top-0 w-full sm:h-[10%] h-[18%] min-h-[28px] max-h-[34px] group hover:bg-opacity-80 transition-all duration-300">
-                        <p className="text-white mx-1 text-sm">
+                        <p className="text-white ml-1 text-sm overflow-scroll">
                           {item.fileName}
                         </p>
                         <div className="flex justify-end">
@@ -235,7 +266,7 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
                             onClick={(e) =>
                               handleDeleteImg(item.id, item.isRemoved, e)
                             }
-                            className={`flex items-center justify-center mr-2 ${
+                            className={`flex items-center justify-center mr-1 ${
                               item.isRemoved
                                 ? "text-white border border-[#fff] bg-[#ef4444]"
                                 : "text-white border border-white bg-transparent"
@@ -248,7 +279,7 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
                             onClick={(e) =>
                               handleFeatureImg(item.id, item.isFeatured, e)
                             }
-                            className={`flex items-center justify-center mr-2 ${
+                            className={`flex items-center justify-center mr-1 ${
                               item.isFeatured
                                 ? "text-white border border-[#fff] bg-[color:var(--main-color)] text-[#fff]"
                                 : "text-white bg-[#fff] border border-white bg-transparent"
@@ -318,11 +349,13 @@ export default function CheckBibs({ eventId }: { eventId: string }) {
 }
 
 export async function getServerSideProps(context: any) {
-  const eventId = context.query.eventId;
+  const eventId = context.query.eventId || "";
+  const date = context.query.date || "";
 
   return {
     props: {
       eventId,
+      date,
     },
   };
 }
