@@ -26,6 +26,7 @@ import UploadQueue from "@/lib/upload/uploadQueue";
 import completeUpload from "@/lib/upload/completeUpload";
 import getStartMultipartUploadURL from "@/lib/upload/getStartMultipartUploadURL";
 import chunkFileAndPutS3 from "@/lib/upload/chunkFileAndPutS3";
+import updateFirst50IsFeatured from "@/lib/upload/updateFirst50IsFeatured";
 
 const Uploader = dynamic(() => import("@/components/upload/Uploader"), {
   loading: () => <Spin />,
@@ -49,7 +50,6 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
   const [loading, setLoading] = useState(false);
   const [fileOptionsList, setFileOptionsList] = useState([] as any);
   const [completeCount, setCompleteCount] = useState(0);
-  const [prepareCount, setPrepareCount] = useState(0);
 
   const [modal, contextHolder] = Modal.useModal();
   const [authorName, setAuthorName] = useState(session?.user?.name || "");
@@ -80,7 +80,7 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
     fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/events/getBy/${eventId}`)
       .then((res) => res.json())
       .then((data) => {
-        const { eventName } = data;
+        const { eventName } = data.eventInfo;
         if (!eventName) return handleEventIdError();
         setEventName(eventName);
       });
@@ -91,9 +91,6 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
     setFileOptionsList(uploadData);
     setCompleteCount(
       uploadData.filter((file: any) => file.uploaded).length || 0
-    );
-    setPrepareCount(
-      uploadData.filter((file: any) => file.detected).length || 0
     );
   }, []);
 
@@ -158,6 +155,8 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
       author: session.id,
       isAll: false,
     });
+
+    updateFirst50IsFeatured(eventId);
 
     modal.confirm({
       title: `已上傳完成${fileOptionsList.length}張照片`,
@@ -250,7 +249,6 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
           message.error(res.error);
           return;
         }
-        setPrepareCount((prev) => prev + 1);
         return res;
       });
       await handleChunkFileAndUpload(file, uploadId, key);
@@ -307,21 +305,9 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
     message.destroy();
   };
 
-  const currentStep =
-    prepareCount < fileOptionsList.length
-      ? 0
-      : completeCount > 0
-      ? completeCount === fileOptionsList.length
-        ? 2
-        : 1
-      : (0 as 0 | 1 | 2 | undefined);
+  const currentStep = completeCount === fileOptionsList.length ? 1 : 0;
 
   const steps = [
-    {
-      title: "準備中",
-      description: "照片準備中",
-      subTitle: `${prepareCount}/${fileOptionsList.length}張照片`,
-    },
     {
       title: "上傳中",
       description: "照片上傳中",
@@ -336,20 +322,14 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
       title: "完成",
       description: "上傳完成",
       icon: (
-        <SmileOutlined style={currentStep === 2 ? { color: "#ffd700" } : {}} />
+        <SmileOutlined style={currentStep === 1 ? { color: "#ffd700" } : {}} />
       ),
-      status: currentStep === 2 ? "finish" : "wait",
+      status: currentStep === 1 ? "finish" : "wait",
     },
   ] as any;
 
   const currentPercent = Math.ceil(
-    ((currentStep === 0
-      ? prepareCount
-      : currentStep === 1
-      ? completeCount
-      : fileOptionsList.length) /
-      fileOptionsList.length) *
-      100
+    (completeCount / fileOptionsList.length) * 100
   );
 
   const columns = [
@@ -458,6 +438,7 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
                 loading
               }
               onClick={handleUpload}
+              className="bg-[color:var(--main-color-dark)] text-white w-1/4 text-lg h-auto"
             >
               確定上傳
             </Button>
