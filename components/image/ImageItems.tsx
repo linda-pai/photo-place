@@ -24,6 +24,7 @@ const ImageItems = ({
         height={400}
         quality={30}
         onLoad={onLoad}
+        onContextMenu={(e) => e.preventDefault()}
       />
       <div className="bg-[#fff] bg-opacity-70 absolute bottom-12 sm:p-2 p-1 leading-4 hidden group-hover:block">
         <p className="line-through sm:text-xs text-[12px] text-[#8f8f8f] ">
