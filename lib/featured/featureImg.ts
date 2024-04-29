@@ -13,7 +13,7 @@ const featureImg = ({
 }) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const response = fetch(
-    `${domain}/api/images/setFeatured/${eventId}/${id}/${author}`,
+    `${domain}/api/images/setStatus/${eventId}/${id}/${author}`,
     {
       method: "POST",
       headers: {
