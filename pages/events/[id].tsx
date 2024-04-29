@@ -368,7 +368,7 @@ export default function EventSearchPage({
                       ? total[IMAGE_STATUS.MORE]
                       : total[IMAGE_STATUS.IDENTIFYED]
                   } 張照片，${
-                    images?.[category]?.length < 0
+                    images?.[category]?.length === 0
                       ? "我們未來會努力增加攝影師的💪"
                       : "太有緣份了！"
                   }`}</p>
@@ -411,13 +411,13 @@ export default function EventSearchPage({
                       </Radio.Group>
                     </div>
                     <Select
-                      defaultValue="請選擇攝影師"
-                      className="w-1/6 mx-1 w-fit"
+                      className="mx-1 w-[200px]"
                       options={[
                         { label: "全部", value: "" },
                         ...photographerOptions,
                       ]}
                       onChange={handleOnChangePhotographer}
+                      placeholder="請選擇攝影師"
                     />
                   </div>
                 )}
@@ -486,19 +486,16 @@ export async function getServerSideProps(context: any) {
     `${domain}/api/images/getByPathAndEventId/${eventId}`
   ).then((res) => res.json());
 
-  const eventInfo = await fetch(`${domain}/api/events/getBy/${eventId}`).then(
-    (res) => res.json()
-  );
+  const { eventInfo, featuredImages } = await fetch(
+    `${domain}/api/events/getBy/${eventId}`
+  ).then((res) => res.json());
 
   const isCompleteUpload = eventInfo.isCompleteUpload;
 
   if (!isCompleteUpload) {
     const pageSize = 24;
     //問是否有精選照片，有超過24張精選照片就更新 event isCompleteUpload = true
-    const featuredImages = imagesInfo.images.filter(
-      (item: ImageItemProps) => item?.isFeatured || false
-    );
-    if (featuredImages.length > pageSize) {
+    if (featuredImages >= pageSize) {
       eventInfo.isCompleteUpload = true;
       //update event
       await fetch(`${domain}/api/events/update/${eventId}`, {
