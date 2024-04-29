@@ -159,7 +159,7 @@ const WatermarkModal = ({
             <div className="flex justify-center">
               <div className="w-[120px] h-[200px]">
                 <Image
-                  src={featuredImages[0].url}
+                  src={featuredImages[0].watermarkedUrl}
                   width="120"
                   height="160"
                   className=" absolute bottom-32"

@@ -34,7 +34,7 @@ const EventCard = ({ event }: any) => {
       iconClassName="icon-position"
       icon={
         <Badge count={"馬拉松/路跑"} color="gold" offset={[-24, -14]}>
-          <img src="./favicon.ico" alt="myLogo" />
+          <img src="https://www.photopacer.com/favicon.ico" alt="myLogo" />
         </Badge>
       }
     >
