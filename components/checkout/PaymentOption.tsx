@@ -35,8 +35,12 @@ const PaymentOption = ({
                     src={option.icon}
                     alt={option.label}
                   />
-                  <p className="font-medium">{option.label}</p>
-                  <p className="">{option?.desc}</p>
+                  <div className="flex">
+                    <p className="font-medium hidden sm:block">
+                      {option.label}
+                    </p>
+                    <p className="">{option?.desc}</p>
+                  </div>
                 </div>
               </Radio>
             ))}
