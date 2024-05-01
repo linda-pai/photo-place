@@ -41,7 +41,7 @@ const Nav = ({ navBarRef }: any) => {
   };
 
   const login = async () => {
-    router.push("/auth/signIn");
+    router.push(`${process.env.NEXT_PUBLIC_APP_URL}/auth/signIn`);
   };
 
   const photographerItems: any = session

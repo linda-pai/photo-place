@@ -10,7 +10,9 @@ const useAuth = () => {
   useEffect(() => {
     const previousUrl = router.asPath;
     if (session !== undefined && !session) {
-      router.push(`/auth/signIn?previousUrl=${previousUrl}`);
+      router.push(
+        `${process.env.NEXT_PUBLIC_APP_URL}/auth/signIn?previousUrl=${previousUrl}`
+      );
     }
   }, [session, router]);
 
