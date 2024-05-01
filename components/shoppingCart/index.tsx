@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Space } from "antd";
+import { Table, Button, Space, Image } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -20,11 +20,28 @@ const ShoppingCart = () => {
 
   //custom render for columns
   const columnsRenderMap = {
+    rwd: {
+      responsive: ["xs"],
+      render: (_: any, record: any, key: number) => (
+        <div className="flex flex-col gap-1">
+          <div className="flex gap-2 overflow-scroll mt-2 w-full">
+            <Image
+              src={record.watermarkedUrl}
+              alt={record.id}
+              onContextMenu={(e) => e.preventDefault()}
+            />
+          </div>
+        </div>
+      ),
+    },
+    eventName: {
+      responsive: ["sm"],
+    },
     watermarkedUrl: {
-      render: (url: string, record: any) => (
+      render: (url: string, record: any, index: number) => (
         <div
           className="item cursor-pointer scale-100 hover:scale-105 transition-all duration-300 max-w-[100px]"
-          key={record.id}
+          key={index}
           onClick={() => handleClickImg(record.id)}
         >
           <img
@@ -34,6 +51,7 @@ const ShoppingCart = () => {
           />
         </div>
       ),
+      responsive: ["sm"],
     },
     price: {
       render: (price: number) => <p className="max-w-[80px]">TWD {price} 元</p>,

@@ -116,10 +116,59 @@ const EventManagement = ({
 
   const columns = [
     {
+      title: "詳細資訊",
+      width: 100,
+      responsive: ["xs"],
+      render: (record: EventProps) => (
+        <div className="flex flex-col gap-1">
+          <p className="">賽事名稱{record.eventName}</p>
+          <p className="">日期{record.date}</p>
+
+          <div className="flex flex-col gap-2">
+            <p className="">審核</p>
+            <Switch
+              checked={isReviewed[record.eventId]}
+              onChange={(checked) =>
+                handleOnChange(checked, record.eventId, "isReviewed")
+              }
+              className="w-fit"
+            />
+            <p className="">顯示在首頁</p>
+            <Switch
+              checked={isShow[record.eventId]}
+              onChange={(checked) =>
+                handleOnChange(checked, record.eventId, "isShow")
+              }
+              className="w-fit"
+            />
+            <p className="">完成上傳</p>
+            <Switch
+              checked={isCompleteUpload[record.eventId]}
+              onChange={(checked) =>
+                handleOnChange(checked, record.eventId, "isCompleteUpload")
+              }
+              className="w-fit"
+            />
+          </div>
+          <p className="">Description</p>
+          <Editable
+            item={record}
+            targetId={record.eventId}
+            text={record.description || ""}
+            updateFunction={() =>
+              updateEvent(record.eventId, { description: record.description })
+            }
+            handleRemarkChange={handleRemarkChange}
+          />
+        </div>
+      ),
+    },
+    {
       title: "賽事名稱",
       dataIndex: "eventName",
       key: "eventName",
       width: 360,
+      responsive: ["sm"],
     },
     {
       title: "日期",
@@ -130,6 +179,7 @@ const EventManagement = ({
         const dateB = new Date(b.date);
         return dateA.getTime() - dateB.getTime();
       },
+      responsive: ["sm"],
     },
     {
       title: "封面圖",
@@ -143,6 +193,7 @@ const EventManagement = ({
           alt="coverImg"
         />
       ),
+      responsive: ["sm"],
     },
     {
       title: `審核 (${eventData.filter((event) => !event.isReviewed).length} )`,
@@ -157,6 +208,7 @@ const EventManagement = ({
       sorter: (a: EventProps, b: EventProps) => {
         return a.isReviewed === b.isReviewed ? 0 : a.isReviewed ? -1 : 1;
       },
+      responsive: ["sm"],
     },
     {
       title: "顯示在首頁",
@@ -168,6 +220,7 @@ const EventManagement = ({
           onChange={(checked) => handleOnChange(checked, eventId, "isShow")}
         />
       ),
+      responsive: ["sm"],
     },
     {
       title: "完成上傳",
@@ -181,6 +234,7 @@ const EventManagement = ({
           }
         />
       ),
+      responsive: ["sm"],
     },
     {
       title: "Description",
@@ -197,11 +251,13 @@ const EventManagement = ({
           handleRemarkChange={handleRemarkChange}
         />
       ),
+      responsive: ["sm"],
     },
     {
       title: "Action",
       dataIndex: "eventId",
       key: "action",
+      width: 50,
       render: (eventId: string) => (
         <Button danger onClick={() => deleteEvent(eventId)}>
           刪除賽事
@@ -224,7 +280,7 @@ const EventManagement = ({
       {isAllowed ? (
         <div className="container mx-auto my-24 text-slate-600">
           <h1 className="text-center text-2xl mb-10">賽事管理中心</h1>
-          <Table dataSource={eventData} columns={columns} />
+          <Table dataSource={eventData} columns={columns as any} />
           {contextHolder}
         </div>
       ) : (
@@ -241,8 +297,8 @@ export default EventManagement;
 export async function getServerSideProps() {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   // Fetch data from external API
-  const events = await fetch(`${domain}/api/events?sort=asc`).then((res) =>
-    res.json()
+  const events = await fetch(`${domain}/api/events/eventList?sort=asc`).then(
+    (res) => res.json()
   );
 
   // Pass data to the page via props

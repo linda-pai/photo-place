@@ -10,6 +10,11 @@ interface CardDataProps {
 const tableConfig = (columnsRenderMap: any) => {
   const columns: ColumnsType<CardDataProps> = [
     {
+      title: "詳細資訊",
+      ...columnsRenderMap.rwd,
+      width: 100,
+    },
+    {
       title: "活動名稱",
       dataIndex: "eventName",
       key: "eventName",
@@ -27,13 +32,13 @@ const tableConfig = (columnsRenderMap: any) => {
       title: "價格",
       dataIndex: "price",
       key: "price",
-      width: 80,
+      width: 50,
       ...columnsRenderMap.price,
     },
     {
       title: "",
       key: "action",
-      width: 80,
+      width: 50,
       ...columnsRenderMap.action,
     },
   ];

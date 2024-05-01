@@ -4,6 +4,12 @@ import { Order } from "@/types/interfaces/CartDataProps";
 const tableConfig = (columnsRenderMap: any) => {
   const columns: ColumnsType<Order> = [
     {
+      title: "詳細資訊",
+      ...columnsRenderMap.rwd,
+      width: 100,
+    },
+
+    {
       title: "訂單編號",
       dataIndex: "orderId",
       key: "orderId",

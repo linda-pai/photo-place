@@ -48,6 +48,51 @@ const Orders = () => {
   const [currentOrder, setCurrentOrder] = useState({} as Order);
 
   const columnsRenderMap = {
+    rwd: {
+      responsive: ["xs"],
+      render: (_: any, record: any, key: number) => (
+        <div className="flex flex-col gap-1">
+          <p className="">訂單編號：{record.orderId}</p>
+
+          <p className="">
+            訂單時間：
+            {record.createAt
+              ? dayjs(record.createAt).format("YYYY-MM-DD HH:mm")
+              : "-"}
+          </p>
+
+          <p className="">訂單金額：TWD {record.totalAmount} 元</p>
+
+          <div className="flex gap-1 items-center">
+            <p>
+              付款方式：
+              {
+                paymentOptions.find(
+                  (option: any) => option.value === record.paymentMethod
+                )?.label
+              }
+            </p>
+            <div>
+              {record.paidAt ? (
+                <Tag color="#B0B97A">已付款</Tag>
+              ) : (
+                <Tag color="#f0cf02">未付款</Tag>
+              )}
+            </div>
+          </div>
+
+          <div className="flex gap-2 overflow-scroll mt-2">
+            {record.items.map((item: any, key: number) => (
+              <ImageItemDisplay
+                item={item}
+                onClick={() => handleClickImage(record, key)}
+                key={key}
+              />
+            ))}
+          </div>
+        </div>
+      ),
+    },
     orderId: {
       ellipsis: true,
       render: (text: string, _: any, key: number) => (
@@ -61,6 +106,7 @@ const Orders = () => {
           {text}
         </a>
       ),
+      responsive: ["sm"],
     },
     createAt: {
       sorter: (a: Order, b: Order) => {
@@ -71,6 +117,7 @@ const Orders = () => {
       render: (text: string, _: any, key: number) => (
         <p key={key}>{text ? dayjs(text).format("YYYY-MM-DD HH:mm") : "-"}</p>
       ),
+      responsive: ["sm"],
     },
     items: {
       ellipsis: true,
@@ -87,6 +134,7 @@ const Orders = () => {
           </div>
         </div>
       ),
+      responsive: ["sm"],
     },
     paymentMethod: {
       render: (text: string, orderInfo: any, key: number) => (
@@ -94,6 +142,7 @@ const Orders = () => {
           {paymentOptions.find((option: any) => option.value === text)?.label}
         </p>
       ),
+      responsive: ["sm"],
     },
     paidAt: {
       render: (text: string, orderInfo: any, key: number) => (
@@ -107,6 +156,7 @@ const Orders = () => {
           )}
         </div>
       ),
+      responsive: ["sm"],
     },
     totalAmount: {
       render: (totalAmount: number, _: any, key: number) => (
@@ -114,6 +164,7 @@ const Orders = () => {
           TWD {totalAmount} 元
         </p>
       ),
+      responsive: ["sm"],
     },
     action: {
       render: (_: any, orderInfo: any, key: number) => (
@@ -229,7 +280,7 @@ const Orders = () => {
     const eventId = items[0].eventId;
 
     return await fetch(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/images/getByEventIdAndImageIds/${orderId}/${eventId}/${imageIdList}`
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/orders/getByEventIdAndImageIds/${orderId}/${eventId}/${imageIdList}`
     )
       .then((res) => res.json())
       .then((result) => result)
@@ -239,7 +290,7 @@ const Orders = () => {
   };
 
   return !loading ? (
-    <div className="text-slate-600 sm:mx-0 mx-4">
+    <div className="text-slate-600 sm:mx-0 mx-2">
       <Table
         dataSource={orders}
         columns={columns}

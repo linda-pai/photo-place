@@ -50,6 +50,31 @@ const UploadTable = ({ tableData, eventId }: any) => {
 
   const columns = [
     {
+      title: "詳細資訊",
+      responsive: ["xs"],
+      width: 100,
+      render: (_: string, record: UploadProps) => (
+        <div className="flex flex-col gap-1">
+          <p className="">攝影師：{record.name}</p>
+          <p className="">
+            上傳：
+            {dayjs(record.createAt).format("YYYY-MM-DD HH:mm:ss")}
+          </p>
+          <p className="">
+            更新：
+            {dayjs(record.lastEditTime).format("YYYY-MM-DD HH:mm:ss")}
+          </p>
+          {uploadData[currAuthor] && (
+            <RecordOfUpload
+              uploadData={[uploadData[currAuthor]]}
+              key={currAuthor}
+              showHeader={false}
+            />
+          )}
+        </div>
+      ),
+    },
+    {
       title: "攝影師",
       dataIndex: "author",
       key: "author",
@@ -67,18 +92,21 @@ const UploadTable = ({ tableData, eventId }: any) => {
           </a>
         </div>
       ),
+      responsive: ["sm"],
     },
     {
       title: "上傳時間",
       dataIndex: "createAt",
       key: "createAt",
       render: (text: string) => dayjs(text).format("YYYY-MM-DD HH:mm:ss"),
+      responsive: ["sm"],
     },
     {
       title: "更新時間",
       dataIndex: "lastEditTime",
       key: "lastEditTime",
       render: (text: string) => dayjs(text).format("YYYY-MM-DD HH:mm:ss"),
+      responsive: ["sm"],
     },
     {
       title: "詳細資訊",
@@ -96,11 +124,12 @@ const UploadTable = ({ tableData, eventId }: any) => {
           )
         );
       },
+      responsive: ["sm"],
     },
     {
       title: "Action",
       key: "action",
-      width: 140,
+      width: 110,
       render: (_: string, record: UploadProps) => (
         <>
           <Space size="middle">
@@ -111,11 +140,33 @@ const UploadTable = ({ tableData, eventId }: any) => {
                 setCurrAuthor(record.author);
               }}
             >
-              載入詳細資訊
+              詳細資訊
             </Button>
           </Space>
         </>
       ),
+      responsive: ["sm"],
+    },
+    {
+      title: "Action",
+      key: "action",
+      width: 50,
+      render: (_: string, record: UploadProps) => (
+        <>
+          <Space size="middle">
+            <Button
+              type="primary"
+              onClick={() => {
+                getUploadDetail(record);
+                setCurrAuthor(record.author);
+              }}
+            >
+              詳細資訊
+            </Button>
+          </Space>
+        </>
+      ),
+      responsive: ["xs"],
     },
   ];
 
@@ -151,7 +202,7 @@ const UploadTable = ({ tableData, eventId }: any) => {
         {contextHolder}
       </div>
       <div>
-        <Table dataSource={data} columns={columns} />
+        <Table dataSource={data} columns={columns as any} />
       </div>
     </div>
   );

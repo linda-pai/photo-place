@@ -26,8 +26,41 @@ const SoldList = ({ eventId }: { eventId: string }) => {
     {} as SoldImageItemProps
   );
   const [loading, setLoading] = useState(false);
+  const [showImageViewer, setShowImageViewer] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [currImgIndex, setCurrImgIndex] = useState(0); // [0, images.length - 1
+
+  const handleClickImg = (images: any, orderId: string) => {
+    setShowImageViewer((prev) => ({ ...prev, [orderId]: true }));
+    setCurrImgIndex(images.findIndex((item: any) => item.id === images[0].id));
+  };
 
   const columnsRenderMap = {
+    rwd: {
+      responsive: ["xs"],
+      render: (text: string, record: SoldImagesProps) => (
+        <div className="flex flex-col gap-1">
+          <p className="">訂單編號：{record.orderId}</p>
+
+          <p className="">
+            交易完成時間
+            {record.soldAt
+              ? dayjs(record.soldAt).format("YYYY-MM-DD HH:mm")
+              : "-"}
+          </p>
+
+          <p className="">
+            總金額：
+            {record.images
+              .map((item: any) => item.price)
+              .reduce((a, b) => a + b)}{" "}
+            元
+          </p>
+        </div>
+      ),
+    },
+
     orderId: {
       ellipsis: true,
       render: (text: string) => (
@@ -40,6 +73,7 @@ const SoldList = ({ eventId }: { eventId: string }) => {
           {text}
         </a>
       ),
+      responsive: ["sm"],
     },
     soldAt: {
       sorter: (a: SoldImagesProps, b: SoldImagesProps) => {
@@ -50,16 +84,28 @@ const SoldList = ({ eventId }: { eventId: string }) => {
       render: (text: string) => (
         <p>{text ? dayjs(text).format("YYYY-MM-DD HH:mm") : "-"}</p>
       ),
+      responsive: ["sm"],
     },
     images: {
       ellipsis: true,
-      render: (_: string, { images }: any, index: number) => (
-        <ImageDetail items={images} index={index} />
+      render: (_: string, { images, orderId }: any, index: number) => (
+        <>
+          <ImageDetail
+            images={images}
+            isOpen={showImageViewer[orderId] || false}
+            onClose={() =>
+              setShowImageViewer((prev) => ({ ...prev, [orderId]: false }))
+            }
+            currImg={currImgIndex}
+            handleClickImg={() => handleClickImg(images, orderId)}
+          />
+        </>
       ),
     },
     totalAmount: {
       render: (text: number, record: SoldImagesProps, index: number) =>
         record.images.map((item: any) => item.price).reduce((a, b) => a + b),
+      responsive: ["sm"],
     },
   };
 
