@@ -43,7 +43,7 @@ const UploadPrompt = dynamic(() => import("@/components/UploadPrompt"), {
   loading: () => <Spin />,
 });
 
-const UploadImages = ({ eventId }: { eventId: string }) => {
+const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
   const { data: session }: any = useSession();
   const router = useRouter();
 
@@ -80,7 +80,7 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
     fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/events/getBy/${eventId}`)
       .then((res) => res.json())
       .then((data) => {
-        const { eventName } = data.eventInfo;
+        const { eventName } = data?.eventInfo || {};
         if (!eventName) return handleEventIdError();
         setEventName(eventName);
       });
@@ -166,7 +166,7 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
       okText: "編輯照片",
       onOk: () => {
         deleteCookie(`uploadInfo-${eventId}`);
-        router.push(`/photographer/checkBibs?eventId=${eventId}`);
+        router.push(`/photographer/checkBibs?eventId=${eventId}&date=${date}`);
       },
       cancelText: "繼續上傳",
     });
@@ -290,7 +290,7 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
         //寫入上傳資訊
         //100張一組，完成後再上傳下一組
         console.time("upload");
-        const groupLimit = 100;
+        const groupLimit = 200;
         parallelUploadWithLimit(
           tobeUploadedList,
           groupLimit,

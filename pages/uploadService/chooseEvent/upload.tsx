@@ -8,7 +8,10 @@ const UploadImages = dynamic(() => import("@/components/upload/UploadImages"), {
   loading: () => <Spin />,
 });
 
-const UploadPage: React.FC<{ eventId: string }> = ({ eventId }) => {
+const UploadPage: React.FC<{ eventId: string; date: string }> = ({
+  eventId,
+  date,
+}) => {
   const title = "上傳照片 - " + process.env.NEXT_PUBLIC_APP_NAME;
 
   const isAllowed = userPermission();
@@ -25,7 +28,7 @@ const UploadPage: React.FC<{ eventId: string }> = ({ eventId }) => {
       </Head>
       {isAllowed ? (
         <>
-          <UploadImages eventId={eventId} />
+          <UploadImages eventId={eventId} date={date} />
         </>
       ) : (
         <Spin className="mx-auto my-[40vh] w-full" size="large" />
@@ -36,8 +39,9 @@ const UploadPage: React.FC<{ eventId: string }> = ({ eventId }) => {
 
 export async function getServerSideProps(context: any) {
   const eventId = context.query.eventId || "";
+  const date = context.query.date || "";
 
-  return { props: { eventId } };
+  return { props: { eventId, date } };
 }
 
 export default UploadPage;

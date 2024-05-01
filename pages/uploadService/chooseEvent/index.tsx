@@ -28,8 +28,14 @@ const chooseEvent = ({ eventOption }: { eventOption: Event[] }) => {
   const router = useRouter();
   const [eventId, setEventId] = useState<string>();
   const [eventOptions, setEventOptions] = useState(eventOption as Event[]);
+  const [eventDate, setEventDate] = useState<string>();
 
-  const handleSelected = (value: string) => setEventId(value);
+  const handleSelected = (value: string) => {
+    setEventId(value);
+    const flattenOptions = eventOptions.flatMap((item: any) => item.children);
+    const selected = flattenOptions.find((item) => item.value === value);
+    setEventDate(selected?.date);
+  };
 
   const fetchEventOptions = async () => {
     const domain = process.env.NEXT_PUBLIC_SERVER_URL;
@@ -87,7 +93,7 @@ const chooseEvent = ({ eventOption }: { eventOption: Event[] }) => {
             <Button
               onClick={() => {
                 router.push(
-                  `/uploadService/chooseEvent/upload?eventId=${eventId}`
+                  `/uploadService/chooseEvent/upload?eventId=${eventId}&date=${eventDate}`
                 );
               }}
               className="my-10"

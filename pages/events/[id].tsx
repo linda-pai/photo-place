@@ -479,7 +479,7 @@ export default function EventSearchPage({
 
 export async function getServerSideProps(context: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-  const eventId = context.params.id;
+  const eventId = context.params.id || "";
   const bib = context.query.bib || "";
 
   const imagesInfo = await fetch(
@@ -490,7 +490,13 @@ export async function getServerSideProps(context: any) {
     `${domain}/api/events/getBy/${eventId}`
   ).then((res) => res.json());
 
-  const isCompleteUpload = eventInfo.isCompleteUpload;
+  if (!eventInfo) {
+    return {
+      notFound: true,
+    };
+  }
+
+  const isCompleteUpload = eventInfo?.isCompleteUpload || false;
 
   if (!isCompleteUpload) {
     const pageSize = 24;
@@ -511,7 +517,7 @@ export async function getServerSideProps(context: any) {
   }
 
   const photographerOptions = await fetch(
-    `${domain}/api/images/getPhotographers/${eventId}`
+    `${domain}/api/events/getPhotographers/${eventId}`
   )
     .then((res) => res.json())
     .then((data) => {
