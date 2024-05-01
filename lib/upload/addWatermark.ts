@@ -10,7 +10,7 @@ const addWatermark = async (reqBody: {
 }) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
-  const response = await fetch(`${domain}/api/images/addWatermark`, {
+  const response = await fetch(`${domain}/api/upload/addWatermark`, {
     method: "POST",
     body: JSON.stringify(reqBody),
     headers: {

@@ -25,7 +25,7 @@ const UploadImagePage: React.FC = () => {
     formData.append("path", "/common/");
 
     try {
-      const response = await fetch(`${domain}/api/singleImgS3Upload`, {
+      const response = await fetch(`${domain}/api/images/singleImgS3Upload`, {
         method: "POST",
         body: formData,
       }).then((res) => res.json());

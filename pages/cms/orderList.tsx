@@ -36,7 +36,7 @@ export default orderList;
 
 export async function getServerSideProps() {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-  const res = await fetch(`${domain}/api/orders`);
+  const res = await fetch(`${domain}/api/orders/orderList`);
   const orders = await res.json();
 
   return {

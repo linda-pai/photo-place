@@ -32,7 +32,7 @@ export default function Removed({ eventId }: { eventId: string }) {
     if (!session) return;
 
     fetch(
-      `${domain}/api/images/getByStatus/${eventId}/${session.id}?page=${curPage}&status=removed`
+      `${domain}/api/photographer/getByStatus/${eventId}/${session.id}?page=${curPage}&status=removed`
     )
       .then((res) => res.json())
       .then((data) => {

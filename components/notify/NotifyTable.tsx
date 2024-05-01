@@ -97,7 +97,7 @@ const NotifyTable = ({ tableData, eventId }: any) => {
   };
 
   const getNotifyData = (eventId: string) => {
-    fetch(`${domain}/api/imagesUploadComplete/notifyRecord/${eventId}`)
+    fetch(`${domain}/api/cms/notifyRecord/${eventId}`)
       .then((res) => res.json())
       .then((data) => {
         setData(data);
@@ -107,7 +107,7 @@ const NotifyTable = ({ tableData, eventId }: any) => {
   const sendEmail = async (record: NotifyProps) => {
     setLoading(true);
 
-    await fetch(`${domain}/api/imagesUploadComplete/sendEmail`, {
+    await fetch(`${domain}/api/cms/sendEmail`, {
       method: "POST",
       body: JSON.stringify(record),
       headers: {
@@ -130,7 +130,7 @@ const NotifyTable = ({ tableData, eventId }: any) => {
   const sendAllEmail = async (eventId: string, isAll: boolean) => {
     setLoading(true);
 
-    await fetch(`${domain}/api/imagesUploadComplete/sendAllEmail/${eventId}`, {
+    await fetch(`${domain}/api/cms/sendAllEmail/${eventId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

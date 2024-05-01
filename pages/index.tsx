@@ -68,16 +68,12 @@ export default function Home({
 export async function getServerSideProps(context: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   // Fetch data from external API
-  const res = await fetch(`${domain}/api/events?sort=desc`);
+  const res = await fetch(`${domain}/api/events/eventList?sort=desc`);
   const events = await res.json();
 
   const { token } = context.req.cookies;
   if (!token) return { props: { events } };
 
-  const resUser = await fetch(`${domain}/api/user/getUserInfo/${token}`)
-    .then((res) => res.json())
-    .catch((err) => console.log(err));
-
   // Pass data to the page via props
-  return { props: { events, userInfo: resUser || {} } };
+  return { props: { events } };
 }

@@ -27,7 +27,7 @@ const WatermarkModal = ({
   const [position, setPosition] = useState("southeast");
 
   const handleAddWatermark = () => {
-    fetch(`${domain}/api/images/photographer/getWatermark/${session.id}`)
+    fetch(`${domain}/api/photographer/getWatermark/${session.id}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.error) {
@@ -48,7 +48,7 @@ const WatermarkModal = ({
     formData.append("path", `/watermark/${session.id}/`);
 
     try {
-      const response = await fetch(`${domain}/api/singleImgS3Upload`, {
+      const response = await fetch(`${domain}/api/images/singleImgS3Upload`, {
         method: "POST",
         body: formData,
       }).then((res) => res.json());
@@ -58,7 +58,7 @@ const WatermarkModal = ({
       } else {
         message.success("上傳成功");
         setWatermarkImg(response.Location);
-        fetch(`${domain}/api/images/photographer/watermark`, {
+        fetch(`${domain}/api/photographer/watermark`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -89,7 +89,7 @@ const WatermarkModal = ({
 
     const getImageDownloadInfo = async () => {
       return await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/images/getFeaturedWatermarkImages/${eventId}/${session.id}`
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/photographer/getFeaturedWatermarkImages/${eventId}/${session.id}`
       )
         .then((res) => res.json())
         .then((result) => {
@@ -120,7 +120,7 @@ const WatermarkModal = ({
     };
     message.open({ ...loadingMsgConfig, type: "loading" });
 
-    fetch(`${domain}/api/images/addFeaturedImageWatermark`, {
+    fetch(`${domain}/api/photographer/addFeaturedImageWatermark`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

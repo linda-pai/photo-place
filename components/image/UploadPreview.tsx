@@ -21,7 +21,7 @@ export default function UploadPreview({ eventId }: { eventId: string }) {
   useEffect(() => {
     if (!session) return;
     fetch(
-      `${domain}/api/images/getByAuthor/${eventId}/${session.id}/lastModified?page=${curPage}`
+      `${domain}/api/photographer/getByAuthor/${eventId}/${session.id}/lastModified?page=${curPage}`
     )
       .then((res) => res.json())
       .then((data) => {

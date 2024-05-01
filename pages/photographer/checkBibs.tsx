@@ -55,7 +55,7 @@ export default function CheckBibs({
     setLoading(true);
 
     fetch(
-      `${domain}/api/images/getByAuthor/${eventId}/${session.id}/${sortBy}?page=${curPage}`
+      `${domain}/api/photographer/getByAuthor/${eventId}/${session.id}/${sortBy}?page=${curPage}`
     )
       .then((res) => res.json())
       .then((data) => {
@@ -90,7 +90,7 @@ export default function CheckBibs({
   };
 
   const updateBibs = (newTags: string[], id: string) => {
-    fetch(`${domain}/api/images/updateBibs`, {
+    fetch(`${domain}/api/photographer/updateBibs`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -111,7 +111,7 @@ export default function CheckBibs({
   const handleDeleteImg = (id: string, isRemoved: boolean, e: any) => {
     e.stopPropagation();
 
-    fetch(`${domain}/api/images/delete/${eventId}/${id}/${session.id}`, {
+    fetch(`${domain}/api/photographer/delete/${eventId}/${id}/${session.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -207,12 +207,12 @@ export default function CheckBibs({
           </div>
           {memoImages.length > 0 && (
             <div className="container mx-auto sm:my-10 my-4">
-              <div className="flex justify-between mx-2">
+              <div className="sm:flex justify-between mx-2 my-2 sm:my-0">
                 <Radio.Group
                   defaultValue="lastModified"
                   buttonStyle="solid"
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="mb-4"
+                  className="sm:mb-0 mb-1"
                 >
                   <Radio.Button value="pathCount">
                     按號碼布數量排序

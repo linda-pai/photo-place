@@ -25,7 +25,7 @@ const records = () => {
   }, [session]);
 
   const getUploadDetail = async () => {
-    fetch(`${domain}/api/images/getUploadInfo/${session.id}`)
+    fetch(`${domain}/api/photographer/getUploadInfo/${session.id}`)
       .then((res) => res.json())
       .then((data) => {
         setUploadData(data);

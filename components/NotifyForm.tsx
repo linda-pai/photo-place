@@ -41,7 +41,7 @@ const NotifyForm = ({
     const notifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${eventId}?bib=${bib}`;
     //fetch api
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/imagesUploadComplete/notifyRecord`,
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/cms/notifyRecord`,
       {
         method: "POST",
         headers: {

@@ -41,7 +41,7 @@ export default function Featured({ eventId }: { eventId: string }) {
     if (!session) return;
 
     fetch(
-      `${domain}/api/images/getByStatus/${eventId}/${session.id}?page=${curPage}&status=featured`
+      `${domain}/api/photographer/getByStatus/${eventId}/${session.id}?page=${curPage}&status=featured`
     )
       .then((res) => res.json())
       .then((data) => {
