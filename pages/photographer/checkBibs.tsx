@@ -4,7 +4,16 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import Head from "next/head";
-import { Button, Pagination, Radio, Spin, message, Progress } from "antd";
+import {
+  Button,
+  Pagination,
+  Radio,
+  Spin,
+  message,
+  Progress,
+  Input,
+  Empty,
+} from "antd";
 import {
   DeleteOutlined,
   StarOutlined,
@@ -40,6 +49,7 @@ export default function CheckBibs({
   const [total, setTotal] = useState(0);
   const [sortBy, setSortBy] = useState("lastModified"); //  pathCount or lastModified
   const [eventName, setEventName] = useState("");
+  const [search, setSearch] = useState("");
 
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [currImgIndex, setCurrImgIndex] = useState(0); // [0, images.length - 1
@@ -54,17 +64,27 @@ export default function CheckBibs({
   const getImageInfo = debounce(() => {
     setLoading(true);
 
-    fetch(
-      `${domain}/api/photographer/getByAuthor/${eventId}/${session.id}/${sortBy}?page=${curPage}`
-    )
+    fetch(`${domain}/api/photographer/getByAuthor`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        eventId,
+        author: session.id,
+        curPage,
+        sortBy,
+        fileName: search,
+      }),
+    })
       .then((res) => res.json())
       .then((data) => {
         setLoading(false);
-
         setImages(data.images);
+
+        if (search) return;
         setTotal(data.totalCount);
         setDetectLength(data.detectedImageLength);
-
         setEventName(data.images[0].eventName);
       });
   });
@@ -72,7 +92,7 @@ export default function CheckBibs({
   useEffect(() => {
     if (!session) return;
     getImageInfo();
-  }, [session, sortBy, curPage]);
+  }, [session, sortBy, curPage, search]);
 
   const memoImages = useMemo(() => images, [images]);
 
@@ -160,6 +180,16 @@ export default function CheckBibs({
 
   const isProcessing = detectLength !== total;
 
+  const onSearch = (value: string) => {
+    setSearch(value);
+    setLoading(true);
+  };
+
+  const onRadioChange = (e: any) => {
+    setSortBy(e.target.value);
+    setLoading(true);
+  };
+
   return (
     <>
       <Head>
@@ -173,7 +203,7 @@ export default function CheckBibs({
 
       {isAllowed ? (
         <>
-          <div className="text-center mt-24 text-[color:var(--main-color-dark)]">
+          <div className="text-center mt-24 text-[color:var(--main-color-dark)] mx-2">
             <h1 className="text-center text-2xl mb-2">編輯照片</h1>
             <h2 className="text-center text-xl mb-2">{eventName}</h2>
             <p className="text-[#9ca3af]">
@@ -205,13 +235,15 @@ export default function CheckBibs({
               </div>
             </div>
           </div>
-          {memoImages.length > 0 && (
-            <div className="container mx-auto sm:my-10 my-4">
-              <div className="sm:flex justify-between mx-2 my-2 sm:my-0">
+
+          <div className="container mx-auto sm:my-10 my-4">
+            <div className="sm:flex justify-between mx-2 my-2 sm:my-0">
+              <div className="sm:flex gap-2">
                 <Radio.Group
                   defaultValue="lastModified"
                   buttonStyle="solid"
-                  onChange={(e) => setSortBy(e.target.value)}
+                  onChange={onRadioChange}
+                  disabled={loading}
                   className="sm:mb-0 mb-1"
                 >
                   <Radio.Button value="pathCount">
@@ -219,127 +251,148 @@ export default function CheckBibs({
                   </Radio.Button>
                   <Radio.Button value="lastModified">按時間排序</Radio.Button>
                 </Radio.Group>
-                <div className="flex items-center gap-2">
-                  <Link href={`/events/${eventId}?bib=`} passHref>
-                    <Button className="flex items-center">
-                      <BookOutlined />
-                      賽事相簿
-                    </Button>
-                  </Link>
-                  <Link
-                    href={`/uploadService/chooseEvent/upload?eventId=${eventId}`}
-                    passHref
-                  >
-                    <Button
-                      className="flex items-center"
-                      disabled={!isUploadable(date)}
-                    >
-                      <UploadOutlined />
-                      上傳照片
-                    </Button>
-                  </Link>
+                <div className="mb-2 w-60 ">
+                  <Input.Search
+                    placeholder="請輸入檔名"
+                    onSearch={onSearch}
+                    enterButton
+                    disabled={loading}
+                    type="primary"
+                  />
                 </div>
               </div>
-              <div className="masonry">
-                {!loading ? (
-                  memoImages.map((item: any, key: number) => (
-                    <div
-                      key={key}
-                      className="relative masonry-item h-fit cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
-                      onClick={() => handleClickImg(item.id)}
-                    >
-                      <Image
-                        className="w-full h-auto"
-                        src={item.watermarkedUrl || DETECTING_IMG}
-                        alt={item.watermarkedUrl || DETECTING_IMG}
-                        width="0"
-                        height="0"
-                        sizes="100vw"
-                        quality={30}
-                      />
-                      <div className="flex gap-2 py-5 px-1 justify-between items-center bg-[#404040] bg-opacity-40 absolute top-0 w-full sm:h-[10%] h-[18%] min-h-[28px] max-h-[34px] group hover:bg-opacity-80 transition-all duration-300">
-                        <p className="text-white ml-1 text-sm overflow-scroll">
-                          {item.fileName}
-                        </p>
-                        <div className="flex justify-end">
-                          <Button
-                            onClick={(e) =>
-                              handleDeleteImg(item.id, item.isRemoved, e)
-                            }
-                            className={`flex items-center justify-center mr-1 ${
-                              item.isRemoved
-                                ? "text-white border border-[#fff] bg-[#ef4444]"
-                                : "text-white border border-white bg-transparent"
-                            }`}
-                            size="small"
-                          >
-                            <DeleteOutlined />
-                          </Button>
-                          <Button
-                            onClick={(e) =>
-                              handleFeatureImg(item.id, item.isFeatured, e)
-                            }
-                            className={`flex items-center justify-center mr-1 ${
-                              item.isFeatured
-                                ? "text-white border border-[#fff] bg-[color:var(--main-color)] text-[#fff]"
-                                : "text-white bg-[#fff] border border-white bg-transparent"
-                            }`}
-                            size="small"
-                          >
-                            <StarOutlined />
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="absolute bottom-0">
-                        <AddableTags
-                          key={memoImages[key].path}
-                          bibs={item.path.map((tag: string) =>
-                            tag === "common" ? "" : tag
-                          )}
-                          handleUpdateBibs={(newTags: string[]) =>
-                            updateBibs(newTags, item.id)
-                          }
-                        />
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <Spin className="mx-auto my-[40vh] w-full" size="large" />
-                )}
-
-                <ImageLightBox
-                  images={memoImages}
-                  isOpen={showImageViewer}
-                  curIndex={currImgIndex}
-                  onClose={() => setShowImageViewer(false)}
-                  onPrev={gotoPrevious}
-                  onNext={gotoNext}
-                  customFooter={
-                    <div className="absolute bottom-[-20px] left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                      <AddableTags
-                        bibs={memoImages[currImgIndex].path}
-                        handleUpdateBibs={(newTags: string[]) =>
-                          updateBibs(newTags, memoImages[currImgIndex].id)
-                        }
-                        key={memoImages[currImgIndex].path}
-                      />
-                    </div>
-                  }
-                />
-              </div>
-
-              <div className="text-center my-10">
-                <Pagination
-                  defaultCurrent={curPage}
-                  onChange={setCurPage}
-                  total={total}
-                  pageSize={pageSize}
-                  showSizeChanger={false}
-                  current={curPage}
-                />
+              <div className="flex items-center gap-2">
+                <Link href={`/events/${eventId}?bib=`} passHref>
+                  <Button className="flex items-center">
+                    <BookOutlined />
+                    賽事相簿
+                  </Button>
+                </Link>
+                <Link
+                  href={`/uploadService/chooseEvent/upload?eventId=${eventId}`}
+                  passHref
+                >
+                  <Button
+                    className="flex items-center"
+                    disabled={!isUploadable(date)}
+                  >
+                    <UploadOutlined />
+                    上傳照片
+                  </Button>
+                </Link>
               </div>
             </div>
-          )}
+            {memoImages.length !== 0 ? (
+              <>
+                <div className="masonry">
+                  {!loading ? (
+                    memoImages.map((item: any, key: number) => (
+                      <div
+                        key={key}
+                        className="relative masonry-item h-fit cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
+                        onClick={() => handleClickImg(item.id)}
+                      >
+                        <Image
+                          className="w-full h-auto"
+                          src={item.watermarkedUrl || DETECTING_IMG}
+                          alt={item.watermarkedUrl || DETECTING_IMG}
+                          width="0"
+                          height="0"
+                          sizes="100vw"
+                          quality={30}
+                        />
+                        <div className="flex gap-2 py-2 px-1 justify-between items-center bg-[#404040] bg-opacity-40 absolute top-0 w-full  group hover:bg-opacity-80 transition-all duration-300">
+                          <p className="w-[60%] text-white ml-1 text-sm break-words">
+                            {item.fileName}
+                          </p>
+                          <div className="w-[40%] flex justify-end">
+                            <Button
+                              onClick={(e) =>
+                                handleDeleteImg(item.id, item.isRemoved, e)
+                              }
+                              className={`flex items-center justify-center mr-1 ${
+                                item.isRemoved
+                                  ? "text-white border border-[#fff] bg-[#ef4444]"
+                                  : "text-white border border-white bg-transparent"
+                              }`}
+                              size="small"
+                            >
+                              <DeleteOutlined />
+                            </Button>
+                            <Button
+                              onClick={(e) =>
+                                handleFeatureImg(item.id, item.isFeatured, e)
+                              }
+                              className={`flex items-center justify-center mr-1 ${
+                                item.isFeatured
+                                  ? "text-white border border-[#fff] bg-[color:var(--main-color)] text-[#fff]"
+                                  : "text-white bg-[#fff] border border-white bg-transparent"
+                              }`}
+                              size="small"
+                            >
+                              <StarOutlined />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="absolute bottom-0">
+                          <AddableTags
+                            key={memoImages[key].path}
+                            bibs={item.path.map((tag: string) =>
+                              tag === "common" ? "" : tag
+                            )}
+                            handleUpdateBibs={(newTags: string[]) =>
+                              updateBibs(newTags, item.id)
+                            }
+                          />
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <Spin className="mx-auto my-[40vh] w-full" size="large" />
+                  )}
+
+                  <ImageLightBox
+                    images={memoImages}
+                    isOpen={showImageViewer}
+                    curIndex={currImgIndex}
+                    onClose={() => setShowImageViewer(false)}
+                    onPrev={gotoPrevious}
+                    onNext={gotoNext}
+                    customFooter={
+                      <div className="absolute bottom-[-20px] left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                        <AddableTags
+                          bibs={memoImages[currImgIndex].path}
+                          handleUpdateBibs={(newTags: string[]) =>
+                            updateBibs(newTags, memoImages[currImgIndex].id)
+                          }
+                          key={memoImages[currImgIndex].path}
+                        />
+                      </div>
+                    }
+                  />
+                </div>
+
+                <div className="text-center my-10">
+                  <Pagination
+                    defaultCurrent={curPage}
+                    onChange={setCurPage}
+                    total={total}
+                    pageSize={pageSize}
+                    showSizeChanger={false}
+                    current={curPage}
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="text-center my-10">
+                {loading ? (
+                  <Spin className="mx-auto my-[40vh] w-full" size="large" />
+                ) : (
+                  <Empty />
+                )}
+              </div>
+            )}
+          </div>
         </>
       ) : (
         <Spin className="mx-auto my-[40vh] w-full" size="large" />
