@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Head from "next/head";
+import Link from "next/link";
 import { Pagination, Spin, Button, Empty } from "antd";
 import { StarOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -20,7 +21,13 @@ import { DETECTING_IMG } from "@/constants";
 //   }
 // );
 
-export default function Featured({ eventId }: { eventId: string }) {
+export default function Featured({
+  eventId,
+  date,
+}: {
+  eventId: string;
+  date: string;
+}) {
   const title = "精選照片 - " + process.env.NEXT_PUBLIC_APP_NAME;
   const isAllowed = userPermission();
 
@@ -101,73 +108,85 @@ export default function Featured({ eventId }: { eventId: string }) {
         <>
           <div className="container mx-auto text-slate-600 my-24 overflow-hidden">
             <h2 className="text-center text-2xl mb-8">精選照片</h2>
-            {featuredImages.length > 0 ? (
-              <div className="container mx-auto sm:my-10 my-4">
-                {/* <WatermarkModal
+            <div className="container mx-auto sm:my-10 my-4">
+              {/* <WatermarkModal
                   featuredImages={featuredImages}
                   eventId={eventId}
                 /> */}
-
-                <div className="masonry">
-                  {featuredImages.map((item: any, key: number) => (
-                    <div
-                      className="masonry-item h-fit cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group overflow-hidden relative"
-                      key={item.id}
-                      onClick={() => handleClickImg(item.id)}
-                    >
-                      <Image
-                        src={item.watermarkedUrl || DETECTING_IMG}
-                        alt={item.watermarkedUrl || DETECTING_IMG}
-                        width={300}
-                        height={400}
-                        quality={30}
-                      />
-                      <div className="flex gap-2 py-5 px-1 justify-end items-center bg-[#404040] bg-opacity-40 absolute top-0 w-full sm:h-[10%] h-[18%] min-h-[28px] max-h-[34px] group hover:bg-opacity-80 transition-all duration-300">
-                        <Button
-                          onClick={(e) =>
-                            handleFeatureImg(item.id, item.isFeatured, e)
-                          }
-                          className={`flex items-center justify-center mr-1 ${
-                            item.isFeatured
-                              ? "text-white border border-[#fff] bg-[color:var(--main-color)] text-[#fff]"
-                              : "text-white bg-[#fff] border border-white bg-transparent"
-                          }`}
-                        >
-                          <StarOutlined />
-                        </Button>
+              <Link
+                href={`/photographer/checkBibs?eventId=${eventId}&date=${date}`}
+                className={`mx-2 my-2 flex ${
+                  featuredImages.length > 0 ? "justify-start" : "justify-center"
+                }`}
+              >
+                <Button type="primary">編輯相簿</Button>
+              </Link>
+              {featuredImages.length > 0 ? (
+                <>
+                  <div className="masonry">
+                    {featuredImages.map((item: any, key: number) => (
+                      <div
+                        className="masonry-item h-fit cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group overflow-hidden relative"
+                        key={item.id}
+                        onClick={() => handleClickImg(item.id)}
+                      >
+                        <Image
+                          src={item.watermarkedUrl || DETECTING_IMG}
+                          alt={item.watermarkedUrl || DETECTING_IMG}
+                          width={300}
+                          height={400}
+                          quality={30}
+                        />
+                        <div className="flex gap-2 py-2 px-1 justify-end items-center bg-[#404040] bg-opacity-40 absolute top-0 w-full group hover:bg-opacity-80 transition-all duration-300">
+                          <Button
+                            onClick={(e) =>
+                              handleFeatureImg(item.id, item.isFeatured, e)
+                            }
+                            className={`flex items-center justify-center mr-1 ${
+                              item.isFeatured
+                                ? "text-white border border-[#fff] bg-[color:var(--main-color)] text-[#fff]"
+                                : "text-white bg-[#fff] border border-white bg-transparent"
+                            }`}
+                            size="small"
+                          >
+                            <StarOutlined />
+                          </Button>
+                        </div>
+                        <div className="absolute bottom-0 text-start text-sm text-[color:var(--main-color-dark)] p-1 bg-[#fff] bg-opacity-70">
+                          <p>{item.fileName}</p>
+                          <p>
+                            {dayjs(item.lastModified).format(
+                              "YYYY/MM/DD HH:mm"
+                            )}
+                          </p>
+                        </div>
                       </div>
-                      <div className="absolute bottom-0 text-start text-sm text-[color:var(--main-color-dark)] p-1 bg-[#fff] bg-opacity-70">
-                        <p>{item.fileName}</p>
-                        <p>
-                          {dayjs(item.lastModified).format("YYYY/MM/DD HH:mm")}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                  <ImageLightBox
-                    images={featuredImages}
-                    isOpen={showImageViewer}
-                    curIndex={currImgIndex}
-                    onClose={() => setShowImageViewer(false)}
-                    onPrev={gotoPrevious}
-                    onNext={gotoNext}
-                    customFooter={null}
-                  />
-                </div>
-                <div className="text-center my-10">
-                  <Pagination
-                    defaultCurrent={curPage}
-                    onChange={setCurPage}
-                    total={totalFeatured}
-                    pageSize={pageSize}
-                    showSizeChanger={false}
-                    current={curPage}
-                  />
-                </div>
-              </div>
-            ) : (
-              <Empty />
-            )}
+                    ))}
+                    <ImageLightBox
+                      images={featuredImages}
+                      isOpen={showImageViewer}
+                      curIndex={currImgIndex}
+                      onClose={() => setShowImageViewer(false)}
+                      onPrev={gotoPrevious}
+                      onNext={gotoNext}
+                      customFooter={null}
+                    />
+                  </div>
+                  <div className="text-center my-10">
+                    <Pagination
+                      defaultCurrent={curPage}
+                      onChange={setCurPage}
+                      total={totalFeatured}
+                      pageSize={pageSize}
+                      showSizeChanger={false}
+                      current={curPage}
+                    />
+                  </div>
+                </>
+              ) : (
+                <Empty />
+              )}
+            </div>
           </div>
         </>
       ) : (
@@ -179,10 +198,12 @@ export default function Featured({ eventId }: { eventId: string }) {
 
 export async function getServerSideProps(context: any) {
   const eventId = context.query.eventId;
+  const date = context.query.date;
 
   return {
     props: {
       eventId: eventId || "",
+      date: date || "",
     },
   };
 }

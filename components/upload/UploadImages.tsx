@@ -162,7 +162,7 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
       title: `已上傳完成${fileOptionsList.length}張照片`,
       icon: <ExclamationCircleOutlined />,
       content:
-        "提醒您：相簿僅會顯示精選照片，預設為您上傳照片排序前50張， \n 如要變更，再請到編輯設定精選照片歐～",
+        "提醒您：相簿僅會顯示精選照片，預設為您上傳照片排序前50張， \n 如要變更，請至[攝影師成就 -> 編輯]挑選精選照片",
       okText: "編輯照片",
       onOk: () => {
         deleteCookie(`uploadInfo-${eventId}`);
@@ -290,7 +290,7 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
         //寫入上傳資訊
         //100張一組，完成後再上傳下一組
         console.time("upload");
-        const groupLimit = 200;
+        const groupLimit = 500;
         parallelUploadWithLimit(
           tobeUploadedList,
           groupLimit,
