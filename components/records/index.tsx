@@ -50,7 +50,7 @@ const RecordOfUpload = ({
           />
         </Link>
         <Link
-          href={`/photographer/removed?eventId=${record.eventId}`}
+          href={`/photographer/removed?eventId=${record.eventId}&date=${record.date}`}
           className={`hover:bg-[#e7e5e4] p-2 rounded-md cursor-pointer ${
             record.allImageLength > 0 ? "" : "pointer-events-none"
           }`}
@@ -76,7 +76,7 @@ const RecordOfUpload = ({
           />
         </Link>
         <Link
-          href={`/photographer/featured?eventId=${record.eventId}`}
+          href={`/photographer/featured?eventId=${record.eventId}&date=${record.date}`}
           className={`hover:bg-[#e7e5e4] p-2 rounded-md cursor-pointer ${
             record.allImageLength > 0 ? "" : "pointer-events-none"
           }`}
