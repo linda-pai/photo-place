@@ -20,9 +20,19 @@ export default function UploadPreview({ eventId }: { eventId: string }) {
 
   useEffect(() => {
     if (!session) return;
-    fetch(
-      `${domain}/api/photographer/getByAuthor/${eventId}/${session.id}/lastModified?page=${curPage}`
-    )
+    fetch(`${domain}/api/photographer/getByAuthor`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        eventId,
+        author: session.id,
+        curPage,
+        sortBy: "lastModified",
+        fileName: "",
+      }),
+    })
       .then((res) => res.json())
       .then((data) => {
         setAllImages(data.images);
@@ -50,7 +60,7 @@ export default function UploadPreview({ eventId }: { eventId: string }) {
           <div className="masonry">
             {allImages.map((item: any, key: number) => (
               <div
-                className="masonry-item h-fit cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
+                className={`${`masonry-item-${item.orientation}`} masonry-item h-fit cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group`}
                 key={item.id}
                 onClick={() => handleClickImg(item.id)}
               >
