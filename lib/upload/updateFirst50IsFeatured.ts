@@ -1,4 +1,4 @@
-const updateFirst50IsFeatured = async (eventId: string) => {
+const updateFirst50IsFeatured = async (eventId: string, author: string) => {
   fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/images/updateIsFeatured`, {
     method: "POST",
     headers: {
@@ -6,6 +6,7 @@ const updateFirst50IsFeatured = async (eventId: string) => {
     },
     body: JSON.stringify({
       eventId,
+      author,
     }),
   }).then((res) => res.json());
 };

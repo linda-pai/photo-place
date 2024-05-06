@@ -53,7 +53,7 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
 
   const [modal, contextHolder] = Modal.useModal();
   const [authorName, setAuthorName] = useState(session?.user?.name || "");
-  const [price, setPrice] = useState(159);
+  const [price, setPrice] = useState(169);
   const [eventName, setEventName] = useState("");
   const [isUploadable, setIsUploadable] = useState(true);
 
@@ -156,7 +156,7 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
       isAll: false,
     });
 
-    updateFirst50IsFeatured(eventId);
+    updateFirst50IsFeatured(eventId, session.id);
 
     modal.confirm({
       title: `已上傳完成${fileOptionsList.length}張照片`,
@@ -413,6 +413,7 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
                 value={authorName}
                 defaultValue={authorName || ""}
                 addonBefore="攝影師名稱"
+                disabled={loading}
               />
             </div>
             <div>
@@ -423,6 +424,7 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
                 value={price}
                 defaultValue={price || ""}
                 addonBefore="照片價格"
+                disabled={loading}
               />
             </div>
           </div>
