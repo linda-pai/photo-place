@@ -114,7 +114,7 @@ export default function Removed({
                   <div className="masonry">
                     {removedImages.map((item: any, key: number) => (
                       <div
-                        className="masonry-item h-fit cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group overflow-hidden relative"
+                        className={`${`masonry-item-${item.orientation}`} masonry-item h-fit cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group overflow-hidden relative`}
                         key={item.id}
                         onClick={() => handleClickImg(item.id)}
                       >

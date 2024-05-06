@@ -9,11 +9,11 @@ const ImageItems = ({
   handleClickImg,
   onLoad,
 }: any) => {
-  const { id, watermarkedUrl, price, lastModified } = item;
+  const { id, watermarkedUrl, price, lastModified, orientation } = item;
 
   return (
     <div
-      className="masonry-item h-fit cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
+      className={`${`masonry-item-${orientation}`} masonry-item h-fit cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group`}
       key={id}
       onClick={() => handleClickImg(id)}
     >

@@ -204,7 +204,7 @@ export default function CheckBibs({
       {isAllowed ? (
         <>
           <div className="text-center mt-24 text-[color:var(--main-color-dark)] mx-2">
-            <h1 className="text-center text-2xl mb-2">編輯照片</h1>
+            <h1 className="text-center text-2xl mb-2">編輯相簿</h1>
             <h2 className="text-center text-xl mb-2">{eventName}</h2>
             <p className="text-[#9ca3af]">
               您可以在這裡為照片檢查號碼布、選擇精選、從相簿移除照片
@@ -289,7 +289,7 @@ export default function CheckBibs({
                     memoImages.map((item: any, key: number) => (
                       <div
                         key={key}
-                        className="relative masonry-item h-fit cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
+                        className={`${`masonry-item-${item.orientation}`} relative masonry-item h-fit cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group`}
                         onClick={() => handleClickImg(item.id)}
                       >
                         <Image

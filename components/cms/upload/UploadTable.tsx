@@ -17,7 +17,6 @@ const UploadTable = ({ tableData, eventId }: any) => {
 
   const [data, setData] = useState<UploadProps[]>(tableData);
   const [uploadData, setUploadData] = useState<{ [key: string]: any }>({});
-  const [currAuthor, setCurrAuthor] = useState("");
 
   const [modal, contextHolder] = Modal.useModal();
 
@@ -40,9 +39,10 @@ const UploadTable = ({ tableData, eventId }: any) => {
       .then((data) => {
         tableData.map((item: any) => {
           if (item.author === record.author) {
-            setUploadData({
+            setUploadData((prev) => ({
+              ...prev,
               [record.author]: { ...item, ...data },
-            });
+            }));
           }
         });
       });
@@ -64,10 +64,10 @@ const UploadTable = ({ tableData, eventId }: any) => {
             更新：
             {dayjs(record.lastEditTime).format("YYYY-MM-DD HH:mm:ss")}
           </p>
-          {uploadData[currAuthor] && (
+          {uploadData[record.author] && (
             <RecordOfUpload
-              uploadData={[uploadData[currAuthor]]}
-              key={currAuthor}
+              uploadData={[uploadData[record.author]]}
+              key={record.author}
               showHeader={false}
             />
           )}
@@ -113,12 +113,12 @@ const UploadTable = ({ tableData, eventId }: any) => {
       dataIndex: "status",
       key: "status",
       width: 800,
-      render: (text: string) => {
+      render: (text: string, record: UploadProps) => {
         return (
-          uploadData[currAuthor] && (
+          uploadData[record.author] && (
             <RecordOfUpload
-              uploadData={[uploadData[currAuthor]]}
-              key={currAuthor}
+              uploadData={[uploadData[record.author]]}
+              key={record.author}
               showHeader={false}
             />
           )
@@ -137,7 +137,6 @@ const UploadTable = ({ tableData, eventId }: any) => {
               type="primary"
               onClick={() => {
                 getUploadDetail(record);
-                setCurrAuthor(record.author);
               }}
             >
               詳細資訊
@@ -158,7 +157,6 @@ const UploadTable = ({ tableData, eventId }: any) => {
               type="primary"
               onClick={() => {
                 getUploadDetail(record);
-                setCurrAuthor(record.author);
               }}
             >
               詳細資訊

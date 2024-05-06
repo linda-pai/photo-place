@@ -4,8 +4,9 @@ import Head from "next/head";
 import usePermission from "@/hooks/usePermission";
 import { EventProps } from "@/types/interfaces/EventProps";
 import { Table, Switch, Button, Modal, message, Spin } from "antd";
-import { ExclamationCircleOutlined } from "@ant-design/icons";
+import { ExclamationCircleOutlined, CopyOutlined } from "@ant-design/icons";
 import { DEFAULT_COVER_IMG } from "@/constants";
+import copyToClipboard from "@/utils/copyToClipboard";
 import dynamic from "next/dynamic";
 
 const Editable = dynamic(() => import("@/components/cms/Editable"), {
@@ -121,6 +122,15 @@ const EventManagement = ({
       responsive: ["xs"],
       render: (record: EventProps) => (
         <div className="flex flex-col gap-1">
+          <a
+            onClick={() => copyToClipboard(record.eventId)}
+            className="cursor-pointer"
+            key={record.eventId}
+            title="複製賽事 ID"
+          >
+            <CopyOutlined className="mr-2" />
+            {record.eventId}
+          </a>
           <p className="">賽事名稱{record.eventName}</p>
           <p className="">日期{record.date}</p>
 
@@ -164,10 +174,28 @@ const EventManagement = ({
       ),
     },
     {
+      title: "賽事 ID",
+      dataIndex: "eventId",
+      key: "eventId",
+      width: 100,
+      responsive: ["sm"],
+      render: (eventId: string) => (
+        <a
+          onClick={() => copyToClipboard(eventId)}
+          className="cursor-pointer"
+          key={eventId}
+          title="賽事 ID"
+        >
+          <CopyOutlined className="mr-2" />
+          {eventId}
+        </a>
+      ),
+    },
+    {
       title: "賽事名稱",
       dataIndex: "eventName",
       key: "eventName",
-      width: 360,
+      width: 260,
       responsive: ["sm"],
     },
     {
@@ -257,10 +285,10 @@ const EventManagement = ({
       title: "Action",
       dataIndex: "eventId",
       key: "action",
-      width: 50,
+      width: 80,
       render: (eventId: string) => (
         <Button danger onClick={() => deleteEvent(eventId)}>
-          刪除賽事
+          刪除
         </Button>
       ),
     },
