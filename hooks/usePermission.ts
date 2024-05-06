@@ -1,13 +1,17 @@
 //檢查是否有admin權限
 
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useRouter } from "next/router";
 import { message } from "antd";
 import useAuth from "@/hooks/useAuth";
-import { ROLE_PHOTOGRAPHER, ROLE_ADMIN } from "@/lib/roles";
+import { ROLE_ADMIN } from "@/lib/roles";
+import { RolesContext } from "@/context/RolesContext";
 
 function usePermission(): boolean {
+  const roles = useContext(RolesContext);
+  const ROLE_PHOTOGRAPHER = roles?.photographer || [];
+
   const isLogin = useAuth();
 
   const [isAllowed, setIsAllowed] = useState(false);
