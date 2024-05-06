@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Table, Button, Tag, Statistic, Col, Modal, Progress } from "antd";
+import {
+  Table,
+  Button,
+  Tag,
+  Statistic,
+  Col,
+  Modal,
+  Progress,
+  message,
+} from "antd";
 import {
   InfoCircleOutlined,
   ReloadOutlined,
@@ -356,6 +365,7 @@ const RecordOfUpload = ({
               : item
           )
         );
+        message.success("號碼布辨識進度已更新");
       });
   });
 
@@ -365,6 +375,8 @@ const RecordOfUpload = ({
       eventId,
       author,
       isAll: false,
+    }).then(() => {
+      message.success("號碼布辨識已重新啟動");
     });
     getDetectProcess(record);
   };
