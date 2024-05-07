@@ -78,16 +78,20 @@ export default function EventSearchPage({
   };
 
   useEffect(() => {
-    if (curPage[category]) {
-      onSearch();
-    }
-  }, [curPage]);
+    onSearch();
+  }, [curPage[IMAGE_STATUS.IDENTIFYED], author]);
+
+  useEffect(() => {
+    if (isGetMore) getMoreImages();
+  }, [curPage[IMAGE_STATUS.MORE]]);
 
   useEffect(() => {
     if (search && isSearched) {
-      setCurPage({
-        [IMAGE_STATUS.IDENTIFYED]: 1,
-        // [IMAGE_STATUS.UNIDENTIFYED]: 1,
+      setCurPage((prev) => {
+        return {
+          ...prev,
+          [category]: 1,
+        };
       });
       setCategory(IMAGE_STATUS.IDENTIFYED);
     }
@@ -139,9 +143,6 @@ export default function EventSearchPage({
     if (search !== "" && search.match(/^[0-9]+$/) == null)
       return message.error("請輸入正確的號碼布");
 
-    const searchValue =
-      category === IMAGE_STATUS.IDENTIFYED ? search : "unIdentify";
-
     router.push(
       {
         pathname: `/events/${eventId}`,
@@ -152,24 +153,26 @@ export default function EventSearchPage({
     );
 
     fetch(
-      `${domain}/api/images/getByPathAndEventId/${eventId}?path=${searchValue}&page=${curPage[category]}&author=${author}`
+      `${domain}/api/images/getByPathAndEventId/${eventId}?path=${search}&page=${
+        curPage[IMAGE_STATUS.IDENTIFYED]
+      }&author=${author}`
     )
       .then((res) => res.json())
       .then((data) => {
         setImages((prev) => {
           return {
             ...prev,
-            [category]:
-              curPage[category] === 1
+            [IMAGE_STATUS.IDENTIFYED]:
+              curPage[IMAGE_STATUS.IDENTIFYED] === 1
                 ? data.images
-                : [...prev[category], ...data.images],
+                : [...prev[IMAGE_STATUS.IDENTIFYED], ...data.images],
           };
         });
 
         setTotal((prev) => {
           return {
             ...prev,
-            [category]: data.totalCount,
+            [IMAGE_STATUS.IDENTIFYED]: data.totalCount,
           };
         });
 
@@ -212,67 +215,76 @@ export default function EventSearchPage({
     );
   };
 
-  const getMoreImages = () => {
+  const getMoreImages = async () => {
     setIsGetMoreLoading(true);
-    //相同 author且 依據lastModified 排序，差距在20000ms以內的視為同一組
-    const groupedImages = images[category].reduce((acc: any, curr: any) => {
-      const lastGroup = acc[acc.length - 1];
-      if (
-        lastGroup &&
-        lastGroup[lastGroup.length - 1].author === curr.author &&
-        new Date(curr.lastModified).getTime() -
-          new Date(lastGroup[lastGroup.length - 1].lastModified).getTime() <
-          20000
-      ) {
-        lastGroup.push(curr);
-      } else {
-        acc.push([curr]);
-      }
-      return acc;
-    }, []);
-
-    groupedImages.forEach((group: any) => {
-      const firstImage = group[0];
-      const lastImage = group[group.length - 1];
-
-      //TODO: 加入頁碼
-      fetch(
-        `${domain}/api/images/getByLastModified/${eventId}?page=${curPage[category]}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            author: firstImage.author,
-            lastModified: firstImage.lastModified,
-            lastModifiedEnd: lastImage.lastModified,
-          }),
+    //相同 author且 依據lastModified 排序，差距在30000ms以內的視為同一組
+    const groupedImages = await images[IMAGE_STATUS.IDENTIFYED].reduce(
+      (acc: any, curr: any) => {
+        const lastGroup = acc[acc.length - 1];
+        if (
+          lastGroup &&
+          lastGroup[lastGroup.length - 1].author === curr.author &&
+          new Date(curr.lastModified).getTime() -
+            new Date(lastGroup[lastGroup.length - 1].lastModified).getTime() <
+            30000
+        ) {
+          lastGroup.push(curr);
+        } else {
+          acc.push([curr]);
         }
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          setImages((prev) => {
-            return {
-              ...prev,
-              [IMAGE_STATUS.MORE]:
-                curPage[IMAGE_STATUS.MORE] === 1
-                  ? data
-                  : [...prev[IMAGE_STATUS.MORE], ...data],
-            };
-          });
+        return acc;
+      },
+      []
+    );
 
-          setTotal((prev) => {
-            return {
-              ...prev,
-              [IMAGE_STATUS.MORE]: prev[IMAGE_STATUS.MORE] + data.length,
-            };
-          });
-
-          setCategory(IMAGE_STATUS.MORE);
-          setIsGetMoreLoading(false);
-        });
+    const intervalGroup = groupedImages.map((group: any) => {
+      return {
+        start: group[0].lastModified,
+        end: group[group.length - 1].lastModified,
+        author: group[0].author,
+      };
     });
+
+    let accCount = 0;
+
+    return await fetch(
+      `${domain}/api/images/getByLastModified/${eventId}?page=${
+        curPage[IMAGE_STATUS.MORE]
+      }`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          intervalGroup,
+        }),
+      }
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setImages((prev) => {
+          return {
+            ...prev,
+            [IMAGE_STATUS.MORE]:
+              curPage[IMAGE_STATUS.MORE] === 1
+                ? data.images
+                : [...prev[IMAGE_STATUS.MORE], ...data.images],
+          };
+        });
+        setCategory(IMAGE_STATUS.MORE);
+        setIsGetMoreLoading(false);
+
+        return (accCount += data.totalCount);
+      })
+      .then((count) => {
+        setTotal((prev) => {
+          return {
+            ...prev,
+            [IMAGE_STATUS.MORE]: count,
+          };
+        });
+      });
   };
 
   const gotoPrevious = () =>
@@ -296,8 +308,8 @@ export default function EventSearchPage({
   const handleOnChangePhotographer = (value: string) => {
     if (value === "請選擇攝影師") return;
     setCurPage({
+      [IMAGE_STATUS.MORE]: 1,
       [IMAGE_STATUS.IDENTIFYED]: 1,
-      // [IMAGE_STATUS.UNIDENTIFYED]: 1,
     });
     setCategory(IMAGE_STATUS.IDENTIFYED);
     setAuthor(value);
@@ -378,15 +390,26 @@ export default function EventSearchPage({
               {identify.images.length > 0 && (
                 <div
                   className="my-4 flex justify-center gap-3"
-                  onClick={getMoreImages}
+                  onClick={() => setIsGetMore((prev) => !prev)}
                 >
                   <p>號碼布可能被擋到了...</p>
-                  <Button
-                    onClick={() => setIsGetMore((prev) => !prev)}
-                    loading={isGetMoreLoading}
-                  >
-                    {isGetMore ? "返回" : "顯示前後5秒內的照片"}
-                  </Button>
+                  {isGetMore ? (
+                    <Button loading={isGetMoreLoading}>返回</Button>
+                  ) : (
+                    <Button
+                      onClick={() => {
+                        if (
+                          lastPage[IMAGE_STATUS.MORE] ===
+                          curPage[IMAGE_STATUS.MORE]
+                        )
+                          return;
+                        getMoreImages();
+                      }}
+                      loading={isGetMoreLoading}
+                    >
+                      顯示前後5秒內的照片
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
