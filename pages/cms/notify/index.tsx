@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import { Spin } from "antd";
 import usePermission from "@/hooks/usePermission";
+import { useSession, getSession } from "next-auth/react";
 import dynamic from "next/dynamic";
+import { sha256 } from "js-sha256";
 import { NotifyProps } from "@/types/interfaces/NotifyProps";
 import { EventProps } from "@/types/interfaces/EventProps";
 
@@ -23,6 +25,8 @@ const Notify = ({
   notifyData: any;
   eventId: string;
 }) => {
+  const { data: session }: any = useSession();
+
   const title = "通知管理 - " + process.env.NEXT_PUBLIC_APP_NAME;
   const [tableData, setTableData] = useState<NotifyProps[]>(notifyData);
 
@@ -45,8 +49,12 @@ const Notify = ({
 
       {isAllowed ? (
         <>
-          <NotifyList events={events} />
-          <NotifyTable tableData={tableData} eventId={eventId} />
+          <NotifyList events={events} session={session} />
+          <NotifyTable
+            tableData={tableData}
+            eventId={eventId}
+            session={session}
+          />
         </>
       ) : (
         <Spin className="mx-auto my-[40vh] w-full" size="large" />
@@ -57,6 +65,8 @@ const Notify = ({
 export default Notify;
 
 export async function getServerSideProps(context: any) {
+  const session = (await getSession(context)) as any;
+
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const events = await fetch(`${domain}/api/events/eventList`).then((res) =>
     res.json()
@@ -65,9 +75,13 @@ export async function getServerSideProps(context: any) {
 
   const getNotifyData = async () => {
     const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-    return await fetch(`${domain}/api/cms/notifyRecord/${eventId}`).then(
-      (res) => res.json()
-    );
+    return await fetch(`${domain}/api/cms/notifyRecord/${eventId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
+      },
+    }).then((res) => res.json());
   };
 
   const notifyData = eventId ? await getNotifyData() : [];
