@@ -1,4 +1,5 @@
 import React, { useEffect, createContext, useContext } from "react";
+import { useSession } from "next-auth/react";
 
 // Define the shape of the roles object
 interface Roles {
@@ -20,6 +21,8 @@ export function useRoles(): Roles {
 
 // RolesProvider component
 export function RolesProvider(props: any) {
+  const { data: session }: any = useSession();
+
   const [roles, setRoles] = React.useState<Roles>({
     admin: [],
     photographer: [],
@@ -29,7 +32,11 @@ export function RolesProvider(props: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
   const fetchRoles = async () => {
-    const res = await fetch(`${domain}/api/roles/rolesList`);
+    const res = await fetch(`${domain}/api/roles/rolesList`, {
+      headers: {
+        Authorization: "Bearer " + session.accessToken,
+      },
+    });
     const data = await res.json();
     setRoles(data);
   };
@@ -38,8 +45,8 @@ export function RolesProvider(props: any) {
   const memoizedValue = React.useMemo(() => roles, [roles]);
 
   useEffect(() => {
-    fetchRoles();
-  }, []);
+    if (session) fetchRoles();
+  }, [session]);
 
   return (
     <RolesContext.Provider value={memoizedValue}>
