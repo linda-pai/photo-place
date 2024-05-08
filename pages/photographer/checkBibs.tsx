@@ -68,6 +68,7 @@ export default function CheckBibs({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: "Bearer " + session.accessToken,
       },
       body: JSON.stringify({
         eventId,
@@ -114,6 +115,7 @@ export default function CheckBibs({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: "Bearer " + session.accessToken,
       },
       body: JSON.stringify({ bibs: newTags, imageId: id, eventId }),
     });
@@ -131,17 +133,21 @@ export default function CheckBibs({
   const handleDeleteImg = (id: string, isRemoved: boolean, e: any) => {
     e.stopPropagation();
 
-    fetch(`${domain}/api/photographer/delete/${eventId}/${id}/${session.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ isRemoved: !isRemoved }),
-    })
+    fetch(
+      `${domain}/api/photographer/setStatus/${eventId}/${id}/${session.id}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + session.accessToken,
+        },
+        body: JSON.stringify({ isRemoved: !isRemoved }),
+      }
+    )
       .then((res) => res.json())
       .then((data) => {
         if (data.status === "success") {
-          message.success(isRemoved ? "恢復成功" : "從相簿移除成功");
+          message.success(isRemoved ? "從相簿恢復" : "從相簿移除成功");
           setImages((prev) =>
             prev.map((item) => {
               if (item.id === id) {
@@ -164,6 +170,7 @@ export default function CheckBibs({
       id,
       author: session.id,
       isFeatured,
+      accessToken: session.accessToken,
     }).then((data) => {
       if (data.status === "success") {
         setImages((prev) =>

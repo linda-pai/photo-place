@@ -5,11 +5,13 @@ const featureImg = ({
   id,
   author,
   isFeatured,
+  accessToken,
 }: {
   eventId: string;
   id: string;
   author: string;
   isFeatured: boolean;
+  accessToken: string;
 }) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const response = fetch(
@@ -18,6 +20,7 @@ const featureImg = ({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: "Bearer " + accessToken,
       },
       body: JSON.stringify({ isFeatured: !isFeatured }),
     }

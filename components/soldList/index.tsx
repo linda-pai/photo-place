@@ -59,6 +59,11 @@ const SoldList = ({ eventId }: { eventId: string }) => {
           </p>
         </div>
       ),
+      sorter: (a: SoldImagesProps, b: SoldImagesProps) => {
+        const dateA = new Date(a.soldAt);
+        const dateB = new Date(b.soldAt);
+        return dateA.getTime() - dateB.getTime();
+      },
     },
 
     orderId: {
@@ -113,7 +118,14 @@ const SoldList = ({ eventId }: { eventId: string }) => {
 
   const getSoldData = (eventId: string) => {
     fetch(
-      `${domain}/api/photographer/getSoldInfoByAuthor/${eventId}/${session.id}`
+      `${domain}/api/photographer/getSoldInfoByAuthor/${eventId}/${session.id}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + session.accessToken,
+        },
+      }
     )
       .then((res) => res.json())
       .then((data) => {

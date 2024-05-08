@@ -5,11 +5,13 @@ const featureImg = ({
   id,
   author,
   isRemoved,
+  accessToken,
 }: {
   eventId: string;
   id: string;
   author: string;
   isRemoved: boolean;
+  accessToken: string;
 }) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const response = fetch(
@@ -18,6 +20,7 @@ const featureImg = ({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: "Bearer " + accessToken,
       },
       body: JSON.stringify({ isRemoved: !isRemoved }),
     }

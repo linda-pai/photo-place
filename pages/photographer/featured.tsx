@@ -48,7 +48,14 @@ export default function Featured({
     if (!session) return;
 
     fetch(
-      `${domain}/api/photographer/getByStatus/${eventId}/${session.id}?page=${curPage}&status=featured`
+      `${domain}/api/photographer/getByStatus/${eventId}/${session.id}?page=${curPage}&status=featured`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + session.accessToken,
+        },
+      }
     )
       .then((res) => res.json())
       .then((data) => {
@@ -80,6 +87,7 @@ export default function Featured({
       id,
       author: session.id,
       isFeatured,
+      accessToken: session.accessToken,
     }).then((data) => {
       if (data.status === "success") {
         const updatedImages = featuredImages.map((item) => {

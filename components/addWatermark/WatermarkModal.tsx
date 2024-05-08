@@ -27,7 +27,13 @@ const WatermarkModal = ({
   const [position, setPosition] = useState("southeast");
 
   const handleAddWatermark = () => {
-    fetch(`${domain}/api/photographer/getWatermark/${session.id}`)
+    fetch(`${domain}/api/photographer/getWatermark/${session.id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + session.accessToken,
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data.error) {
@@ -62,6 +68,7 @@ const WatermarkModal = ({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: "Bearer " + session.accessToken,
           },
           body: JSON.stringify({
             watermarkImg: response.Location,
@@ -89,7 +96,14 @@ const WatermarkModal = ({
 
     const getImageDownloadInfo = async () => {
       return await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/photographer/getFeaturedWatermarkImages/${eventId}/${session.id}`
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/photographer/getFeaturedWatermarkImages/${eventId}/${session.id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + session.accessToken,
+          },
+        }
       )
         .then((res) => res.json())
         .then((result) => {
@@ -124,6 +138,7 @@ const WatermarkModal = ({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: "Bearer " + session.accessToken,
       },
       body: JSON.stringify({
         images: featuredImages,

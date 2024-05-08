@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
   Table,
@@ -29,6 +30,8 @@ const RecordOfUpload = ({
   uploadData: RecordOfUploadProps[];
   showHeader?: boolean;
 }) => {
+  const { data: session }: any = useSession();
+
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const [uploadDetail, setUploadDetail] = useState(
     uploadData as RecordOfUploadProps[]
@@ -354,7 +357,14 @@ const RecordOfUpload = ({
   const getDetectProcess = debounce((record: RecordOfUploadProps) => {
     const { eventId, author } = record;
     fetch(
-      `${domain}/api/photographer/getDetectedImageLength/${eventId}/${author}`
+      `${domain}/api/photographer/getDetectedImageLength/${eventId}/${author}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + session.accessToken,
+        },
+      }
     )
       .then((res) => res.json())
       .then((data) => {

@@ -39,7 +39,14 @@ export default function Removed({
     if (!session) return;
 
     fetch(
-      `${domain}/api/photographer/getByStatus/${eventId}/${session.id}?page=${curPage}&status=removed`
+      `${domain}/api/photographer/getByStatus/${eventId}/${session.id}?page=${curPage}&status=removed`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + session.accessToken,
+        },
+      }
     )
       .then((res) => res.json())
       .then((data) => {
@@ -71,6 +78,7 @@ export default function Removed({
       id,
       author: session.id,
       isRemoved,
+      accessToken: session.accessToken,
     }).then((data) => {
       if (data.status === "success") {
         const updatedImages = removedImages.map((item) => {
