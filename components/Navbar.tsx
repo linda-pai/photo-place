@@ -9,13 +9,9 @@ import {
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { useSession, signOut } from "next-auth/react";
-import { ROLE_ADMIN } from "@/lib/roles";
-import { RolesContext } from "@/context/RolesContext";
+import { ROLE_ADMIN, ROLE_PHOTOGRAPHER } from "@/lib/roles";
 
 const Nav = ({ navBarRef }: any) => {
-  const roles = useContext(RolesContext);
-  const ROLE_PHOTOGRAPHER = roles?.photographer || [];
-
   const router = useRouter();
   const [showLightColor, setShowLightColor] = useState(false);
 

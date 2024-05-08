@@ -30,14 +30,14 @@ export default function App({
   const navBarRef = useRef();
   const getLayout = Component.getLayout ?? ((page) => page);
   return getLayout(
-    <RolesProvider>
-      <IsSsrMobileContext.Provider value={pageProps.isSsrMobile}>
-        <SessionProvider session={session}>
-          <Layout navBarRef={navBarRef}>
-            <Component {...pageProps} navBarRef={navBarRef} />
-          </Layout>
-        </SessionProvider>
-      </IsSsrMobileContext.Provider>
-    </RolesProvider>
+    <IsSsrMobileContext.Provider value={pageProps.isSsrMobile}>
+      <SessionProvider session={session}>
+        {/* <RolesProvider> */}
+        <Layout navBarRef={navBarRef}>
+          <Component {...pageProps} navBarRef={navBarRef} />
+        </Layout>
+        {/* </RolesProvider> */}
+      </SessionProvider>
+    </IsSsrMobileContext.Provider>
   );
 }
