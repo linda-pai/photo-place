@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { Table, Space, Button, Tag, Modal, message, Spin } from "antd";
 import { ExclamationCircleOutlined, CopyOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { Order, OrderListProps } from "@/types/interfaces/CartDataProps";
+import { Order } from "@/types/interfaces/CartDataProps";
 import copyToClipboard from "@/utils/copyToClipboard";
 import paymentOptions from "@/utils/paymentOptions";
 import updateOrderData from "@/lib/order/updateOrderData";
 import tableConfig from "./tableConfig";
 import dynamic from "next/dynamic";
+import { sha256 } from "js-sha256";
 
 const ImageDetail = dynamic(() => import("./ImageDetail"), {
   loading: () => <Spin />,
@@ -17,7 +18,7 @@ const Editable = dynamic(() => import("@/components/cms/Editable"), {
   loading: () => <Spin />,
 });
 
-const OrderList = ({ orders }: OrderListProps) => {
+const OrderList = ({ orders, session }: { orders: Order[]; session: any }) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
   const [orderData, setOrderData] = useState<Order[]>(orders);
@@ -246,10 +247,13 @@ const OrderList = ({ orders }: OrderListProps) => {
   };
 
   const handleInputConfirm = (orderId: string, text: string) => {
-    updateOrderData({
-      remark: text,
-      orderId: orderId,
-    });
+    updateOrderData(
+      {
+        remark: text,
+        orderId: orderId,
+      },
+      session
+    );
   };
 
   const handleRemarkChange = (e: any, record: Order) => {
@@ -270,6 +274,7 @@ const OrderList = ({ orders }: OrderListProps) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
       },
     })
       .then((res) => res.json())
@@ -285,7 +290,11 @@ const OrderList = ({ orders }: OrderListProps) => {
   };
 
   const getOrderData = () => {
-    fetch(`${domain}/api/orders/orderList`)
+    fetch(`${domain}/api/orders/orderList`, {
+      headers: {
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         setOrderData(data);
@@ -296,7 +305,7 @@ const OrderList = ({ orders }: OrderListProps) => {
     setLoading(true);
     //remove _id
     record._id && delete record._id;
-    updateOrderData(record)
+    updateOrderData(record, session)
       .then((res) => res.json())
       .then(() => {
         getOrderData();

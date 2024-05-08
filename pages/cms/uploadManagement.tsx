@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import { Spin } from "antd";
+import { useSession, getSession } from "next-auth/react";
+import { sha256 } from "js-sha256";
 import usePermission from "@/hooks/usePermission";
 import dynamic from "next/dynamic";
 import { NotifyProps } from "@/types/interfaces/NotifyProps";
@@ -26,6 +28,8 @@ const UploadManagement = ({
   uploadData: any;
   eventId: string;
 }) => {
+  const { data: session }: any = useSession();
+
   const title = "攝影師上傳管理 - " + process.env.NEXT_PUBLIC_APP_NAME;
   const [tableData, setTableData] = useState<NotifyProps[]>(uploadData);
 
@@ -49,7 +53,11 @@ const UploadManagement = ({
       {isAllowed ? (
         <>
           <UploadList events={events} />
-          <UploadTable tableData={tableData} eventId={eventId} />
+          <UploadTable
+            tableData={tableData}
+            eventId={eventId}
+            session={session}
+          />
         </>
       ) : (
         <Spin className="mx-auto my-[40vh] w-full" size="large" />
@@ -60,18 +68,28 @@ const UploadManagement = ({
 export default UploadManagement;
 
 export async function getServerSideProps(context: any) {
+  const session = (await getSession(context)) as any;
+
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-  const events = await fetch(`${domain}/api/cms/getUploadInfo`).then((res) =>
-    res.json()
-  );
+  const events = await fetch(`${domain}/api/cms/getUploadInfo`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
+    },
+  }).then((res) => res.json());
 
   const eventId = context.query.eventId || "";
 
   const getUploadData = async () => {
     const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-    return await fetch(`${domain}/api/cms/getUploadInfo/${eventId}`).then(
-      (res) => res.json()
-    );
+    return await fetch(`${domain}/api/cms/getUploadInfo/${eventId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
+      },
+    }).then((res) => res.json());
   };
 
   const uploadData = eventId ? await getUploadData() : [];

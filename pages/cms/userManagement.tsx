@@ -1,7 +1,9 @@
 import Head from "next/head";
 import { Table } from "antd";
+import { getSession } from "next-auth/react";
 import { CopyOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { sha256 } from "js-sha256";
 import usePermission from "@/hooks/usePermission";
 import copyToClipboard from "@/utils/copyToClipboard";
 import { UserProps } from "@/types/interfaces/UserProps";
@@ -86,12 +88,17 @@ const UserManagement = ({ userList }: { userList: UserProps[] }) => {
 };
 export default UserManagement;
 
-export async function getServerSideProps() {
+export async function getServerSideProps(ctx: any) {
+  const session = (await getSession(ctx)) as any;
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   // Fetch data from external API
-  const userList = await fetch(`${domain}/api/user/userList`).then((res) =>
-    res.json()
-  );
+  const userList = await fetch(`${domain}/api/cms/userList`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
+    },
+  }).then((res) => res.json());
 
   // Pass data to the page via props
   return { props: { userList } };

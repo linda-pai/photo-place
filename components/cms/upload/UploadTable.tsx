@@ -3,6 +3,7 @@ import { Table, Space, Button, Spin, Modal } from "antd";
 import { CopyOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import dynamic from "next/dynamic";
+import { sha256 } from "js-sha256";
 import { UploadProps } from "@/types/interfaces/UploadProps";
 import copyToClipboard from "@/utils/copyToClipboard";
 import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
@@ -12,7 +13,7 @@ const RecordOfUpload = dynamic(() => import("@/components/records"), {
   loading: () => <Spin />,
 });
 
-const UploadTable = ({ tableData, eventId }: any) => {
+const UploadTable = ({ tableData, eventId, session }: any) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
   const [data, setData] = useState<UploadProps[]>(tableData);
@@ -30,6 +31,7 @@ const UploadTable = ({ tableData, eventId }: any) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
       },
       body: JSON.stringify({
         author: record.author,

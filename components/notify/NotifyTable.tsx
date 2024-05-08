@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Table, Modal, Space, Button, message } from "antd";
 import { ExclamationCircleOutlined, CopyOutlined } from "@ant-design/icons";
+import { sha256 } from "js-sha256";
 import { NotifyProps } from "@/types/interfaces/NotifyProps";
 import copyToClipboard from "@/utils/copyToClipboard";
 import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
 
-const NotifyTable = ({ tableData, eventId }: any) => {
+const NotifyTable = ({ tableData, eventId, session }: any) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
   const [data, setData] = useState<NotifyProps[]>(tableData);
@@ -97,7 +98,12 @@ const NotifyTable = ({ tableData, eventId }: any) => {
   };
 
   const getNotifyData = (eventId: string) => {
-    fetch(`${domain}/api/cms/notifyRecord/${eventId}`)
+    fetch(`${domain}/api/cms/notifyRecord/${eventId}`, {
+      method: "GET",
+      headers: {
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         setData(data);
@@ -112,6 +118,7 @@ const NotifyTable = ({ tableData, eventId }: any) => {
       body: JSON.stringify(record),
       headers: {
         "Content-Type": "application/json",
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
       },
     })
       .then((res) => res.json())
@@ -134,6 +141,7 @@ const NotifyTable = ({ tableData, eventId }: any) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
       },
       body: JSON.stringify({
         isAll,

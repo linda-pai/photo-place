@@ -1,12 +1,15 @@
 import React, { useEffect } from "react";
 import { Form, Input, Button, message, Modal } from "antd";
+import { sha256 } from "js-sha256";
 
 const NotifyForm = ({
   eventName,
   eventId,
+  session,
 }: {
   eventName: string;
   eventId: string;
+  session: any;
 }) => {
   const [form] = Form.useForm();
   const [modal, contextHolder] = Modal.useModal();
@@ -46,6 +49,7 @@ const NotifyForm = ({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
         },
         body: JSON.stringify({
           email: values.email,

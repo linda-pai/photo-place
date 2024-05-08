@@ -10,6 +10,7 @@ import {
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import dynamic from "next/dynamic";
 import dayjs from "dayjs";
+import { sha256 } from "js-sha256";
 import copyToClipboard from "@/utils/copyToClipboard";
 import paymentOptions from "@/utils/paymentOptions";
 import downloadImage from "@/utils/downloadImage";
@@ -92,6 +93,11 @@ const Orders = () => {
           </div>
         </div>
       ),
+      sorter: (a: Order, b: Order) => {
+        const dateA = new Date(a.createAt);
+        const dateB = new Date(b.createAt);
+        return dateA.getTime() - dateB.getTime();
+      },
     },
     orderId: {
       ellipsis: true,
@@ -211,7 +217,13 @@ const Orders = () => {
   }, [session]);
 
   const getOrders = () => {
-    fetch(`${domain}/api/orders/getByUser/${session.id}`)
+    fetch(`${domain}/api/orders/getByUser/${session.id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         setLoading(false);
@@ -280,7 +292,13 @@ const Orders = () => {
     const eventId = items[0].eventId;
 
     return await fetch(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/orders/getByEventIdAndImageIds/${orderId}/${eventId}/${imageIdList}`
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/orders/getByEventIdAndImageIds/${orderId}/${eventId}/${imageIdList}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
+        },
+      }
     )
       .then((res) => res.json())
       .then((result) => result)
