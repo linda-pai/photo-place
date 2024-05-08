@@ -5,12 +5,12 @@ import { useEffect, useState, useContext } from "react";
 import { useRouter } from "next/router";
 import { message } from "antd";
 import useAuth from "@/hooks/useAuth";
-import { ROLE_ADMIN } from "@/lib/roles";
-import { RolesContext } from "@/context/RolesContext";
+import { ROLE_ADMIN, ROLE_PHOTOGRAPHER } from "@/lib/roles";
+// import { RolesContext } from "@/context/RolesContext";
 
 function usePermission(): boolean {
-  const roles = useContext(RolesContext);
-  const ROLE_PHOTOGRAPHER = roles?.photographer || [];
+  // const roles = useContext(RolesContext);
+  // const ROLE_PHOTOGRAPHER = roles?.photographer || [];
 
   const isLogin = useAuth();
 
