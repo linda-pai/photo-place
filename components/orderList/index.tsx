@@ -270,7 +270,7 @@ const OrderList = ({ orders, session }: { orders: Order[]; session: any }) => {
 
   const handleOnDelete = (record: Order) => {
     setLoading(true);
-    fetch(`${domain}/api/orders/delete/${record.orderId}`, {
+    fetch(`${domain}/api/cms/deleteOrder/${record.orderId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -290,7 +290,7 @@ const OrderList = ({ orders, session }: { orders: Order[]; session: any }) => {
   };
 
   const getOrderData = () => {
-    fetch(`${domain}/api/orders/orderList`, {
+    fetch(`${domain}/api/cms/orderList`, {
       headers: {
         secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
       },

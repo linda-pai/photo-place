@@ -40,7 +40,7 @@ export default orderList;
 export async function getServerSideProps(ctx: any) {
   const session = (await getSession(ctx)) as any;
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-  const res = await fetch(`${domain}/api/orders/orderList`, {
+  const res = await fetch(`${domain}/api/cms/orderList`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

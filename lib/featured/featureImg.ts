@@ -29,10 +29,10 @@ const featureImg = ({
     .then((data) => {
       if (data.status === "success") {
         message.success(isFeatured ? "取消精選成功" : "設定精選成功");
-        return data;
       } else {
-        message.error("設定精選失敗");
+        message.error(data.message || "設定精選失敗");
       }
+      return data;
     });
 
   return response;

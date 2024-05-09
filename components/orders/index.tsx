@@ -221,7 +221,7 @@ const Orders = () => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
+        Authorization: "Bearer " + session.accessToken,
       },
     })
       .then((res) => res.json())
@@ -296,7 +296,7 @@ const Orders = () => {
       {
         headers: {
           "Content-Type": "application/json",
-          secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
+          Authorization: "Bearer " + session.accessToken,
         },
       }
     )
