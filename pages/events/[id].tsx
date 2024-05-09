@@ -28,6 +28,7 @@ export default function EventSearchPage({
   eventInfo,
   navBarRef,
   bib,
+  photoBy,
   imagesInfo,
   photographerOptions,
 }: any) {
@@ -56,7 +57,7 @@ export default function EventSearchPage({
   });
 
   const [category, setCategory] = useState(IMAGE_STATUS.IDENTIFYED);
-  const [author, setAuthor] = useState("");
+  const [author, setAuthor] = useState(photoBy || "");
   const [isLoading, setIsLoading] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [currImgIndex, setCurrImgIndex] = useState(0); // [0, images.length - 1
@@ -112,6 +113,7 @@ export default function EventSearchPage({
   }, [images]);
 
   const handleOnChangeSearch = (e: any) => {
+    setAuthor("");
     setSearch(e.target.value.trim());
     if (e.target.value.trim() === "") {
       resetImages();
@@ -146,7 +148,7 @@ export default function EventSearchPage({
     router.push(
       {
         pathname: `/events/${eventId}`,
-        query: { bib: search },
+        query: { bib: search, photoBy: author },
       },
       undefined,
       { shallow: true }
@@ -360,7 +362,11 @@ export default function EventSearchPage({
       <div id="result-container">
         {!eventInfo.isCompleteUpload ? (
           <div className="container mx-auto sm:my-10 my-4">
-            <NotifyForm eventName={eventName} eventId={eventId} />
+            <NotifyForm
+              eventName={eventName}
+              eventId={eventId}
+              session={session}
+            />
           </div>
         ) : (
           <div className="container mx-auto sm:my-10 my-4">
@@ -441,6 +447,7 @@ export default function EventSearchPage({
                       ]}
                       onChange={handleOnChangePhotographer}
                       placeholder="請選擇攝影師"
+                      value={author}
                     />
                   </div>
                 )}
@@ -504,39 +511,20 @@ export async function getServerSideProps(context: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const eventId = context.params.id || "";
   const bib = context.query.bib || "";
+  const photoBy = context.query.photoBy || "";
 
   const imagesInfo = await fetch(
     `${domain}/api/images/getByPathAndEventId/${eventId}`
   ).then((res) => res.json());
 
-  const { eventInfo, featuredImages } = await fetch(
-    `${domain}/api/events/getBy/${eventId}`
-  ).then((res) => res.json());
+  const eventInfo = await fetch(`${domain}/api/events/getBy/${eventId}`).then(
+    (res) => res.json()
+  );
 
   if (!eventInfo) {
     return {
       notFound: true,
     };
-  }
-
-  const isCompleteUpload = eventInfo?.isCompleteUpload || false;
-
-  if (!isCompleteUpload) {
-    const pageSize = 24;
-    //問是否有精選照片，有超過24張精選照片就更新 event isCompleteUpload = true
-    if (featuredImages >= pageSize) {
-      eventInfo.isCompleteUpload = true;
-      //update event
-      await fetch(`${domain}/api/events/update/${eventId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          isCompleteUpload: true,
-        }),
-      }).then((res) => res.json());
-    }
   }
 
   const photographerOptions = await fetch(
@@ -556,6 +544,7 @@ export async function getServerSideProps(context: any) {
     props: {
       eventInfo,
       bib,
+      photoBy,
       imagesInfo,
       photographerOptions,
     },

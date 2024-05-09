@@ -269,7 +269,7 @@ export default function CheckBibs({
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Link href={`/events/${eventId}?bib=`} passHref>
+                <Link href={`/events/${eventId}?bib=&photoBy=`} passHref>
                   <Button className="flex items-center">
                     <BookOutlined />
                     賽事相簿
