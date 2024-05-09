@@ -35,7 +35,7 @@ const tableConfig = (columnsRenderMap: any, showHeader: boolean) => {
       title: "照片數量資訊",
       dataIndex: "soldCount",
       key: "soldCount",
-      width: 320,
+      width: 340,
       ...columnsRenderMap.soldCount,
     },
     {

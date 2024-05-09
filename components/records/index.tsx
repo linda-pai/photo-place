@@ -10,6 +10,7 @@ import {
   Modal,
   Progress,
   message,
+  Popover,
 } from "antd";
 import {
   InfoCircleOutlined,
@@ -236,6 +237,27 @@ const RecordOfUpload = ({
     );
   };
 
+  const popOverContent = (record: any) => (
+    <div>
+      <div className="mb-2">
+        <Link
+          href={`/events/${record.eventId}?bib=&photoBy=${record.author}`}
+          className="hover:bg-[#e7e5e4] p-2 rounded-md cursor-pointer"
+        >
+          我的照片
+        </Link>
+      </div>
+      <div className="">
+        <Link
+          href={`/events/${record.eventId}?bib=&photoBy=`}
+          className="hover:bg-[#e7e5e4] p-2 rounded-md cursor-pointer"
+        >
+          全部照片
+        </Link>
+      </div>
+    </div>
+  );
+
   const columnsRenderMap = {
     rwd: {
       responsive: ["xs"],
@@ -255,12 +277,11 @@ const RecordOfUpload = ({
     },
     eventName: {
       render: (text: string, record: RecordOfUploadProps) => (
-        <Link
-          href={`/events/${record.eventId}?bib=`}
-          className="hover:bg-[#e7e5e4] p-2 rounded-md cursor-pointer"
-        >
-          {text}
-        </Link>
+        <Popover content={popOverContent(record)} trigger="hover">
+          <div className="hover:bg-[#e7e5e4] p-2 rounded-md cursor-pointer">
+            {text}
+          </div>
+        </Popover>
       ),
       responsive: ["sm"],
     },

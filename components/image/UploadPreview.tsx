@@ -5,6 +5,7 @@ import { Pagination } from "antd";
 import dayjs from "dayjs";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import ImageLightBox from "@/components/image/ImageLightBox";
+import { DETECTING_IMG } from "@/constants";
 
 export default function UploadPreview({ eventId }: { eventId: string }) {
   const { data: session }: any = useSession();
@@ -67,8 +68,8 @@ export default function UploadPreview({ eventId }: { eventId: string }) {
               >
                 <Image
                   className="item__content"
-                  src={item.watermarkedUrl}
-                  alt={item.watermarkedUrl}
+                  src={item.watermarkedUrl || DETECTING_IMG}
+                  alt={item.watermarkedUrl || DETECTING_IMG}
                   width={300}
                   height={400}
                   quality={30}
