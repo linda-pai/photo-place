@@ -27,6 +27,7 @@ import completeUpload from "@/lib/upload/completeUpload";
 import getStartMultipartUploadURL from "@/lib/upload/getStartMultipartUploadURL";
 import chunkFileAndPutS3 from "@/lib/upload/chunkFileAndPutS3";
 import updateFirst50IsFeatured from "@/lib/upload/updateFirst50IsFeatured";
+import isUploadable from "@/utils/isUploadable";
 
 const Uploader = dynamic(() => import("@/components/upload/Uploader"), {
   loading: () => <Spin />,
@@ -55,7 +56,6 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
   const [authorName, setAuthorName] = useState(session?.user?.name || "");
   const [price, setPrice] = useState(169);
   const [eventName, setEventName] = useState("");
-  const [isUploadable, setIsUploadable] = useState(true);
 
   const msgKey = Math.random().toString();
 
@@ -65,23 +65,12 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
 
   useEffect(() => {
     if (!eventId) return handleEventIdError();
-    fetch(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/events/checkUploadable/${eventId}`
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        setIsUploadable(data.isUploadable);
-        if (!data.isUploadable) handleNotUploadable();
-      });
-  }, [eventId]);
-
-  useEffect(() => {
-    if (!eventId) return handleEventIdError();
     fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/events/getBy/${eventId}`)
       .then((res) => res.json())
       .then((data) => {
-        const { eventName } = data?.eventInfo || {};
+        const { eventName, date } = data || {};
         if (!eventName) return handleEventIdError();
+        if (!isUploadable(date)) return handleNotUploadable();
         setEventName(eventName);
       });
   }, [eventId]);
@@ -396,7 +385,7 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
   return (
     <div className="mt-24 container mx-auto px-4">
       <UploadBreadcrumb />
-      {isUploadable && (
+      {
         <>
           <UploadPrompt isUploading={loading} onConfirmLeave={onConfirmLeave} />
           <div className="text-center">
@@ -482,7 +471,7 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
             </>
           )}
         </>
-      )}
+      }
 
       {contextHolder}
     </div>
