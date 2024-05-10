@@ -21,6 +21,7 @@ import {
   BookOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
+import { sha256 } from "js-sha256";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import ImageLightBox from "@/components/image/ImageLightBox";
 import userPermission from "@/hooks/usePermission";
@@ -68,7 +69,8 @@ export default function CheckBibs({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + session.accessToken,
+        Authorization: "Bearer " + session.id,
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
       },
       body: JSON.stringify({
         eventId,
@@ -115,7 +117,8 @@ export default function CheckBibs({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + session.accessToken,
+        Authorization: "Bearer " + session.id,
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
       },
       body: JSON.stringify({ bibs: newTags, imageId: id, eventId }),
     });
@@ -139,7 +142,8 @@ export default function CheckBibs({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer " + session.accessToken,
+          Authorization: "Bearer " + session.id,
+          secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
         },
         body: JSON.stringify({ isRemoved: !isRemoved }),
       }
@@ -168,9 +172,8 @@ export default function CheckBibs({
     featureImg({
       eventId,
       id,
-      author: session.id,
       isFeatured,
-      accessToken: session.accessToken,
+      session,
     }).then((data) => {
       if (data.status === "success") {
         setImages((prev) =>

@@ -3,6 +3,7 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { Pagination } from "antd";
 import dayjs from "dayjs";
+import { sha256 } from "js-sha256";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import ImageLightBox from "@/components/image/ImageLightBox";
 import { DETECTING_IMG } from "@/constants";
@@ -25,7 +26,8 @@ export default function UploadPreview({ eventId }: { eventId: string }) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + session.accessToken,
+        Authorization: "Bearer " + session.id,
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
       },
       body: JSON.stringify({
         eventId,

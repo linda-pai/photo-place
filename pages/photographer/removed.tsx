@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Pagination, Spin, Button, Empty } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { sha256 } from "js-sha256";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import ImageLightBox from "@/components/image/ImageLightBox";
 import userPermission from "@/hooks/usePermission";
@@ -44,7 +45,8 @@ export default function Removed({
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer " + session.accessToken,
+          Authorization: "Bearer " + session.id,
+          secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
         },
       }
     )
@@ -76,9 +78,8 @@ export default function Removed({
     removeImg({
       eventId,
       id,
-      author: session.id,
       isRemoved,
-      accessToken: session.accessToken,
+      session,
     }).then((data) => {
       if (data.status === "success") {
         const updatedImages = removedImages.map((item) => {

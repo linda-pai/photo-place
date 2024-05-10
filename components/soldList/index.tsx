@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Table, Spin } from "antd";
 import { CopyOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { sha256 } from "js-sha256";
 import {
   SoldImagesProps,
   SoldImageItemProps,
@@ -123,7 +124,8 @@ const SoldList = ({ eventId }: { eventId: string }) => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer " + session.accessToken,
+          Authorization: "Bearer " + session.id,
+          secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
         },
       }
     )

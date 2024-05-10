@@ -3,6 +3,7 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { Modal, Segmented, Flex, Avatar, Spin, message, Button } from "antd";
 import dynamic from "next/dynamic";
+import { sha256 } from "js-sha256";
 import downloadImage from "@/utils/downloadImage";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 
@@ -31,7 +32,8 @@ const WatermarkModal = ({
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + session.accessToken,
+        Authorization: "Bearer " + session.id,
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
       },
     })
       .then((res) => res.json())
@@ -68,7 +70,8 @@ const WatermarkModal = ({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: "Bearer " + session.accessToken,
+            Authorization: "Bearer " + session.id,
+            secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
           },
           body: JSON.stringify({
             watermarkImg: response.Location,
@@ -101,7 +104,8 @@ const WatermarkModal = ({
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: "Bearer " + session.accessToken,
+            Authorization: "Bearer " + session.id,
+            secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
           },
         }
       )
@@ -138,7 +142,8 @@ const WatermarkModal = ({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + session.accessToken,
+        Authorization: "Bearer " + session.id,
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
       },
       body: JSON.stringify({
         images: featuredImages,

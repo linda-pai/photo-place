@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { Spin } from "antd";
 import dynamic from "next/dynamic";
 import Head from "next/head";
+import { sha256 } from "js-sha256";
 import usePermission from "@/hooks/usePermission";
 import { RecordOfUploadProps } from "@/types/interfaces/UploadProps";
 
@@ -29,7 +30,8 @@ const records = () => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + session.accessToken,
+        Authorization: "Bearer " + session.id,
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
       },
     })
       .then((res) => res.json())

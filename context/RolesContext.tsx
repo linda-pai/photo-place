@@ -1,5 +1,6 @@
 import React, { useEffect, createContext, useContext } from "react";
 import { useSession } from "next-auth/react";
+import { sha256 } from "js-sha256";
 
 // Define the shape of the roles object
 interface Roles {
@@ -34,7 +35,8 @@ export function RolesProvider(props: any) {
   const fetchRoles = async () => {
     const res = await fetch(`${domain}/api/roles/rolesList`, {
       headers: {
-        Authorization: "Bearer " + session.accessToken,
+        Authorization: "Bearer " + session.id,
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
       },
     });
     const data = await res.json();
