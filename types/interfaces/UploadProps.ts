@@ -11,6 +11,7 @@ export interface UploadProps {
 
 export interface RecordOfUploadProps {
   author: string;
+  name: string;
   createAt: string;
   eventId: string;
   eventName: string;

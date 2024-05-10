@@ -8,6 +8,7 @@ interface Event {
   userId: string;
   isShow: boolean;
   eventId: string;
+  date: string;
 }
 
 const NotifyList = ({ events }: any) => {
@@ -31,6 +32,11 @@ const NotifyList = ({ events }: any) => {
       dataIndex: "date",
       key: "date",
       width: 120,
+      sorter: (a: Event, b: Event) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return dateA.getTime() - dateB.getTime();
+      },
     },
     {
       title: "Action",
