@@ -68,9 +68,9 @@ export async function getServerSideProps(context: any) {
   const session = (await getSession(context)) as any;
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-  const events = await fetch(`${domain}/api/events/eventList`).then((res) =>
-    res.json()
-  );
+  const events = await fetch(
+    `${domain}/api/events/eventList?isRecent=true`
+  ).then((res) => res.json());
   const eventId = context.query.eventId || "";
 
   const getNotifyData = async () => {
