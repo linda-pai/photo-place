@@ -86,7 +86,7 @@ const Orders = () => {
             {record.items.map((item: any, key: number) => (
               <ImageItemDisplay
                 item={item}
-                onClick={() => handleClickImage(record, key)}
+                onClick={() => handleClickImage(record, item.id)}
                 key={key}
               />
             ))}
@@ -133,7 +133,7 @@ const Orders = () => {
             {record.items.map((item: any, key: number) => (
               <ImageItemDisplay
                 item={item}
-                onClick={() => handleClickImage(record, key)}
+                onClick={() => handleClickImage(record, item.id)}
                 key={key}
               />
             ))}
@@ -259,12 +259,12 @@ const Orders = () => {
     }
   };
 
-  const handleOnDownload = async (record: any, key: number) => {
+  const handleOnDownload = async (record: any, id: string) => {
     setLoading(true);
     const imageList = await getImageDownloadInfo(record);
 
     try {
-      const url = imageList[key].url;
+      const url = imageList.find((item: any) => item.id === id).url;
       downloadImage(url);
       setLoading(false);
       message.success("下載成功");
@@ -274,9 +274,9 @@ const Orders = () => {
     }
   };
 
-  const handleClickImage = (record: Order, key: number) => {
+  const handleClickImage = (record: Order, id: string) => {
     const { paidAt } = record;
-    if (paidAt) return handleOnDownload(record, key);
+    if (paidAt) return handleOnDownload(record, id);
     modal.confirm({
       title: "照片下載失敗",
       icon: <ExclamationCircleOutlined />,
