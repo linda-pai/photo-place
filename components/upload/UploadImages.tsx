@@ -28,6 +28,10 @@ import getStartMultipartUploadURL from "@/lib/upload/getStartMultipartUploadURL"
 import chunkFileAndPutS3 from "@/lib/upload/chunkFileAndPutS3";
 import updateFirst50IsFeatured from "@/lib/upload/updateFirst50IsFeatured";
 import isUploadable from "@/utils/isUploadable";
+import {
+  getAuthorDisplayName,
+  setAuthorDisplayName,
+} from "@/lib/photographer/displayName";
 
 const Uploader = dynamic(() => import("@/components/upload/Uploader"), {
   loading: () => <Spin />,
@@ -60,8 +64,12 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
   const msgKey = Math.random().toString();
 
   useEffect(() => {
-    setAuthorName(session?.user?.name || "");
-  }, []);
+    //get user Name
+    if (!session?.id) return;
+    getAuthorDisplayName(session.id).then((data) =>
+      setAuthorName(data?.displayName || session?.user?.name)
+    );
+  }, [session]);
 
   useEffect(() => {
     if (!eventId) return handleEventIdError();
@@ -250,6 +258,7 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
   const handleUpload = async () => {
     if (!session.id) return message.error("請先登入");
     if (!eventId) return message.error("請選擇活動");
+    if (!authorName) return message.error("請輸入攝影師名稱");
 
     const tobeUploadedList = fileOptionsList.filter((file: any) => file.type);
 
@@ -399,6 +408,14 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
                 placeholder="攝影師名稱"
                 className="w-1/3"
                 onChange={handleChangeAuthorName}
+                onKeyDown={(e: any) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    e.target.blur();
+                    setAuthorDisplayName(session.id, e.target.value);
+                  }
+                }}
+                onBlur={(e) => setAuthorDisplayName(session.id, e.target.value)}
                 value={authorName}
                 defaultValue={authorName || ""}
                 addonBefore="攝影師名稱"
