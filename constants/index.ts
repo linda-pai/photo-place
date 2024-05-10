@@ -13,6 +13,11 @@ const IMAGE_STATUS = {
   // UNRECOGNIZED: 3,
 };
 
+const CHARGE_TYPE = {
+  PAY_AS_YOU_GO: 1,
+  REVENEUE_SHARING: 2,
+};
+
 const DEFAULT_COVER_IMG =
   "https://photo-pacer-buckets.s3.ap-northeast-1.amazonaws.com/images-dev/common/8180dbf5c144f6ad3a8eadc4508ecc307fedbd361741c37104da3484fb93773c-photo-pacer-high-resolution-logo%20%282%29%20%282%29.png";
 
@@ -25,6 +30,7 @@ export {
   paymentConst,
   CHARGE_PERCENTAGE,
   IMAGE_STATUS,
+  CHARGE_TYPE,
   DEFAULT_COVER_IMG,
   DETECTING_IMG,
   SITE_NAME,

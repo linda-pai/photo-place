@@ -7,22 +7,27 @@ import {
   Tag,
   Statistic,
   Col,
-  Modal,
   Progress,
   message,
   Popover,
+  Spin,
 } from "antd";
 import {
-  InfoCircleOutlined,
   ReloadOutlined,
   EditOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
+import { sha256 } from "js-sha256";
 import tableConfig from "./tableConfig";
 import addWaterMarkAndDetect from "@/lib/upload/addWaterMarkAndDetect";
 import debounce from "@/utils/debounce";
 import isUploadable from "@/utils/isUploadable";
 import { RecordOfUploadProps } from "@/types/interfaces/UploadProps";
+import dynamic from "next/dynamic";
+
+const Earnings = dynamic(() => import("./Earnings"), {
+  loading: () => <Spin />,
+});
 
 const RecordOfUpload = ({
   uploadData,
@@ -38,21 +43,24 @@ const RecordOfUpload = ({
     uploadData as RecordOfUploadProps[]
   );
 
-  const [isModalOpen, setModalOpen] = useState<{
-    [key: string]: boolean;
-  }>({});
-
   useEffect(() => {
     setUploadDetail(uploadData);
   }, [uploadData]);
 
   const imagesInfoComponent = (record: RecordOfUploadProps) => {
+    const recordData = {
+      eventName: record.eventName,
+      name: record.name,
+      date: record.date,
+      createAt: record.createAt,
+      allImageLength: record.allImageLength,
+    };
     return (
       <Col className="flex sm:gap-6 gap-2">
         <Link
           href={`/photographer/uploadDetail?eventId=${
             record.eventId
-          }&status=ALL&record=${JSON.stringify(record)}`}
+          }&status=ALL&record=${JSON.stringify(recordData)}`}
           className="hover:bg-[#e7e5e4] p-2 rounded-md cursor-pointer"
         >
           <Statistic
@@ -105,138 +113,6 @@ const RecordOfUpload = ({
     );
   };
 
-  const earningsComponent = (record: RecordOfUploadProps) => {
-    const allImageLength = record?.allImageLength || 0;
-    const fee = (allImageLength * 0.2).toFixed(2);
-
-    const flattenSoldImages = record.soldImages?.reduce(
-      (acc: any, cur: any) => {
-        return acc.concat(cur.images);
-      },
-      []
-    );
-
-    const revenue = flattenSoldImages
-      ?.map((item: any) => item.price || 0)
-      .reduce((acc: any, cur: any) => acc + cur, 0);
-
-    const thirdPartyFee = flattenSoldImages
-      ?.map((item: any) => {
-        return Math.round((item.price || 0) * 0.03);
-      })
-      .reduce((acc: any, cur: any) => acc + cur, 0);
-
-    const tableColumns = [
-      {
-        title: () => {
-          return (
-            <div>
-              <p>照片收益</p>
-              <p className="font-normal text-[#a3a3a3] text-xs">
-                賣出 {flattenSoldImages?.length || 0} 張
-              </p>
-            </div>
-          );
-        },
-        dataIndex: "revenue",
-        key: "revenue",
-        width: 90,
-        render: () => (
-          <div>
-            <p>{revenue || 0} 元</p>
-          </div>
-        ),
-      },
-      {
-        title: () => {
-          return (
-            <div>
-              <p>上傳服務費</p>
-              <p className="font-normal text-[#a3a3a3] text-xs">
-                上傳 {allImageLength}張 x 每張 0.2 元
-              </p>
-            </div>
-          );
-        },
-        dataIndex: "fee",
-        key: "fee",
-        render: () => <div>{fee} 元</div>,
-      },
-      {
-        title: () => {
-          return (
-            <div>
-              <p>第三方金流手續費</p>
-              <p className="font-normal text-[#a3a3a3] text-xs">
-                賣出 {revenue || 0} 元 x 3%
-              </p>
-            </div>
-          );
-        },
-        dataIndex: "thirdPartyFee",
-        key: "thirdPartyFee",
-        render: () => <div>{thirdPartyFee || 0} 元</div>,
-      },
-    ];
-
-    return (
-      <>
-        <div
-          className="flex gap-2 justify-center hover:cursor-pointer"
-          onClick={() =>
-            setModalOpen((prev) => ({
-              ...prev,
-              [record.eventId]: true,
-            }))
-          }
-        >
-          <Statistic
-            title="收入"
-            value={Math.round(revenue - Number(fee) - thirdPartyFee) || 0}
-            valueStyle={{ color: "#ef4444" }}
-          />
-          <InfoCircleOutlined className="text-[#06b6d4]" />
-        </div>
-        <Modal
-          title={`收入明細 - ${record.eventName}`}
-          onCancel={() =>
-            setModalOpen((prev) => ({
-              ...prev,
-              [record.eventId]: false,
-            }))
-          }
-          cancelButtonProps={{ style: { display: "none" } }}
-          footer={null}
-          onOk={() =>
-            setModalOpen((prev) => ({
-              ...prev,
-              [record.eventId]: false,
-            }))
-          }
-          open={isModalOpen[record.eventId]}
-          className="w-[20%] mx-auto"
-        >
-          <Table
-            columns={tableColumns as any}
-            dataSource={[record]}
-            pagination={false}
-            className="my-6"
-            footer={() => (
-              <div className="text-end">
-                <h6>
-                  <Tag color="green">
-                    總收益:{" "}
-                    {Math.round(revenue - Number(fee) - thirdPartyFee) || 0} 元
-                  </Tag>
-                </h6>
-              </div>
-            )}
-          />
-        </Modal>
-      </>
-    );
-  };
-
   const popOverContent = (record: any) => (
     <div>
       <div className="mb-2">
@@ -271,7 +147,7 @@ const RecordOfUpload = ({
             {record.detectedImageLength}/{record.allImageLength}
           </p>
           {imagesInfoComponent(record)}
-          {earningsComponent(record)}
+          <Earnings record={record} />
         </div>
       ),
     },
@@ -335,7 +211,7 @@ const RecordOfUpload = ({
       responsive: ["sm"],
     },
     earning: {
-      render: (_: any, record: any) => earningsComponent(record),
+      render: (_: any, record: any) => <Earnings record={record} />,
       responsive: ["sm"],
     },
     ...(showHeader && {
@@ -383,7 +259,8 @@ const RecordOfUpload = ({
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer " + session.accessToken,
+          Authorization: "Bearer " + session.id,
+          secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
         },
       }
     )
