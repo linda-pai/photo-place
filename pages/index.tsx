@@ -58,6 +58,12 @@ export default function Home({
                   event.isShow && <EventCard event={event} key={key} />
               )}
             </VerticalTimeline>
+            <div className="hidden">
+              {events.map(
+                (event: Event, key: number) =>
+                  !event.isShow && <EventCard event={event} key={key} />
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -68,7 +74,9 @@ export default function Home({
 export async function getServerSideProps(context: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   // Fetch data from external API
-  const res = await fetch(`${domain}/api/events/eventList?sort=desc`);
+  const res = await fetch(
+    `${domain}/api/events/eventList?sort=desc&isRecent=true`
+  );
   const events = await res.json();
 
   const { token } = context.req.cookies;
