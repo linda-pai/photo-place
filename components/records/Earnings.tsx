@@ -28,11 +28,13 @@ const Earnings = ({ record }: { record: RecordOfUploadProps }) => {
     })
     .reduce((acc: any, cur: any) => acc + cur, 0);
 
-  const shareFee = flattenSoldImages
-    ?.map((item: any) => {
-      return Math.round((item.price || 0) * 0.4);
-    })
-    .reduce((acc: any, cur: any) => acc + cur, 0);
+  const shareFee = Math.round(
+    flattenSoldImages
+      ?.map((item: any) => {
+        return (item.price || 0) * 0.4;
+      })
+      .reduce((acc: any, cur: any) => acc + cur, 0)
+  );
 
   const payAsYouGoColumns = [
     {
