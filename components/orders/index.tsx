@@ -3,13 +3,14 @@ import { useSession } from "next-auth/react";
 import { Table, Spin, Space, Button, Tag, Modal, message } from "antd";
 import {
   DownloadOutlined,
-  InfoCircleOutlined,
+  CreditCardOutlined,
   CopyOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import dynamic from "next/dynamic";
 import dayjs from "dayjs";
+import { sha256 } from "js-sha256";
 import copyToClipboard from "@/utils/copyToClipboard";
 import paymentOptions from "@/utils/paymentOptions";
 import downloadImage from "@/utils/downloadImage";
@@ -48,6 +49,56 @@ const Orders = () => {
   const [currentOrder, setCurrentOrder] = useState({} as Order);
 
   const columnsRenderMap = {
+    rwd: {
+      responsive: ["xs"],
+      render: (_: any, record: any, key: number) => (
+        <div className="flex flex-col gap-1">
+          <p className="">訂單編號：{record.orderId}</p>
+
+          <p className="">
+            訂單時間：
+            {record.createAt
+              ? dayjs(record.createAt).format("YYYY-MM-DD HH:mm")
+              : "-"}
+          </p>
+
+          <p className="">訂單金額：TWD {record.totalAmount} 元</p>
+
+          <div className="flex gap-1 items-center">
+            <p>
+              付款方式：
+              {
+                paymentOptions.find(
+                  (option: any) => option.value === record.paymentMethod
+                )?.label
+              }
+            </p>
+            <div>
+              {record.paidAt ? (
+                <Tag color="#B0B97A">已付款</Tag>
+              ) : (
+                <Tag color="#f0cf02">未付款</Tag>
+              )}
+            </div>
+          </div>
+
+          <div className="flex gap-2 overflow-scroll mt-2">
+            {record.items.map((item: any, key: number) => (
+              <ImageItemDisplay
+                item={item}
+                onClick={() => handleClickImage(record, item.id)}
+                key={key}
+              />
+            ))}
+          </div>
+        </div>
+      ),
+      sorter: (a: Order, b: Order) => {
+        const dateA = new Date(a.createAt);
+        const dateB = new Date(b.createAt);
+        return dateA.getTime() - dateB.getTime();
+      },
+    },
     orderId: {
       ellipsis: true,
       render: (text: string, _: any, key: number) => (
@@ -61,6 +112,7 @@ const Orders = () => {
           {text}
         </a>
       ),
+      responsive: ["sm"],
     },
     createAt: {
       sorter: (a: Order, b: Order) => {
@@ -71,6 +123,7 @@ const Orders = () => {
       render: (text: string, _: any, key: number) => (
         <p key={key}>{text ? dayjs(text).format("YYYY-MM-DD HH:mm") : "-"}</p>
       ),
+      responsive: ["sm"],
     },
     items: {
       ellipsis: true,
@@ -80,13 +133,14 @@ const Orders = () => {
             {record.items.map((item: any, key: number) => (
               <ImageItemDisplay
                 item={item}
-                onClick={() => handleClickImage(record, key)}
+                onClick={() => handleClickImage(record, item.id)}
                 key={key}
               />
             ))}
           </div>
         </div>
       ),
+      responsive: ["sm"],
     },
     paymentMethod: {
       render: (text: string, orderInfo: any, key: number) => (
@@ -94,6 +148,7 @@ const Orders = () => {
           {paymentOptions.find((option: any) => option.value === text)?.label}
         </p>
       ),
+      responsive: ["sm"],
     },
     paidAt: {
       render: (text: string, orderInfo: any, key: number) => (
@@ -101,20 +156,13 @@ const Orders = () => {
           {text ? (
             <Tag color="#B0B97A">已付款</Tag>
           ) : (
-            <div
-              onClick={() => {
-                if (orderInfo.paidAt) return;
-                showModal();
-                setCurrentOrder(orderInfo);
-              }}
-              className="hover:cursor-pointer"
-            >
+            <div>
               <Tag color="#f0cf02">未付款</Tag>
-              <InfoCircleOutlined style={{ color: "#f0cf02" }} />
             </div>
           )}
         </div>
       ),
+      responsive: ["sm"],
     },
     totalAmount: {
       render: (totalAmount: number, _: any, key: number) => (
@@ -122,22 +170,41 @@ const Orders = () => {
           TWD {totalAmount} 元
         </p>
       ),
+      responsive: ["sm"],
     },
     action: {
-      render: (_: any, record: any, key: number) => (
+      render: (_: any, orderInfo: any, key: number) => (
         <>
-          <Space size="small" key={key}>
-            <Button
-              onClick={() => getImagesZip(record)}
-              className="flex items-center"
-              disabled={!record.paidAt}
-            >
-              <div className="sm:block hidden">
-                <DownloadOutlined />
-              </div>
-              下載全部
-            </Button>
-          </Space>
+          {orderInfo.paidAt ? (
+            <Space size="small" key={key}>
+              <Button
+                onClick={() => getImagesZip(orderInfo)}
+                className="flex items-center"
+                disabled={!orderInfo.paidAt}
+              >
+                <div className="sm:block hidden">
+                  <DownloadOutlined />
+                </div>
+                下載全部
+              </Button>
+            </Space>
+          ) : (
+            <Space size="small" key={key}>
+              <Button
+                onClick={() => {
+                  if (orderInfo.paidAt) return;
+                  showModal();
+                  setCurrentOrder(orderInfo);
+                }}
+                className="flex items-center bg-[color:var(--main-color-dark)] text-white"
+              >
+                <div className="sm:block hidden mr-1">
+                  <CreditCardOutlined />
+                </div>
+                前往付款
+              </Button>
+            </Space>
+          )}
         </>
       ),
     },
@@ -150,7 +217,14 @@ const Orders = () => {
   }, [session]);
 
   const getOrders = () => {
-    fetch(`${domain}/api/orders/getByUser/${session.id}`)
+    fetch(`${domain}/api/orders/getByUser/${session.id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + session.id,
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         setLoading(false);
@@ -185,12 +259,12 @@ const Orders = () => {
     }
   };
 
-  const handleOnDownload = async (record: any, key: number) => {
+  const handleOnDownload = async (record: any, id: string) => {
     setLoading(true);
     const imageList = await getImageDownloadInfo(record);
 
     try {
-      const url = imageList[key].url;
+      const url = imageList.find((item: any) => item.id === id).url;
       downloadImage(url);
       setLoading(false);
       message.success("下載成功");
@@ -200,9 +274,9 @@ const Orders = () => {
     }
   };
 
-  const handleClickImage = (record: Order, key: number) => {
+  const handleClickImage = (record: Order, id: string) => {
     const { paidAt } = record;
-    if (paidAt) return handleOnDownload(record, key);
+    if (paidAt) return handleOnDownload(record, id);
     modal.confirm({
       title: "照片下載失敗",
       icon: <ExclamationCircleOutlined />,
@@ -219,7 +293,14 @@ const Orders = () => {
     const eventId = items[0].eventId;
 
     return await fetch(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/images/getByEventIdAndImageIds/${orderId}/${eventId}/${imageIdList}`
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/orders/getByEventIdAndImageIds/${orderId}/${eventId}/${imageIdList}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + session.id,
+          secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
+        },
+      }
     )
       .then((res) => res.json())
       .then((result) => result)
@@ -229,7 +310,7 @@ const Orders = () => {
   };
 
   return !loading ? (
-    <div className="text-slate-600 sm:mx-0 mx-4">
+    <div className="text-slate-600 sm:mx-0 mx-2">
       <Table
         dataSource={orders}
         columns={columns}

@@ -1,17 +1,14 @@
 import React, { useState } from "react";
 import { Table, Space, Button, Tag, Modal, message, Spin } from "antd";
-import {
-  ExclamationCircleOutlined,
-  CopyOutlined,
-  EditOutlined,
-} from "@ant-design/icons";
+import { ExclamationCircleOutlined, CopyOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { Order, OrderListProps } from "@/types/interfaces/CartDataProps";
+import { Order } from "@/types/interfaces/CartDataProps";
 import copyToClipboard from "@/utils/copyToClipboard";
 import paymentOptions from "@/utils/paymentOptions";
 import updateOrderData from "@/lib/order/updateOrderData";
 import tableConfig from "./tableConfig";
 import dynamic from "next/dynamic";
+import { sha256 } from "js-sha256";
 
 const ImageDetail = dynamic(() => import("./ImageDetail"), {
   loading: () => <Spin />,
@@ -21,15 +18,96 @@ const Editable = dynamic(() => import("@/components/cms/Editable"), {
   loading: () => <Spin />,
 });
 
-const OrderList = ({ orders }: OrderListProps) => {
+const OrderList = ({ orders, session }: { orders: Order[]; session: any }) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
   const [orderData, setOrderData] = useState<Order[]>(orders);
   const [loading, setLoading] = useState(false);
-  const [editing, setEditing] = useState<{ [key: string]: boolean }>({});
   const [modal, contextHolder] = Modal.useModal();
 
+  const [showImageViewer, setShowImageViewer] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [currImgIndex, setCurrImgIndex] = useState(0); // [0, images.length - 1
+
+  const handleClickImg = (images: any, orderId: string) => {
+    setShowImageViewer((prev) => ({ ...prev, [orderId]: true }));
+    setCurrImgIndex(images.findIndex((item: any) => item.id === images[0].id));
+  };
+
   const columnsRenderMap = {
+    rwd: {
+      responsive: ["xs"],
+      render: (_: any, record: any, key: number) => (
+        <div className="flex flex-col gap-1">
+          <p className="">訂單編號：{record.orderId}</p>
+
+          <p className="">
+            訂單成立：
+            {record.createAt
+              ? dayjs(record.createAt).format("YYYY-MM-DD HH:mm")
+              : "-"}
+          </p>
+          <p className="">
+            完成付款：
+            {record.paidAt
+              ? dayjs(record.paidAt).format("YYYY-MM-DD HH:mm")
+              : "-"}
+          </p>
+          <p className="">訂購人：{record.orderBy}</p>
+          <div className="flex gap-1 items-center">
+            <p>
+              付款方式：
+              {
+                paymentOptions.find(
+                  (option: any) => option.value === record.paymentMethod
+                )?.label
+              }
+            </p>
+            <div>
+              {record.paidAt ? (
+                <Tag color="#B0B97A">已付款</Tag>
+              ) : (
+                <Tag color="#f0cf02">未付款</Tag>
+              )}
+            </div>
+          </div>
+          <p className="">訂單金額：{record.totalAmount} 元</p>
+          <p className="flex">
+            備註：
+            <Editable
+              item={record}
+              targetId={record.orderId}
+              text={record.remark}
+              updateFunction={handleInputConfirm}
+              handleRemarkChange={handleRemarkChange}
+            />
+          </p>
+
+          <div className="flex gap-2 overflow-scroll mt-2">
+            <ImageDetail
+              images={record.items}
+              isOpen={showImageViewer[record.orderId] || false}
+              onClose={() =>
+                setShowImageViewer((prev) => ({
+                  ...prev,
+                  [record.orderId]: false,
+                }))
+              }
+              currImg={currImgIndex}
+              handleClickImg={() =>
+                handleClickImg(record.items, record.orderId)
+              }
+            />
+          </div>
+        </div>
+      ),
+      sorter: (a: Order, b: Order) => {
+        const dateA = new Date(a.createAt);
+        const dateB = new Date(b.createAt);
+        return dateA.getTime() - dateB.getTime();
+      },
+    },
     orderId: {
       ellipsis: true,
       render: (text: string) => (
@@ -42,6 +120,7 @@ const OrderList = ({ orders }: OrderListProps) => {
           {text}
         </a>
       ),
+      responsive: ["sm"],
     },
     createAt: {
       sorter: (a: Order, b: Order) => {
@@ -52,6 +131,7 @@ const OrderList = ({ orders }: OrderListProps) => {
       render: (text: string) => (
         <p>{text ? dayjs(text).format("YYYY-MM-DD HH:mm") : "-"}</p>
       ),
+      responsive: ["sm"],
     },
     paidAt: {
       sorter: (a: Order, b: Order) => {
@@ -62,6 +142,7 @@ const OrderList = ({ orders }: OrderListProps) => {
       render: (text: string) => (
         <p>{text ? dayjs(text).format("YYYY-MM-DD HH:mm") : "-"}</p>
       ),
+      responsive: ["sm"],
     },
     orderBy: {
       ellipsis: true,
@@ -70,6 +151,7 @@ const OrderList = ({ orders }: OrderListProps) => {
           {text}
         </p>
       ),
+      responsive: ["sm"],
     },
     paymentMethod: {
       render: (text: string) => (
@@ -77,12 +159,25 @@ const OrderList = ({ orders }: OrderListProps) => {
           {paymentOptions.find((option: any) => option.value === text)?.label}
         </p>
       ),
+      responsive: ["sm"],
     },
     items: {
       ellipsis: true,
-      render: (_: string, { items }: Order, index: number) => (
-        <ImageDetail items={items} index={index} />
+      render: (_: string, { items, orderId }: Order) => (
+        <ImageDetail
+          images={items}
+          isOpen={showImageViewer[orderId] || false}
+          onClose={() =>
+            setShowImageViewer((prev) => ({
+              ...prev,
+              [orderId]: false,
+            }))
+          }
+          currImg={currImgIndex}
+          handleClickImg={() => handleClickImg(items, orderId)}
+        />
       ),
+      responsive: ["sm"],
     },
     paymentStatus: {
       render: (text: string) => (
@@ -94,10 +189,12 @@ const OrderList = ({ orders }: OrderListProps) => {
           )}
         </p>
       ),
+      responsive: ["sm"],
     },
     totalAmount: {
       sorter: (a: Order, b: Order) => a.totalAmount - b.totalAmount,
       sortDirections: ["descend"],
+      responsive: ["sm"],
     },
     remark: {
       render: (text: string, record: Order) => (
@@ -109,6 +206,25 @@ const OrderList = ({ orders }: OrderListProps) => {
           handleRemarkChange={handleRemarkChange}
         />
       ),
+      responsive: ["sm"],
+    },
+    actionXS: {
+      render: (_: string, record: Order) => (
+        <>
+          <Space size="middle">
+            <Button type="primary" onClick={() => confirm(record)}>
+              確認收款
+            </Button>
+          </Space>
+          <Space size="middle" className="my-2">
+            <Button danger onClick={() => deleteOrder(record)}>
+              刪除訂單
+            </Button>
+          </Space>
+        </>
+      ),
+      width: 50,
+      responsive: ["xs"],
     },
     action: {
       render: (_: string, record: Order) => (
@@ -125,16 +241,19 @@ const OrderList = ({ orders }: OrderListProps) => {
           </Space>
         </>
       ),
+      width: 110,
+      responsive: ["sm"],
     },
   };
 
   const handleInputConfirm = (orderId: string, text: string) => {
-    setEditing((prev) => ({ ...prev, [orderId]: false }));
-
-    updateOrderData({
-      remark: text,
-      orderId: orderId,
-    });
+    updateOrderData(
+      {
+        remark: text,
+        orderId: orderId,
+      },
+      session
+    );
   };
 
   const handleRemarkChange = (e: any, record: Order) => {
@@ -147,21 +266,15 @@ const OrderList = ({ orders }: OrderListProps) => {
     setOrderData(newOrderData);
   };
 
-  const toggle = (orderId: string) => {
-    setEditing((prevToggle) => ({
-      ...prevToggle,
-      [orderId]: !prevToggle[orderId],
-    }));
-  };
-
   const columns = tableConfig(columnsRenderMap);
 
   const handleOnDelete = (record: Order) => {
     setLoading(true);
-    fetch(`${domain}/api/orders/delete/${record.orderId}`, {
+    fetch(`${domain}/api/cms/deleteOrder/${record.orderId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
       },
     })
       .then((res) => res.json())
@@ -177,7 +290,11 @@ const OrderList = ({ orders }: OrderListProps) => {
   };
 
   const getOrderData = () => {
-    fetch(`${domain}/api/orders`)
+    fetch(`${domain}/api/cms/orderList`, {
+      headers: {
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         setOrderData(data);
@@ -188,7 +305,7 @@ const OrderList = ({ orders }: OrderListProps) => {
     setLoading(true);
     //remove _id
     record._id && delete record._id;
-    updateOrderData(record)
+    updateOrderData(record, session)
       .then((res) => res.json())
       .then(() => {
         getOrderData();

@@ -48,7 +48,7 @@ export default function Home({
           ref={navBarRef}
           className={`flex flex-col items-center justify-between my-24 container mx-auto ${inter.className}`}
         >
-          <h1 className=" mt-5 mb-16 border-b sm:text-3xl text-2xl text-[color:var(--main-color-dark)]">
+          <h1 className=" mt-5 mb-16 border-b sm:text-3xl text-2xl text-white">
             運動賽事相簿
           </h1>
           <div className="max-w-[1280px] flex flex-wrap justify-center w-[75%]">
@@ -58,6 +58,12 @@ export default function Home({
                   event.isShow && <EventCard event={event} key={key} />
               )}
             </VerticalTimeline>
+            <div className="hidden">
+              {events.map(
+                (event: Event, key: number) =>
+                  !event.isShow && <EventCard event={event} key={key} />
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -68,16 +74,14 @@ export default function Home({
 export async function getServerSideProps(context: any) {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   // Fetch data from external API
-  const res = await fetch(`${domain}/api/events?sort=desc`);
+  const res = await fetch(
+    `${domain}/api/events/eventList?sort=desc&isRecent=true`
+  );
   const events = await res.json();
 
   const { token } = context.req.cookies;
   if (!token) return { props: { events } };
 
-  const resUser = await fetch(`${domain}/api/user/getUserInfo/${token}`)
-    .then((res) => res.json())
-    .catch((err) => console.log(err));
-
   // Pass data to the page via props
-  return { props: { events, userInfo: resUser || {} } };
+  return { props: { events } };
 }

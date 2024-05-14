@@ -4,6 +4,11 @@ import { Order } from "@/types/interfaces/CartDataProps";
 const tableConfig = (columnsRenderMap: any) => {
   const columns: ColumnsType<Order> = [
     {
+      title: "詳細資訊",
+      ...columnsRenderMap.rwd,
+      width: 100,
+    },
+    {
       title: "訂單編號",
       dataIndex: "orderId",
       key: "orderId",
@@ -42,7 +47,7 @@ const tableConfig = (columnsRenderMap: any) => {
       title: "訂單明細",
       dataIndex: "items",
       key: "items",
-      width: 260,
+      width: 220,
       ...columnsRenderMap.items,
     },
     {
@@ -70,8 +75,13 @@ const tableConfig = (columnsRenderMap: any) => {
       title: "Action",
       key: "action",
       fixed: "right",
-      width: 100,
       ...columnsRenderMap.action,
+    },
+    {
+      title: "Action",
+      key: "actionXS",
+      fixed: "right",
+      ...columnsRenderMap.actionXS,
     },
   ];
   return columns;

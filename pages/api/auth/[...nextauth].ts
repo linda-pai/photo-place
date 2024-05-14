@@ -27,6 +27,8 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
     callbacks: {
       async session({ session, token }: any) {
         session.id = token.sub || token.id;
+        session.token = token.jti;
+        session.accessToken = token.accessToken;
         const user = {
           email: session.user.email,
           name: session.user.name,
@@ -43,6 +45,15 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
           .catch((err) => message.error("登入失敗，請重新登入"));
 
         return session;
+      },
+      async jwt({ token, user, account }) {
+        if (user) {
+          token.id = user.id;
+        }
+        if (account) {
+          token.accessToken = account.access_token;
+        }
+        return token;
       },
     },
   });

@@ -13,4 +13,6 @@ export interface ImageItemProps {
   url: string;
   path?: any;
   isFeatured?: boolean;
+  isRemoved: boolean;
+  lastModified?: string;
 }

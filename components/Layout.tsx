@@ -26,11 +26,7 @@ export default function Layout({ children, navBarRef }: any) {
           content="photopacer, photo pacer, 攝影小隊, 馬拉松照片, 找照片, 買照片, 賣照片, 活動照片, 運動賽事照片, 照片平台, 賽事照片"
         />
         <meta property="og:locale" content="zh_TW" />
-        <link
-          rel="icon"
-          href="https://www.photopacer.com/favicon.ico"
-          sizes="96x96"
-        />
+        <link rel="icon" href="/favicon.ico" sizes="96x96" />
         <meta charSet="utf-8" />
         <meta httpEquiv="Content-Type" content="text/html; charset=UTF-8" />
         <meta

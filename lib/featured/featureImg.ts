@@ -1,23 +1,26 @@
 import { message } from "antd";
+import { sha256 } from "js-sha256";
 
 const featureImg = ({
   eventId,
   id,
-  author,
   isFeatured,
+  session,
 }: {
   eventId: string;
   id: string;
-  author: string;
   isFeatured: boolean;
+  session: any;
 }) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const response = fetch(
-    `${domain}/api/images/setFeatured/${eventId}/${id}/${author}`,
+    `${domain}/api/photographer/setStatus/${eventId}/${id}/${session.id}`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: "Bearer " + session.id,
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
       },
       body: JSON.stringify({ isFeatured: !isFeatured }),
     }
@@ -26,10 +29,10 @@ const featureImg = ({
     .then((data) => {
       if (data.status === "success") {
         message.success(isFeatured ? "取消精選成功" : "設定精選成功");
-        return data;
       } else {
-        message.error("設定精選失敗");
+        message.error(data.message || "設定精選失敗");
       }
+      return data;
     });
 
   return response;

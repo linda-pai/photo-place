@@ -24,40 +24,42 @@ const ImageLightBox = ({
   }));
 
   return (
-    <Lightbox
-      isOpen={isOpen}
-      images={formattedImages}
-      currentIndex={curIndex}
-      onClose={onClose}
-      onPrev={onPrev}
-      onNext={onNext}
-      renderPrevButton={() => (
-        <div
-          onClick={onPrev}
-          className={`z-50 text-white text-4xl sm:p-20 p-1 hover:text-[color:var(--main-color)] ${
-            curIndex === 0
-              ? "opacity-20 hover:cursor-not-allowed"
-              : "hover:cursor-pointer"
-          }`}
-        >
-          <ArrowLeftOutlined />
-        </div>
-      )}
-      renderNextButton={() => (
-        <div
-          onClick={onNext}
-          className={`z-50 text-white text-4xl sm:p-20 p-1 hover:text-[color:var(--main-color)]  ${
-            curIndex === images.length - 1
-              ? "opacity-20 hover:cursor-not-allowed"
-              : "hover:cursor-pointer"
-          }`}
-        >
-          <ArrowRightOutlined />
-        </div>
-      )}
-      renderFooter={() => customFooter}
-      className="bg-opacity-80 bg-black overflow-hidden"
-    />
+    <div onContextMenu={(e) => e.preventDefault()}>
+      <Lightbox
+        isOpen={isOpen}
+        images={formattedImages}
+        currentIndex={curIndex}
+        onClose={onClose}
+        onPrev={onPrev}
+        onNext={onNext}
+        renderPrevButton={() => (
+          <div
+            onClick={onPrev}
+            className={`z-50 text-white text-4xl sm:p-20 p-1 hover:text-[color:var(--main-color)] ${
+              curIndex === 0
+                ? "opacity-20 hover:cursor-not-allowed"
+                : "hover:cursor-pointer"
+            }`}
+          >
+            <ArrowLeftOutlined />
+          </div>
+        )}
+        renderNextButton={() => (
+          <div
+            onClick={onNext}
+            className={`z-50 text-white text-4xl sm:p-20 p-1 hover:text-[color:var(--main-color)]  ${
+              curIndex === images.length - 1
+                ? "opacity-20 hover:cursor-not-allowed"
+                : "hover:cursor-pointer"
+            }`}
+          >
+            <ArrowRightOutlined />
+          </div>
+        )}
+        renderFooter={() => customFooter}
+        className="bg-opacity-80 bg-black overflow-hidden"
+      />
+    </div>
   );
 };
 

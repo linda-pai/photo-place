@@ -3,8 +3,20 @@ import dayjs from "dayjs";
 
 const customImgViewerUI = ({ image, isExistInCart, handleClickCart }: any) => {
   return (
-    <>
-      <div className="flex items-center gap-4 right-[1vh] bottom-[1vh] absolute w-fit">
+    <div className="flex justify-between mx-auto sm:gap-40 gap-20 mb-2">
+      <div>
+        {image?.authorName && (
+          <p className="text-sm text-[#8f8f8f] sm:m-1 m-0">
+            photo by {image?.authorName}
+          </p>
+        )}
+        {image.lastModified && (
+          <p className="sm:text-sm text-[12px] text-[#8f8f8f] sm:m-1 m-0">
+            {dayjs(image.lastModified).format("YYYY/MM/DD HH:mm")}
+          </p>
+        )}
+      </div>
+      <div className="flex items-center gap-4">
         <div>
           <p className="line-through text-xs text-[#8f8f8f]">TWD: 169</p>
           <p className="text-red-500 ">TWD: {image.price} </p>
@@ -31,19 +43,7 @@ const customImgViewerUI = ({ image, isExistInCart, handleClickCart }: any) => {
           </p>
         </button>
       </div>
-      <div>
-        {image?.authorName && (
-          <p className="text-xs text-[#8f8f8f] m-2">
-            photo by {image?.photographer}
-          </p>
-        )}
-        {image.lastModified && (
-          <p className="sm:text-xs text-[12px] text-[#8f8f8f] m-2">
-            {dayjs(image.lastModified).format("YYYY/MM/DD HH:mm")}
-          </p>
-        )}
-      </div>
-    </>
+    </div>
   );
 };
 export default customImgViewerUI;

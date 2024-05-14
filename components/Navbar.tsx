@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useContext } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { message, Dropdown } from "antd";
@@ -9,7 +9,7 @@ import {
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { useSession, signOut } from "next-auth/react";
-import { ROLE_PHOTOGRAPHER } from "@/lib/roles";
+import { ROLE_ADMIN, ROLE_PHOTOGRAPHER } from "@/lib/roles";
 
 const Nav = ({ navBarRef }: any) => {
   const router = useRouter();
@@ -41,14 +41,14 @@ const Nav = ({ navBarRef }: any) => {
   };
 
   const login = async () => {
-    router.push("/auth/signIn");
+    router.push(`${process.env.NEXT_PUBLIC_APP_URL}/auth/signIn`);
   };
 
   const photographerItems: any = session
     ? ROLE_PHOTOGRAPHER.includes(session.id) && [
         {
           key: "4",
-          label: "攝影師上傳紀錄",
+          label: "攝影師成就",
           onClick: () => {
             router.push("/photographer/records");
           },
@@ -81,29 +81,45 @@ const Nav = ({ navBarRef }: any) => {
   //photographerItems ＋ basicItems
   const UserItems: MenuProps["items"] = basicItems.concat(photographerItems);
 
-  const adminItems: MenuProps["items"] = [
-    {
-      key: "2",
-      label: "訂單管理",
-      onClick: () => {
-        router.push("/cms/orderList");
-      },
-    },
-    {
-      key: "3",
-      label: "通知管理",
-      onClick: () => {
-        router.push("/cms/notify");
-      },
-    },
-    {
-      key: "4",
-      label: "賽事管理",
-      onClick: () => {
-        router.push("/cms/eventManagement");
-      },
-    },
-  ];
+  const adminItems: any = session
+    ? ROLE_ADMIN.includes(session.id) && [
+        {
+          key: "2",
+          label: "訂單管理",
+          onClick: () => {
+            router.push("/cms/orderList");
+          },
+        },
+        {
+          key: "3",
+          label: "通知管理",
+          onClick: () => {
+            router.push("/cms/notify");
+          },
+        },
+        {
+          key: "4",
+          label: "賽事管理",
+          onClick: () => {
+            router.push("/cms/eventManagement");
+          },
+        },
+        {
+          key: "5",
+          label: "會員管理",
+          onClick: () => {
+            router.push("/cms/userManagement");
+          },
+        },
+        {
+          key: "6",
+          label: "攝影師上傳管理",
+          onClick: () => {
+            router.push("/cms/uploadManagement");
+          },
+        },
+      ]
+    : [];
 
   return (
     <nav
@@ -150,7 +166,7 @@ const Nav = ({ navBarRef }: any) => {
                   </div>
                 </Dropdown>
               </div>
-              {session.id == process.env.NEXT_PUBLIC_ADMIN_ID && (
+              {ROLE_ADMIN.includes(session.id) && (
                 <div className="cursor-pointer">
                   <Dropdown menu={{ items: adminItems }} placement="bottom">
                     <div className=" text-3xl hover:text-[#ca7c6f]">

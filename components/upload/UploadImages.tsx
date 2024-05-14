@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
-import { setCookie, getCookie } from "cookies-next";
+import { setCookie, getCookie, deleteCookie } from "cookies-next";
 import {
   Input,
   InputNumber,
@@ -20,12 +20,18 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 import parallelUploadWithLimit from "@/utils/parallelUploadWithLimit";
-import addWatermark from "@/lib/upload/addWatermark";
+import addWaterMarkAndDetect from "@/lib/upload/addWaterMarkAndDetect";
 import { writeUploadInfo } from "@/lib/upload/writeUploadInfo";
 import UploadQueue from "@/lib/upload/uploadQueue";
 import completeUpload from "@/lib/upload/completeUpload";
 import getStartMultipartUploadURL from "@/lib/upload/getStartMultipartUploadURL";
 import chunkFileAndPutS3 from "@/lib/upload/chunkFileAndPutS3";
+import updateFirst50IsFeatured from "@/lib/upload/updateFirst50IsFeatured";
+import isUploadable from "@/utils/isUploadable";
+import {
+  getAuthorDisplayName,
+  setAuthorDisplayName,
+} from "@/lib/photographer/displayName";
 
 const Uploader = dynamic(() => import("@/components/upload/Uploader"), {
   loading: () => <Spin />,
@@ -42,50 +48,60 @@ const UploadPrompt = dynamic(() => import("@/components/UploadPrompt"), {
   loading: () => <Spin />,
 });
 
-const UploadImages = ({ eventId }: { eventId: string }) => {
+const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
   const { data: session }: any = useSession();
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
   const [fileOptionsList, setFileOptionsList] = useState([] as any);
   const [completeCount, setCompleteCount] = useState(0);
-  const [detectCount, setDetectCount] = useState(0);
 
   const [modal, contextHolder] = Modal.useModal();
   const [authorName, setAuthorName] = useState(session?.user?.name || "");
-  const [price, setPrice] = useState(159);
+  const [price, setPrice] = useState(169);
   const [eventName, setEventName] = useState("");
 
   const msgKey = Math.random().toString();
 
   useEffect(() => {
-    setAuthorName(session?.user?.name || "");
-  }, []);
+    //get user Name
+    if (!session?.id) return;
+    getAuthorDisplayName(session.id).then((data) =>
+      setAuthorName(data?.displayName || session?.user?.name)
+    );
+  }, [session]);
 
   useEffect(() => {
     if (!eventId) return handleEventIdError();
     fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/events/getBy/${eventId}`)
       .then((res) => res.json())
       .then((data) => {
-        const { eventName } = data;
+        const { eventName, date } = data || {};
         if (!eventName) return handleEventIdError();
+        if (!isUploadable(date)) return handleNotUploadable();
         setEventName(eventName);
       });
   }, [eventId]);
 
   useEffect(() => {
-    const uploadData = JSON.parse(getCookie("uploadInfo") || "[]");
+    const uploadData = JSON.parse(getCookie(`uploadInfo-${eventId}`) || "[]");
     setFileOptionsList(uploadData);
     setCompleteCount(
       uploadData.filter((file: any) => file.uploaded).length || 0
     );
-    setDetectCount(uploadData.filter((file: any) => file.detected).length || 0);
   }, []);
 
   const handleEventIdError = () => {
     message.error("請選擇活動");
     setTimeout(() => {
-      router.push("/photographer/chooseEvent");
+      router.push("/uploadService/chooseEvent");
+    }, 1000);
+  };
+
+  const handleNotUploadable = () => {
+    message.error("此活動已關閉上傳功能");
+    setTimeout(() => {
+      router.push("/uploadService/chooseEvent");
     }, 1000);
   };
 
@@ -121,7 +137,7 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
     setFileOptionsList(newFileOptionsList);
 
     //set in cookie
-    setCookie("uploadInfo", JSON.stringify(newFileOptionsList));
+    setCookie(`uploadInfo-${eventId}`, JSON.stringify(newFileOptionsList));
   };
 
   const handleOnFinishAll = async () => {
@@ -131,85 +147,60 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
     message.success("全部上傳完成🎉🎉");
     message.destroy(msgKey);
 
+    addWaterMarkAndDetect({
+      eventId,
+      author: session.id,
+      isAll: false,
+    });
+
+    updateFirst50IsFeatured(eventId, session.id);
+
     modal.confirm({
       title: `已上傳完成${fileOptionsList.length}張照片`,
       icon: <ExclamationCircleOutlined />,
-      okText: "去檢查號碼布",
-      cancelText: "前往上傳紀錄頁",
+      content:
+        "提醒您：相簿僅會顯示精選照片，預設為您上傳照片排序前50張， \n 如要變更，請至[攝影師成就 -> 編輯]挑選精選照片",
+      okText: "編輯照片",
       onOk: () => {
-        router.push(`/photographer/checkBibs?eventId=${eventId}`);
+        deleteCookie(`uploadInfo-${eventId}`);
+        router.push(`/photographer/checkBibs?eventId=${eventId}&date=${date}`);
       },
-      onCancel: () => {
-        router.push("/photographer/records");
-      },
+      cancelText: "繼續上傳",
     });
   };
 
-  //add watermark and upload after detect text
-  const handleAddWatermarkandUpload = async (key: string, file: File) => {
-    const reqBody = {
-      key,
-      eventId,
-      eventName,
-      fileName: file.name,
-      lastModified: file.lastModified,
-      author: session.id,
-      authorName,
-      price,
-    };
-    const addWaterMarkFunction = async () =>
-      await addWatermark(reqBody).then((res) => {
-        if (res.error) {
-          message.error(res.error);
-          return;
-        }
-
-        setFileOptionsList((prev: any) => {
-          const newFileOptionsList = prev.map((item: any) =>
-            item.path && item.path === file.name
-              ? { ...item, detected: true }
-              : item
-          );
-          setCookie("uploadInfo", JSON.stringify(newFileOptionsList));
-          return newFileOptionsList;
-        });
-
-        setDetectCount((prev) => {
-          if (prev + 1 === fileOptionsList.length) handleOnFinishAll();
-          return prev + 1;
-        });
-      });
-
-    const uploadQueue = new UploadQueue("addWaterMark", addWaterMarkFunction);
-    uploadQueue.enqueue([file]);
-  };
-
   const handleCompleteUpload = async (
-    key: string,
+    uploadData: any,
     file: File,
     uploadPartsArray: any[],
     uploadId: string
   ) => {
     const completeFunction = async () =>
-      await completeUpload(key, uploadPartsArray, uploadId).then((res) => {
-        if (res.error) {
-          message.error(res.error);
-          return;
+      await completeUpload(uploadData, uploadPartsArray, uploadId).then(
+        (res) => {
+          if (res.error) {
+            message.error(res.error);
+            return;
+          }
+          setFileOptionsList((prev: any) => {
+            const newFileOptionsList = prev.map((item: any) =>
+              item.name && item.name === file.name
+                ? { ...item, uploaded: true }
+                : item
+            );
+            setCookie(
+              `uploadInfo-${eventId}`,
+              JSON.stringify(newFileOptionsList)
+            );
+            return newFileOptionsList;
+          });
+
+          setCompleteCount((prev) => {
+            if (prev + 1 === fileOptionsList.length) handleOnFinishAll();
+            return prev + 1;
+          });
         }
-        setFileOptionsList((prev: any) => {
-          const newFileOptionsList = prev.map((item: any) =>
-            item.name && item.name === file.name
-              ? { ...item, uploaded: true }
-              : item
-          );
-          setCookie("uploadInfo", JSON.stringify(newFileOptionsList));
-          return newFileOptionsList;
-        });
-
-        setCompleteCount((prev) => prev + 1);
-
-        handleAddWatermarkandUpload(key, file);
-      });
+      );
 
     const uploadQueue = new UploadQueue("complete", completeFunction);
     uploadQueue.enqueue([file]);
@@ -223,7 +214,23 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
     //2. chunk image withe each 5MB and upload
     const uploadPartsArray = await chunkFileAndPutS3(file, uploadId, key);
     //complete-upload - s3 multipart upload requires complete upload
-    return await handleCompleteUpload(key, file, uploadPartsArray, uploadId);
+
+    const uploadData = {
+      key,
+      eventId,
+      eventName,
+      author: session.id,
+      authorName,
+      price,
+      fileName: file.name,
+      lastModified: file.lastModified,
+    };
+    return await handleCompleteUpload(
+      uploadData,
+      file,
+      uploadPartsArray,
+      uploadId
+    );
   };
 
   const chunkFileAndUpload = async (file: File) => {
@@ -234,7 +241,13 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
       const { key, uploadId } = await getStartMultipartUploadURL(
         path,
         fileName
-      );
+      ).then((res) => {
+        if (res.error) {
+          message.error(res.error);
+          return;
+        }
+        return res;
+      });
       await handleChunkFileAndUpload(file, uploadId, key);
     };
 
@@ -245,6 +258,7 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
   const handleUpload = async () => {
     if (!session.id) return message.error("請先登入");
     if (!eventId) return message.error("請選擇活動");
+    if (!authorName) return message.error("請輸入攝影師名稱");
 
     const tobeUploadedList = fileOptionsList.filter((file: any) => file.type);
 
@@ -272,9 +286,9 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
         };
         message.open({ ...loadingMsgConfig, type: "loading" });
         //寫入上傳資訊
-        //50張一組，完成後再上傳下一組
+        //100張一組，完成後再上傳下一組
         console.time("upload");
-        const groupLimit = 50;
+        const groupLimit = 500;
         parallelUploadWithLimit(
           tobeUploadedList,
           groupLimit,
@@ -289,14 +303,7 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
     message.destroy();
   };
 
-  const currentStep =
-    completeCount < fileOptionsList.length
-      ? 0
-      : detectCount > 0
-      ? detectCount === fileOptionsList.length
-        ? 2
-        : 1
-      : (0 as 0 | 1 | 2 | undefined);
+  const currentStep = completeCount === fileOptionsList.length ? 1 : 0;
 
   const steps = [
     {
@@ -310,28 +317,17 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
       // }
     },
     {
-      title: "偵測中",
-      description: "號碼布偵測中",
-      subTitle: `${detectCount}/${fileOptionsList.length}張照片`,
-    },
-    {
       title: "完成",
       description: "上傳完成",
       icon: (
-        <SmileOutlined style={currentStep === 2 ? { color: "#ffd700" } : {}} />
+        <SmileOutlined style={currentStep === 1 ? { color: "#ffd700" } : {}} />
       ),
-      status: currentStep === 2 ? "finish" : "wait",
+      status: currentStep === 1 ? "finish" : "wait",
     },
   ] as any;
 
   const currentPercent = Math.ceil(
-    ((currentStep === 0
-      ? completeCount
-      : currentStep === 1
-      ? detectCount
-      : fileOptionsList.length) /
-      fileOptionsList.length) *
-      100
+    (completeCount / fileOptionsList.length) * 100
   );
 
   const columns = [
@@ -379,7 +375,10 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
                 (file: any) => file.path !== record.path
               );
               setFileOptionsList(newFileOptionsList);
-              setCookie("uploadInfo", JSON.stringify(newFileOptionsList));
+              setCookie(
+                `uploadInfo-${eventId}`,
+                JSON.stringify(newFileOptionsList)
+              );
             }}
             className="flex items-center"
             disabled={record.uploaded}
@@ -395,86 +394,101 @@ const UploadImages = ({ eventId }: { eventId: string }) => {
   return (
     <div className="mt-24 container mx-auto px-4">
       <UploadBreadcrumb />
-      <UploadPrompt isUploading={loading} onConfirmLeave={onConfirmLeave} />
-      <div className="text-center">
-        <div className="my-8">
-          <h2 className="max-w-[400px] mx-auto text-lg text-[color:var(--main-color-dark)]">
-            {eventName}
-          </h2>
-        </div>
-        <div>
-          <Input
-            placeholder="攝影師名稱"
-            className="w-1/3"
-            onChange={handleChangeAuthorName}
-            value={authorName}
-            defaultValue={authorName || ""}
-            addonBefore="攝影師名稱"
-          />
-        </div>
-        <div>
-          <InputNumber
-            placeholder="照片價格"
-            className="w-1/3 my-2"
-            onChange={handleChangePrice}
-            value={price}
-            defaultValue={price || ""}
-            addonBefore="照片價格"
-          />
-        </div>
-      </div>
-      <div className="text-center mx-auto my-10  max-w-[800px] min-h-[30vh]">
-        <Uploader
-          onChange={handleOnUploaderChange}
-          filesList={fileOptionsList}
-          loading={loading}
-        />
-        <Button
-          disabled={
-            fileOptionsList.filter((file: any) => file.type).length === 0 ||
-            loading
-          }
-          onClick={handleUpload}
-        >
-          確定上傳
-        </Button>
-      </div>
-
-      {fileOptionsList.length > 0 && (
+      {
         <>
-          <div className="text-center text-[color:var(--main-color-dark)]">
-            <Steps
-              current={currentStep}
-              className="w-4/5 mx-auto"
-              percent={currentPercent}
-              items={steps}
-            />
-
-            <Table
-              dataSource={fileOptionsList
-                .map((file: any, key: number) => {
-                  return {
-                    path: file.path,
-                    key,
-                    uploaded: file.uploaded,
-                    type: file.type,
-                  };
-                })
-                // .sort((a: any, b: any) => a.uploaded?.localeCompare(b.uploaded))}
-                .sort((a: any, b: any) =>
-                  a.uploaded ? 1 : b.uploaded ? -1 : 0
-                )}
-              columns={columns}
-              pagination={{
-                defaultPageSize: 50,
-                pageSizeOptions: ["50", "100", "200", "500", "1000"],
-                position: ["bottomCenter"],
-              }}
-              className="w-2/3 mx-auto my-10 max-h-[50vh] overflow-y-auto"
-            />
+          <UploadPrompt isUploading={loading} onConfirmLeave={onConfirmLeave} />
+          <div className="text-center">
+            <div className="my-8">
+              <h2 className="max-w-[400px] mx-auto text-lg text-[color:var(--main-color-dark)]">
+                {eventName}
+              </h2>
+            </div>
+            <div>
+              <Input
+                placeholder="攝影師名稱"
+                className="w-1/3"
+                onChange={handleChangeAuthorName}
+                onKeyDown={(e: any) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    e.target.blur();
+                    setAuthorDisplayName(session.id, e.target.value);
+                  }
+                }}
+                onBlur={(e) => setAuthorDisplayName(session.id, e.target.value)}
+                value={authorName}
+                defaultValue={authorName || ""}
+                addonBefore="攝影師名稱"
+                disabled={loading}
+              />
+            </div>
+            <div>
+              <InputNumber
+                placeholder="照片價格"
+                className="w-1/3 my-2"
+                onChange={handleChangePrice}
+                value={price}
+                defaultValue={price || ""}
+                addonBefore="照片價格"
+                disabled={loading}
+              />
+            </div>
           </div>
+          <div className="text-center mx-auto my-10  max-w-[800px] min-h-[30vh]">
+            <Uploader
+              onChange={handleOnUploaderChange}
+              filesList={fileOptionsList}
+              loading={loading}
+            />
+            <Button
+              disabled={
+                fileOptionsList.filter((file: any) => file.type).length === 0 ||
+                loading
+              }
+              onClick={handleUpload}
+              className="bg-[color:var(--main-color-dark)] text-white w-1/4 text-lg h-auto"
+            >
+              確定上傳
+            </Button>
+          </div>
+
+          {fileOptionsList.length > 0 && (
+            <>
+              <div className="text-center text-[color:var(--main-color-dark)]">
+                <Steps
+                  current={currentStep}
+                  className="w-4/5 mx-auto"
+                  percent={currentPercent}
+                  items={steps}
+                />
+
+                <Table
+                  dataSource={fileOptionsList
+                    .map((file: any, key: number) => {
+                      return {
+                        path: file.path,
+                        key,
+                        uploaded: file.uploaded,
+                        type: file.type,
+                      };
+                    })
+                    // .sort((a: any, b: any) => a.uploaded?.localeCompare(b.uploaded))}
+                    .sort((a: any, b: any) =>
+                      a.uploaded ? 1 : b.uploaded ? -1 : 0
+                    )}
+                  columns={columns}
+                  pagination={{
+                    defaultPageSize: 50,
+                    pageSizeOptions: ["50", "100", "200", "500", "1000"],
+                    position: ["bottomCenter"],
+                  }}
+                  className="w-2/3 mx-auto my-10 max-h-[50vh] overflow-y-auto"
+                />
+              </div>
+            </>
+          )}
         </>
-      )}
+      }
 
       {contextHolder}
     </div>

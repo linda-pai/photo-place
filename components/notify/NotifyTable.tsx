@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Table, Modal, Space, Button, message } from "antd";
 import { ExclamationCircleOutlined, CopyOutlined } from "@ant-design/icons";
+import { sha256 } from "js-sha256";
 import { NotifyProps } from "@/types/interfaces/NotifyProps";
 import copyToClipboard from "@/utils/copyToClipboard";
 import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
 
-const NotifyTable = ({ tableData, eventId }: any) => {
+const NotifyTable = ({ tableData, eventId, session }: any) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
   const [data, setData] = useState<NotifyProps[]>(tableData);
+  const yetSend = data.filter((item) => item.status === "pending");
 
   useEffect(() => {
     setData(tableData);
@@ -96,7 +98,12 @@ const NotifyTable = ({ tableData, eventId }: any) => {
   };
 
   const getNotifyData = (eventId: string) => {
-    fetch(`${domain}/api/imagesUploadComplete/notifyRecord/${eventId}`)
+    fetch(`${domain}/api/cms/notifyRecord/${eventId}`, {
+      method: "GET",
+      headers: {
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         setData(data);
@@ -106,11 +113,12 @@ const NotifyTable = ({ tableData, eventId }: any) => {
   const sendEmail = async (record: NotifyProps) => {
     setLoading(true);
 
-    await fetch(`${domain}/api/imagesUploadComplete/sendEmail`, {
+    await fetch(`${domain}/api/cms/sendEmail`, {
       method: "POST",
       body: JSON.stringify(record),
       headers: {
         "Content-Type": "application/json",
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
       },
     })
       .then((res) => res.json())
@@ -126,14 +134,18 @@ const NotifyTable = ({ tableData, eventId }: any) => {
       });
   };
 
-  const sendAllEmail = async (eventId: string) => {
+  const sendAllEmail = async (eventId: string, isAll: boolean) => {
     setLoading(true);
 
-    await fetch(`${domain}/api/imagesUploadComplete/sendAllEmail/${eventId}`, {
+    await fetch(`${domain}/api/cms/sendAllEmail/${eventId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
       },
+      body: JSON.stringify({
+        isAll,
+      }),
     })
       .then((res) => res.json())
       .then(() => {
@@ -155,14 +167,27 @@ const NotifyTable = ({ tableData, eventId }: any) => {
       content: `確定要寄送 ${eventId} 所有通知嗎？`,
       okText: "確認",
       cancelText: "取消",
-      onOk: () => sendAllEmail(eventId),
+      onOk: () => sendAllEmail(eventId, true),
+    });
+  };
+
+  const handleClickSendNotYet = () => {
+    modal.confirm({
+      title: "一鍵寄送尚未寄出通知",
+      icon: <ExclamationCircleOutlined />,
+      content: `確定要寄送 ${eventId}尚未寄出通知共${yetSend.length}則嗎？`,
+      okText: "確認",
+      cancelText: "取消",
+      onOk: () => {
+        sendAllEmail(eventId, false);
+      },
     });
   };
 
   return (
     <div className="container mx-auto my-24 text-slate-600" id="notify-table">
       <h1 className="text-center text-2xl mb-10">上傳完成通知列表</h1>
-      <div className="w-full flex justify-end my-4">
+      <div className="w-full flex justify-end my-4 gap-1">
         <Button
           className=""
           danger
@@ -171,6 +196,16 @@ const NotifyTable = ({ tableData, eventId }: any) => {
         >
           一鍵寄送通知
         </Button>
+        {yetSend.length > 0 && (
+          <Button
+            className=""
+            danger
+            onClick={handleClickSendNotYet}
+            disabled={data.length === 0}
+          >
+            一鍵寄送尚未寄出通知
+          </Button>
+        )}
       </div>
       <div>
         <Table dataSource={data} columns={columns} loading={loading} />

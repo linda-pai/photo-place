@@ -6,7 +6,7 @@ const writeUploadInfo = async (reqBody: {
 }) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
-  const response = await fetch(`${domain}/api/images/writeUploadInfo`, {
+  const response = await fetch(`${domain}/api/upload/writeUploadInfo`, {
     method: "POST",
     body: JSON.stringify(reqBody),
     headers: {
@@ -17,21 +17,4 @@ const writeUploadInfo = async (reqBody: {
   return await response;
 };
 
-const uploadUploadInfo = async (reqBody: {
-  eventId: string;
-  author: string;
-}) => {
-  const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-
-  const response = await fetch(`${domain}/api/images/updateUploadInfo`, {
-    method: "POST",
-    body: JSON.stringify(reqBody),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  }).then((res) => res.json());
-
-  return await response;
-};
-
-export { writeUploadInfo, uploadUploadInfo };
+export { writeUploadInfo };

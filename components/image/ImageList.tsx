@@ -78,7 +78,7 @@ const ImageList = ({
         event_category: "event",
         event_label: eventName,
         image_id: id,
-        user_id: session?.id || "",
+        user_id_number: String(session?.id) || "",
       });
     } else {
       //從cookie移除
@@ -94,14 +94,14 @@ const ImageList = ({
         event_category: "event",
         event_label: eventName,
         image_id: id,
-        user_id: session?.id || "",
+        user_id_number: String(session?.id) || "",
       });
     }
   };
 
   return (
     <div className="masonry">
-      {images.map((item: any, key: number) => (
+      {images?.map((item: any, key: number) => (
         <ImageItems
           key={key}
           item={item}

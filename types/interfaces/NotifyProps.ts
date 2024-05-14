@@ -6,4 +6,5 @@ export interface NotifyProps {
   creatAt: string;
   notifyId: string;
   notifyAt: string;
+  status: string;
 }

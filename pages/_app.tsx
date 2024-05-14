@@ -5,6 +5,7 @@ import type { AppProps } from "next/app";
 import { SessionProvider } from "next-auth/react";
 import { Spin } from "antd";
 import { IsSsrMobileContext } from "@/hooks/useIsMobile";
+import { RolesProvider } from "@/context/RolesContext";
 
 import dynamic from "next/dynamic";
 
@@ -31,9 +32,11 @@ export default function App({
   return getLayout(
     <IsSsrMobileContext.Provider value={pageProps.isSsrMobile}>
       <SessionProvider session={session}>
+        {/* <RolesProvider> */}
         <Layout navBarRef={navBarRef}>
           <Component {...pageProps} navBarRef={navBarRef} />
         </Layout>
+        {/* </RolesProvider> */}
       </SessionProvider>
     </IsSsrMobileContext.Provider>
   );

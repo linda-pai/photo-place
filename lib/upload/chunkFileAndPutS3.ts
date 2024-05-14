@@ -13,7 +13,7 @@ const chunkFileAndPutS3 = async (file: File, uploadId: string, key: string) => {
 
     //get presigned url
     await fetch(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/get-upload-url?uploadId=${uploadId}&fileName=${file.name}&partNumber=${i}&key=${key}`
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/upload/get-upload-url?uploadId=${uploadId}&fileName=${file.name}&partNumber=${i}&key=${key}`
     )
       .then((res) => res.json())
       .then((result) => {

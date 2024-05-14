@@ -6,7 +6,7 @@ const getSignedUploadURL = async (reqBody: {
 }) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
-  const response = await fetch(`${domain}/api/images/getSignedUploadURL`, {
+  const response = await fetch(`${domain}/api/upload/getSignedUploadURL`, {
     method: "POST",
     body: JSON.stringify(reqBody),
     headers: {

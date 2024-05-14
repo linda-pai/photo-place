@@ -1,53 +1,53 @@
 import type { ColumnsType } from "antd/es/table";
+import { RecordOfUploadProps } from "@/types/interfaces/UploadProps";
 
-interface RecordOfUploadProps {
-  author: string;
-  createAt: string;
-  eventId: string;
-  eventName: string;
-  imagesCount: number;
-  chargeAt: string;
-  uploadId: string;
-}
-
-const tableConfig = (columnsRenderMap: any) => {
+const tableConfig = (columnsRenderMap: any, showHeader: boolean) => {
   const columns: ColumnsType<RecordOfUploadProps> = [
     {
-      title: "活動名稱",
-      dataIndex: "eventName",
-      key: "eventName",
+      title: "詳細資訊",
+      ...columnsRenderMap.rwd,
+      width: 200,
+    },
+    showHeader
+      ? {
+          title: "活動名稱",
+          dataIndex: "eventName",
+          key: "eventName",
+          width: 220,
+          ...columnsRenderMap.eventName,
+        }
+      : {},
+    {
+      title: "活動日期",
+      dataIndex: "date",
+      key: "date",
+      width: 130,
+      ...columnsRenderMap.date,
     },
     {
-      title: "上傳時間",
-      dataIndex: "createAt",
-      key: "createAt",
-      ...columnsRenderMap.createAt,
+      title: "號碼布辨識進度",
+      dataIndex: "imagesCount",
+      key: "imagesCount",
+      width: 150,
+      ...columnsRenderMap.detectProcess,
     },
     {
-      title: "售出張數",
+      title: "照片數量資訊",
       dataIndex: "soldCount",
       key: "soldCount",
-      width: 120,
+      width: 340,
       ...columnsRenderMap.soldCount,
     },
     {
-      title: "售出資訊",
-      dataIndex: "sellInfo",
-      key: "sellInfo",
-      width: 200,
-      ...columnsRenderMap.sellInfo,
+      title: "收入試算",
+      key: "soldCount",
+      width: 110,
+      ...columnsRenderMap.earning,
     },
-    {
-      title: "攝影師名稱",
-      dataIndex: "name",
-      key: "name",
-      ...columnsRenderMap.name,
-    },
-
     {
       title: "Action",
       key: "action",
-      width: 140,
+      width: 80,
       ...columnsRenderMap.action,
     },
   ];

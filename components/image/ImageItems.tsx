@@ -9,22 +9,22 @@ const ImageItems = ({
   handleClickImg,
   onLoad,
 }: any) => {
-  const { id, watermarkedUrl, price, lastModified } = item;
+  const { id, watermarkedUrl, price, lastModified, orientation } = item;
 
   return (
     <div
-      className="sm:basis-[calc(20%_-_16px)] basis-[calc(33%_-_16px)] cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group"
+      className={`${`masonry-item-${orientation}`} masonry-item h-fit cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group`}
       key={id}
       onClick={() => handleClickImg(id)}
     >
       <Image
-        className="item__content"
         src={watermarkedUrl}
         alt={watermarkedUrl}
         width={300}
         height={400}
         quality={30}
         onLoad={onLoad}
+        onContextMenu={(e) => e.preventDefault()}
       />
       <div className="bg-[#fff] bg-opacity-70 absolute bottom-12 sm:p-2 p-1 leading-4 hidden group-hover:block">
         <p className="line-through sm:text-xs text-[12px] text-[#8f8f8f] ">

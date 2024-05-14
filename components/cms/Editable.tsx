@@ -30,7 +30,7 @@ const Editable = ({
   };
 
   return (
-    <div>
+    <div className="flex items-center gap-2">
       {/* 可編輯 */}
       <EditOutlined onClick={() => toggle(targetId)} />
       {editing[targetId] ? (
