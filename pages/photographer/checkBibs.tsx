@@ -383,14 +383,16 @@ export default function CheckBibs({
                 </div>
 
                 <div className="text-center my-10">
-                  <Pagination
-                    defaultCurrent={curPage}
-                    onChange={setCurPage}
-                    total={total}
-                    pageSize={pageSize}
-                    showSizeChanger={false}
-                    current={curPage}
-                  />
+                  {!search && (
+                    <Pagination
+                      defaultCurrent={curPage}
+                      onChange={setCurPage}
+                      total={total}
+                      pageSize={pageSize}
+                      showSizeChanger={false}
+                      current={curPage}
+                    />
+                  )}
                 </div>
               </>
             ) : (
