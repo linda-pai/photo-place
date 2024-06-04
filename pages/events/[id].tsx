@@ -1,10 +1,11 @@
 import { useEffect, useState, useMemo } from "react";
-import { message, Button, Spin, Radio, Select } from "antd";
+import { message, Button, Spin, Radio, Select, TimePicker, Empty } from "antd";
 import { setCookie, getCookie } from "cookies-next";
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import dayjs from "dayjs";
 import scrollIntoViewWithOffset from "@/utils/scrollIntoViewWithOffset";
 import { searchTracking } from "@/lib/gtag";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
@@ -29,13 +30,14 @@ export default function EventSearchPage({
   navBarRef,
   bib,
   photoBy,
+  dateTime,
   imagesInfo,
   photographerOptions,
 }: any) {
   const pageSize = 24;
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
-  const { eventId, eventName, coverImg, description } = eventInfo;
+  const { eventId, eventName, coverImg, description, date } = eventInfo;
   const title = `${eventName} | 號碼布搜尋照片 | Photo Pacer 攝影小隊`;
 
   const { data: session }: any = useSession();
@@ -58,6 +60,7 @@ export default function EventSearchPage({
 
   const [category, setCategory] = useState(IMAGE_STATUS.IDENTIFYED);
   const [author, setAuthor] = useState(photoBy || "");
+  const [lastModified, setLastModified] = useState(dateTime || []);
   const [isLoading, setIsLoading] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [currImgIndex, setCurrImgIndex] = useState(0); // [0, images.length - 1
@@ -80,11 +83,21 @@ export default function EventSearchPage({
 
   useEffect(() => {
     onSearch();
-  }, [curPage[IMAGE_STATUS.IDENTIFYED], author]);
+  }, [curPage[IMAGE_STATUS.IDENTIFYED], author, lastModified]);
 
   useEffect(() => {
     if (isGetMore) getMoreImages();
   }, [curPage[IMAGE_STATUS.MORE]]);
+
+  useEffect(() => {
+    setIsGetMore(false);
+    setCurPage((prev) => {
+      return {
+        ...prev,
+        [IMAGE_STATUS.MORE]: 1,
+      };
+    });
+  }, [author, lastModified]);
 
   useEffect(() => {
     if (search && isSearched) {
@@ -113,7 +126,6 @@ export default function EventSearchPage({
   }, [images]);
 
   const handleOnChangeSearch = (e: any) => {
-    setAuthor("");
     setSearch(e.target.value.trim());
     if (e.target.value.trim() === "") {
       resetImages();
@@ -148,7 +160,7 @@ export default function EventSearchPage({
     router.push(
       {
         pathname: `/events/${eventId}`,
-        query: { bib: search, photoBy: author },
+        query: { bib: search, photoBy: author, lastModified: lastModified },
       },
       undefined,
       { shallow: true }
@@ -157,7 +169,7 @@ export default function EventSearchPage({
     fetch(
       `${domain}/api/images/getByPathAndEventId/${eventId}?path=${search}&page=${
         curPage[IMAGE_STATUS.IDENTIFYED]
-      }&author=${author}`
+      }&author=${author}&lastModified=${lastModified}&date=${date}`
     )
       .then((res) => res.json())
       .then((data) => {
@@ -180,7 +192,7 @@ export default function EventSearchPage({
 
         // set more to true if nextPage exists
         setIsLoading(false);
-        search && setIsSearched(true);
+        (search || author || lastModified.length > 0) && setIsSearched(true);
 
         curPage[category] === 1 &&
           scrollIntoViewWithOffset("#result-container", 100);
@@ -317,6 +329,23 @@ export default function EventSearchPage({
     setAuthor(value);
   };
 
+  const handleOnChangeLastModified = (value: any) => {
+    if (value === null) return;
+    setCurPage({
+      [IMAGE_STATUS.MORE]: 1,
+      [IMAGE_STATUS.IDENTIFYED]: 1,
+    });
+    setCategory(IMAGE_STATUS.IDENTIFYED);
+    const eventDate = dayjs(date).format("YYYY-MM-DD");
+
+    const lastModifiedStart =
+      `${eventDate} ${dayjs(value[0]).format("HH:mm:ss")}` || "";
+    const lastModifiedEnd =
+      `${eventDate} ${dayjs(value[1]).format("HH:mm:ss")}` || "";
+
+    setLastModified([lastModifiedStart, lastModifiedEnd]);
+  };
+
   return (
     <>
       <Head>
@@ -362,11 +391,7 @@ export default function EventSearchPage({
       <div id="result-container">
         {!eventInfo.isCompleteUpload ? (
           <div className="container mx-auto sm:my-10 my-4">
-            <NotifyForm
-              eventName={eventName}
-              eventId={eventId}
-              session={session}
-            />
+            <NotifyForm eventName={eventName} eventId={eventId} date={date} />
           </div>
         ) : (
           <div className="container mx-auto sm:my-10 my-4">
@@ -380,20 +405,35 @@ export default function EventSearchPage({
               {/* <p>試營運期間，只有一位攝影師🥲</p> */}
               {
                 <>
-                  <p>{`號碼布: ${search}`}</p>
+                  <div className="flex items-center gap-2 justify-center">
+                    {search && <p>{`號碼布: ${search}`}</p>}
+                    {author && (
+                      <p>{`攝影師: ${
+                        photographerOptions.find(
+                          (item: any) => item.value === author
+                        )?.label
+                      }`}</p>
+                    )}
+                    {lastModified.length > 0 && (
+                      <p>{`時間: ${dayjs(lastModified[0]).format(
+                        "HH:mm"
+                      )} ~ ${dayjs(lastModified[1]).format("HH:mm")}`}</p>
+                    )}
+                    搜尋結果：
+                  </div>
                   <p>{`找到 ${
                     isGetMore
                       ? total[IMAGE_STATUS.MORE]
                       : total[IMAGE_STATUS.IDENTIFYED]
-                  } 張照片，${
+                  } 張照片${
                     images?.[category]?.length === 0
-                      ? "我們未來會努力增加攝影師的💪"
-                      : "太有緣份了！"
+                      ? "，我們未來會努力增加攝影師的💪"
+                      : ""
                   }`}</p>
                 </>
               }
               {/* <p>不囉唆⚡全面 65 折優惠</p> */}
-              {identify.images.length > 0 && (
+              {identify.images.length > 0 && search && (
                 <div
                   className="my-4 flex justify-center gap-3"
                   onClick={() => setIsGetMore((prev) => !prev)}
@@ -420,38 +460,44 @@ export default function EventSearchPage({
               )}
             </div>
 
-            {images[category]?.length > 0 && (
-              <>
-                {!search && !isSearched && (
-                  <div className="flex items-center mx-3">
-                    <div className="my-4 mx-1 text-[color:var(--main-color-dark)] text-sm">
-                      <Radio.Group
-                        defaultValue={IMAGE_STATUS.IDENTIFYED}
-                        buttonStyle="solid"
-                        onChange={handleOnChangeCategory}
-                        value={category}
-                      >
-                        <Radio.Button value={IMAGE_STATUS.IDENTIFYED}>
-                          精選照片
-                        </Radio.Button>
-                        {/* <Radio.Button value={IMAGE_STATUS.UNIDENTIFYED}>
+            {
+              <div className="flex items-center mx-3">
+                <div className="my-1 mx-1 text-[color:var(--main-color-dark)] text-sm">
+                  <Radio.Group
+                    defaultValue={IMAGE_STATUS.IDENTIFYED}
+                    buttonStyle="solid"
+                    onChange={handleOnChangeCategory}
+                    value={category}
+                  >
+                    <Radio.Button value={IMAGE_STATUS.IDENTIFYED}>
+                      精選照片
+                    </Radio.Button>
+                    {/* <Radio.Button value={IMAGE_STATUS.UNIDENTIFYED}>
                           未成功辨識號碼布
                         </Radio.Button> */}
-                      </Radio.Group>
-                    </div>
-                    <Select
-                      className="mx-1 w-[200px]"
-                      options={[
-                        { label: "全部", value: "" },
-                        ...photographerOptions,
-                      ]}
-                      onChange={handleOnChangePhotographer}
-                      placeholder="請選擇攝影師"
-                      value={author}
-                    />
-                  </div>
-                )}
-                {/* add transition */}
+                  </Radio.Group>
+                </div>
+                <Select
+                  className="mx-1 w-[200px]"
+                  options={[
+                    { label: "全部", value: "" },
+                    ...photographerOptions,
+                  ]}
+                  onChange={handleOnChangePhotographer}
+                  placeholder="請選擇攝影師"
+                  value={author || undefined}
+                />
+                <TimePicker.RangePicker
+                  className="mx-1"
+                  format="HH:mm"
+                  placeholder={["開始時間", "結束時間"]}
+                  onChange={handleOnChangeLastModified}
+                />
+              </div>
+            }
+            {/* add transition */}
+            {images[category]?.length > 0 ? (
+              <>
                 <div className="transition-all duration-500 mx-2">
                   <ImageList
                     images={isGetMore ? more.images : identify.images}
@@ -482,6 +528,10 @@ export default function EventSearchPage({
                     />
                   )}
               </>
+            ) : (
+              <div className="text-center my-10">
+                <Empty />
+              </div>
             )}
             <div>
               {images[category].length > 0 && search && (
@@ -512,6 +562,7 @@ export async function getServerSideProps(context: any) {
   const eventId = context.params.id || "";
   const bib = context.query.bib || "";
   const photoBy = context.query.photoBy || "";
+  const dateTime = context.query.lastModified || "";
 
   const imagesInfo = await fetch(
     `${domain}/api/images/getByPathAndEventId/${eventId}`
@@ -545,6 +596,7 @@ export async function getServerSideProps(context: any) {
       eventInfo,
       bib,
       photoBy,
+      dateTime,
       imagesInfo,
       photographerOptions,
     },
