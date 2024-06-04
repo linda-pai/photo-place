@@ -1,13 +1,15 @@
 import React, { useEffect } from "react";
-import { Form, Input, Button, message, Modal } from "antd";
-import { sha256 } from "js-sha256";
+import { Form, Input, Button, message, Modal, Empty } from "antd";
+import dayjs from "dayjs";
 
 const NotifyForm = ({
   eventName,
   eventId,
+  date,
 }: {
   eventName: string;
   eventId: string;
+  date: string;
 }) => {
   const [form] = Form.useForm();
   const [modal, contextHolder] = Modal.useModal();
@@ -74,64 +76,86 @@ const NotifyForm = ({
     }
   };
 
+  const isIn7Days = dayjs().add(7, "day").isBefore(dayjs(date));
+  const isOver10DaysAgo = dayjs().subtract(10, "day").isAfter(dayjs(date));
+
   return (
     <div className="text-center text-[color:var(--main-color-dark)] my-10  px-4 flex flex-col justify-center  min-h-[60vh]">
       <div className="">
-        <h3 className="mx-auto w-[240px] mb-10 sm:text-xl text-md text-[#faad14]">
+        <h3 className="mx-auto min-w-[240px] w-full  mb-10 sm:text-2xl text-md text-[#faad14]">
           {eventName}
         </h3>
-        <h3 className="sm:mb-3 mb-1 sm:text-xl text-md">尚未有照片上傳</h3>
-        <h3 className="sm:mb-8 mb-1 sm:text-xl text-md">
-          請留下您的號碼布，我們將在上傳完成後通知您
-        </h3>
-        <Form
-          form={form}
-          name="basic"
-          onFinish={onSubmit}
-          style={{ maxWidth: 600 }}
-          className="mx-auto w-full"
-          validateMessages={validateMessages}
-          {...layout}
-        >
-          <Form.Item
-            name="bib"
-            label="號碼布號碼"
-            rules={[
-              {
-                required: false,
-                type: "string",
-              },
-              {
-                pattern: /^[0-9]{0,6}$/,
-                message: "最多6位數字",
-              },
-            ]}
-          >
-            <Input placeholder="請輸入您的號碼布" className="w-full" />
-          </Form.Item>
-          <Form.Item
-            name="email"
-            label="通知 Email"
-            rules={[
-              {
-                required: true,
-                type: "email",
-              },
-            ]}
-          >
-            <Input placeholder="請輸入您的Email" />
-          </Form.Item>
-          <Form.Item className="flex justify-center">
-            <Button
-              className="mt-8"
-              type="primary"
-              htmlType="submit"
-              disabled={!submittable}
+        <h4 className="sm:mb-3 mb-1 sm:text-lg text-md">賽事日期： {date}</h4>
+        {/* 登記號碼布僅開放7天內的賽事 */}
+        {isIn7Days && (
+          <div>
+            <h3 className="sm:mb-8 mb-1 sm:text-xl text-md">
+              登記號碼布僅開放7天內的賽事
+            </h3>
+          </div>
+        )}
+        {/* 賽事已結束超過10天 */}
+        {isOver10DaysAgo && (
+          <div>
+            <Empty />
+          </div>
+        )}
+        {!isIn7Days && !isOver10DaysAgo && (
+          <>
+            <h3 className="sm:mb-3 mb-1 sm:text-xl text-md">尚未有照片上傳</h3>
+            <h3 className="sm:mb-8 mb-1 sm:text-xl text-md">
+              請留下您的號碼布，我們將在上傳完成後通知您
+            </h3>
+            <Form
+              form={form}
+              name="basic"
+              onFinish={onSubmit}
+              style={{ maxWidth: 600 }}
+              className="mx-auto w-full"
+              validateMessages={validateMessages}
+              {...layout}
             >
-              確認
-            </Button>
-          </Form.Item>
-        </Form>
+              <Form.Item
+                name="bib"
+                label="號碼布號碼"
+                rules={[
+                  {
+                    required: false,
+                    type: "string",
+                  },
+                  {
+                    pattern: /^[0-9]{0,6}$/,
+                    message: "最多6位數字",
+                  },
+                ]}
+              >
+                <Input placeholder="請輸入您的號碼布" className="w-full" />
+              </Form.Item>
+              <Form.Item
+                name="email"
+                label="通知 Email"
+                rules={[
+                  {
+                    required: true,
+                    type: "email",
+                  },
+                ]}
+              >
+                <Input placeholder="請輸入您的Email" />
+              </Form.Item>
+              <Form.Item className="flex justify-center">
+                <Button
+                  className="mt-8"
+                  type="primary"
+                  htmlType="submit"
+                  disabled={!submittable}
+                >
+                  確認
+                </Button>
+              </Form.Item>
+            </Form>
+          </>
+        )}
         {contextHolder}
       </div>
     </div>
