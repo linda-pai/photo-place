@@ -5,11 +5,9 @@ import { sha256 } from "js-sha256";
 const NotifyForm = ({
   eventName,
   eventId,
-  session,
 }: {
   eventName: string;
   eventId: string;
-  session: any;
 }) => {
   const [form] = Form.useForm();
   const [modal, contextHolder] = Modal.useModal();
