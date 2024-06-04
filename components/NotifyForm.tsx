@@ -44,12 +44,11 @@ const NotifyForm = ({
     const notifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${eventId}?bib=${bib}`;
     //fetch api
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/cms/notifyRecord`,
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/user/notifyRecord`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
         },
         body: JSON.stringify({
           email: values.email,
