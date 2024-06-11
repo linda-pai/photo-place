@@ -71,13 +71,24 @@ const RecordOfUpload = ({
           />
         </Link>
         <Link
+          href={`/photographer/noneDetected?eventId=${record.eventId}&date=${record.date}`}
+          className="hover:bg-[#e7e5e4] p-2 rounded-md cursor-pointer"
+        >
+          <Statistic
+            title="無法辨識"
+            value={record?.emptyPathImageLength || 0}
+            valueStyle={{ color: "#b45309" }}
+            className="cursor-pointer"
+          />
+        </Link>
+        <Link
           href={`/photographer/removed?eventId=${record.eventId}&date=${record.date}`}
           className={`hover:bg-[#e7e5e4] p-2 rounded-md cursor-pointer ${
             record.allImageLength > 0 ? "" : "pointer-events-none"
           }`}
         >
           <Statistic
-            title="從相簿移除"
+            title="已移除"
             value={record?.removeImageLength || 0}
             valueStyle={{ color: "#9ca3af" }}
             className="cursor-pointer"
@@ -90,7 +101,7 @@ const RecordOfUpload = ({
           }`}
         >
           <Statistic
-            title="售出張數"
+            title="已售出"
             value={record.soldCount || 0}
             valueStyle={{ color: "#65a30d" }}
             className="cursor-pointer"

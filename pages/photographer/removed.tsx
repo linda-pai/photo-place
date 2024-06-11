@@ -10,7 +10,7 @@ import { sha256 } from "js-sha256";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import ImageLightBox from "@/components/image/ImageLightBox";
 import userPermission from "@/hooks/usePermission";
-import removeImg from "@/lib/removed/removeImg";
+import { removeImg } from "@/lib/editImages";
 import { DETECTING_IMG } from "@/constants";
 
 export default function Removed({
