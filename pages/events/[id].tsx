@@ -32,6 +32,8 @@ export default function EventSearchPage({
   photoBy,
   dateTime,
   imagesInfo,
+  unIdentifyImagesInfo,
+  allImagesInfo,
   photographerOptions,
 }: any) {
   const pageSize = 24;
@@ -47,6 +49,9 @@ export default function EventSearchPage({
   const [isSearched, setIsSearched] = useState(false);
   const [images, setImages] = useState({
     [IMAGE_STATUS.IDENTIFYED]: imagesInfo.images as ImageItemProps[],
+    [IMAGE_STATUS.UNIDENTIFYED]:
+      unIdentifyImagesInfo.images as ImageItemProps[],
+    [IMAGE_STATUS.ALL]: allImagesInfo.images as ImageItemProps[],
     [IMAGE_STATUS.MORE]: [] as ImageItemProps[],
   });
 
@@ -55,6 +60,8 @@ export default function EventSearchPage({
 
   const [loadedCount, setLoadedCount] = useState({
     [IMAGE_STATUS.IDENTIFYED]: 0,
+    [IMAGE_STATUS.UNIDENTIFYED]: 0,
+    [IMAGE_STATUS.ALL]: 0,
     [IMAGE_STATUS.MORE]: 0,
   });
 
@@ -66,11 +73,15 @@ export default function EventSearchPage({
   const [currImgIndex, setCurrImgIndex] = useState(0); // [0, images.length - 1
   const [curPage, setCurPage] = useState({
     [IMAGE_STATUS.IDENTIFYED]: 1,
+    [IMAGE_STATUS.UNIDENTIFYED]: 1,
+    [IMAGE_STATUS.ALL]: 1,
     [IMAGE_STATUS.MORE]: 1,
   });
 
   const [total, setTotal] = useState({
     [IMAGE_STATUS.IDENTIFYED]: imagesInfo.totalCount,
+    [IMAGE_STATUS.UNIDENTIFYED]: unIdentifyImagesInfo.totalCount,
+    [IMAGE_STATUS.ALL]: allImagesInfo.totalCount,
     [IMAGE_STATUS.MORE]: 0,
   });
 
@@ -78,12 +89,16 @@ export default function EventSearchPage({
     [IMAGE_STATUS.IDENTIFYED]: Math.ceil(
       total[IMAGE_STATUS.IDENTIFYED] / pageSize
     ),
+    [IMAGE_STATUS.UNIDENTIFYED]: Math.ceil(
+      total[IMAGE_STATUS.UNIDENTIFYED] / pageSize
+    ),
+    [IMAGE_STATUS.ALL]: Math.ceil(total[IMAGE_STATUS.ALL] / pageSize),
     [IMAGE_STATUS.MORE]: Math.ceil(total[IMAGE_STATUS.MORE] / pageSize),
   };
 
   useEffect(() => {
     onSearch();
-  }, [curPage[IMAGE_STATUS.IDENTIFYED], author, lastModified]);
+  }, [curPage, author, lastModified]);
 
   useEffect(() => {
     if (isGetMore) getMoreImages();
@@ -107,14 +122,15 @@ export default function EventSearchPage({
           [category]: 1,
         };
       });
-      setCategory(IMAGE_STATUS.IDENTIFYED);
+      setCategory(IMAGE_STATUS.ALL);
     }
   }, [search, isSearched]);
 
-  const identify = useMemo(() => {
+  const memoImages = useMemo(() => {
     return {
-      images: images[IMAGE_STATUS.IDENTIFYED],
-      curPage: curPage[IMAGE_STATUS.IDENTIFYED],
+      [IMAGE_STATUS.IDENTIFYED]: images[IMAGE_STATUS.IDENTIFYED],
+      [IMAGE_STATUS.UNIDENTIFYED]: images[IMAGE_STATUS.UNIDENTIFYED],
+      [IMAGE_STATUS.ALL]: images[IMAGE_STATUS.ALL],
     };
   }, [images]);
 
@@ -167,26 +183,24 @@ export default function EventSearchPage({
     );
 
     fetch(
-      `${domain}/api/images/getByPathAndEventId/${eventId}?path=${search}&page=${
-        curPage[IMAGE_STATUS.IDENTIFYED]
-      }&author=${author}&lastModified=${lastModified}&date=${date}`
+      `${domain}/api/images/getByPathAndEventId/${eventId}?path=${search}&page=${curPage[category]}&author=${author}&lastModified=${lastModified}&date=${date}&category=${category}`
     )
       .then((res) => res.json())
       .then((data) => {
         setImages((prev) => {
           return {
             ...prev,
-            [IMAGE_STATUS.IDENTIFYED]:
-              curPage[IMAGE_STATUS.IDENTIFYED] === 1
+            [category]:
+              curPage[category] === 1
                 ? data.images
-                : [...prev[IMAGE_STATUS.IDENTIFYED], ...data.images],
+                : [...prev[category], ...data.images],
           };
         });
 
         setTotal((prev) => {
           return {
             ...prev,
-            [IMAGE_STATUS.IDENTIFYED]: data.totalCount,
+            [category]: data.totalCount,
           };
         });
 
@@ -422,9 +436,7 @@ export default function EventSearchPage({
                     搜尋結果：
                   </div>
                   <p>{`找到 ${
-                    isGetMore
-                      ? total[IMAGE_STATUS.MORE]
-                      : total[IMAGE_STATUS.IDENTIFYED]
+                    isGetMore ? total[IMAGE_STATUS.MORE] : total[category]
                   } 張照片${
                     images?.[category]?.length === 0
                       ? "，我們未來會努力增加攝影師的💪"
@@ -433,7 +445,7 @@ export default function EventSearchPage({
                 </>
               }
               {/* <p>不囉唆⚡全面 65 折優惠</p> */}
-              {identify.images.length > 0 && search && (
+              {memoImages[category]?.length > 0 && search && (
                 <div
                   className="my-4 flex justify-center gap-3"
                   onClick={() => setIsGetMore((prev) => !prev)}
@@ -469,12 +481,13 @@ export default function EventSearchPage({
                     onChange={handleOnChangeCategory}
                     value={category}
                   >
+                    <Radio.Button value={IMAGE_STATUS.ALL}>全部</Radio.Button>
                     <Radio.Button value={IMAGE_STATUS.IDENTIFYED}>
                       精選照片
                     </Radio.Button>
-                    {/* <Radio.Button value={IMAGE_STATUS.UNIDENTIFYED}>
-                          未成功辨識號碼布
-                        </Radio.Button> */}
+                    <Radio.Button value={IMAGE_STATUS.UNIDENTIFYED}>
+                      無法辨識號碼布
+                    </Radio.Button>
                   </Radio.Group>
                 </div>
                 <Select
@@ -500,7 +513,7 @@ export default function EventSearchPage({
               <>
                 <div className="transition-all duration-500 mx-2">
                   <ImageList
-                    images={isGetMore ? more.images : identify.images}
+                    images={isGetMore ? more.images : memoImages[category]}
                     isOpen={showImageViewer}
                     curIndex={currImgIndex}
                     onClose={() => setShowImageViewer(false)}
@@ -568,6 +581,14 @@ export async function getServerSideProps(context: any) {
     `${domain}/api/images/getByPathAndEventId/${eventId}`
   ).then((res) => res.json());
 
+  const unIdentifyImagesInfo = await fetch(
+    `${domain}/api/images/getByPathAndEventId/${eventId}?category=${IMAGE_STATUS.UNIDENTIFYED}`
+  ).then((res) => res.json());
+
+  const allImagesInfo = await fetch(
+    `${domain}/api/images/getByPathAndEventId/${eventId}?category=${IMAGE_STATUS.ALL}`
+  ).then((res) => res.json());
+
   const eventInfo = await fetch(`${domain}/api/events/getBy/${eventId}`).then(
     (res) => res.json()
   );
@@ -598,6 +619,8 @@ export async function getServerSideProps(context: any) {
       photoBy,
       dateTime,
       imagesInfo,
+      unIdentifyImagesInfo,
+      allImagesInfo,
       photographerOptions,
     },
   };
