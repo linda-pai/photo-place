@@ -31,7 +31,7 @@ const Earnings = ({ record }: { record: RecordOfUploadProps }) => {
   const shareFee = Math.round(
     flattenSoldImages
       ?.map((item: any) => {
-        return (item.price || 0) * 0.4;
+        return (item.price || 0) * 0.35;
       })
       .reduce((acc: any, cur: any) => acc + cur, 0)
   );
@@ -131,7 +131,7 @@ const Earnings = ({ record }: { record: RecordOfUploadProps }) => {
           <div>
             <p>售出抽成</p>
             <p className="font-normal text-[#a3a3a3] text-xs">
-              賣出 {revenue || 0} 元 x 40%
+              賣出 {revenue || 0} 元 x 35%
             </p>
           </div>
         );
@@ -148,10 +148,16 @@ const Earnings = ({ record }: { record: RecordOfUploadProps }) => {
   const reveneuShareReveneu =
     Math.round(revenue - Number(detectFee) - shareFee) || 0;
 
+  // 取高者
+  const finalReveneu =
+    payAsYouGoReveneu >= reveneuShareReveneu
+      ? payAsYouGoReveneu
+      : reveneuShareReveneu;
+
   return (
     <>
       <div
-        className="flex gap-2 justify-center hover:cursor-pointer"
+        className="flex gap-2 hover:cursor-pointer"
         onClick={() =>
           setModalOpen((prev) => ({
             ...prev,
@@ -163,9 +169,7 @@ const Earnings = ({ record }: { record: RecordOfUploadProps }) => {
           title="收入"
           value={
             // 取高者
-            payAsYouGoReveneu >= reveneuShareReveneu
-              ? payAsYouGoReveneu
-              : reveneuShareReveneu
+            finalReveneu > 0 ? finalReveneu : 0
           }
           valueStyle={{ color: "#ef4444" }}
         />

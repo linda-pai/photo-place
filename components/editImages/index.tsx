@@ -184,7 +184,7 @@ const EditImages = ({ images, setImages, eventId, loading }: EditBibsProps) => {
           customFooter={
             <div className="absolute bottom-[-20px] left-1/2 transform -translate-x-1/2 -translate-y-1/2">
               <AddableTags
-                bibs={memoImages[currImgIndex].path}
+                bibs={memoImages[currImgIndex]?.path}
                 handleUpdateBibs={(newTags: string[]) =>
                   updateBibs(newTags, memoImages[currImgIndex].id)
                 }
