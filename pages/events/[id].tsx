@@ -148,7 +148,7 @@ export default function EventSearchPage({
     }
     setIsSearched(false);
     setIsGetMore(false);
-    setCategory(IMAGE_STATUS.IDENTIFYED);
+    setCategory(IMAGE_STATUS.ALL);
   };
 
   const handleOnChangeCategory = (e: any) => setCategory(e.target.value);
@@ -300,7 +300,7 @@ export default function EventSearchPage({
                 : [...prev[IMAGE_STATUS.MORE], ...data.images],
           };
         });
-        setCategory(IMAGE_STATUS.MORE);
+        setCategory(IMAGE_STATUS.ALL);
         setIsGetMoreLoading(false);
 
         return (accCount += data.totalCount);
@@ -339,7 +339,6 @@ export default function EventSearchPage({
       [IMAGE_STATUS.MORE]: 1,
       [IMAGE_STATUS.IDENTIFYED]: 1,
     });
-    setCategory(IMAGE_STATUS.IDENTIFYED);
     setAuthor(value);
   };
 
@@ -349,7 +348,7 @@ export default function EventSearchPage({
       [IMAGE_STATUS.MORE]: 1,
       [IMAGE_STATUS.IDENTIFYED]: 1,
     });
-    setCategory(IMAGE_STATUS.IDENTIFYED);
+    setCategory(IMAGE_STATUS.ALL);
     const eventDate = dayjs(date).format("YYYY-MM-DD");
 
     const lastModifiedStart =
@@ -420,18 +419,24 @@ export default function EventSearchPage({
               {
                 <>
                   <div className="flex items-center gap-2 justify-center">
-                    {search && <p>{`號碼布: ${search}`}</p>}
+                    {search && <p>{`號碼布: ${search}`} | </p>}
                     {author && (
-                      <p>{`攝影師: ${
-                        photographerOptions.find(
-                          (item: any) => item.value === author
-                        )?.label
-                      }`}</p>
+                      <p>
+                        {`攝影師: ${
+                          photographerOptions.find(
+                            (item: any) => item.value === author
+                          )?.label
+                        }`}{" "}
+                        |{" "}
+                      </p>
                     )}
                     {lastModified.length > 0 && (
-                      <p>{`時間: ${dayjs(lastModified[0]).format(
-                        "HH:mm"
-                      )} ~ ${dayjs(lastModified[1]).format("HH:mm")}`}</p>
+                      <p>
+                        {`時間: ${dayjs(lastModified[0]).format(
+                          "HH:mm"
+                        )} ~ ${dayjs(lastModified[1]).format("HH:mm")}`}{" "}
+                        |{" "}
+                      </p>
                     )}
                     搜尋結果：
                   </div>
@@ -547,7 +552,7 @@ export default function EventSearchPage({
               </div>
             )}
             <div>
-              {images[category].length > 0 && search && (
+              {images[category]?.length > 0 && search && (
                 <Button
                   onClick={() => {
                     images[category].map((item: ImageItemProps) =>
