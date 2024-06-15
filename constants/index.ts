@@ -9,9 +9,7 @@ const IMAGE_STATUS = {
   IDENTIFYED: 3,
   UNIDENTIFYED: 4,
   MORE: 5,
-  ALL: 0,
-  // RECOGNIZED: 1,
-  // UNRECOGNIZED: 3,
+  ALL: 1,
 };
 
 const CHARGE_TYPE = {

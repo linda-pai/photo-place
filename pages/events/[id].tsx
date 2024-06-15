@@ -131,6 +131,7 @@ export default function EventSearchPage({
       [IMAGE_STATUS.IDENTIFYED]: images[IMAGE_STATUS.IDENTIFYED],
       [IMAGE_STATUS.UNIDENTIFYED]: images[IMAGE_STATUS.UNIDENTIFYED],
       [IMAGE_STATUS.ALL]: images[IMAGE_STATUS.ALL],
+      [IMAGE_STATUS.MORE]: images[IMAGE_STATUS.MORE],
     };
   }, [images]);
 
@@ -151,19 +152,29 @@ export default function EventSearchPage({
     setCategory(IMAGE_STATUS.ALL);
   };
 
-  const handleOnChangeCategory = (e: any) => setCategory(e.target.value);
+  const handleOnChangeCategory = (e: any) => {
+    setCategory(e.target.value);
+    setLastModified([]);
+    setSearch("");
+  };
 
   const resetImages = () => {
     setCurPage({
       [IMAGE_STATUS.IDENTIFYED]: 1,
+      [IMAGE_STATUS.UNIDENTIFYED]: 1,
+      [IMAGE_STATUS.ALL]: 1,
       [IMAGE_STATUS.MORE]: 1,
     });
     setImages({
-      [IMAGE_STATUS.IDENTIFYED]: images[IMAGE_STATUS.IDENTIFYED],
+      [IMAGE_STATUS.IDENTIFYED]: imagesInfo.images,
+      [IMAGE_STATUS.UNIDENTIFYED]: unIdentifyImagesInfo.images,
+      [IMAGE_STATUS.ALL]: allImagesInfo.images,
       [IMAGE_STATUS.MORE]: [],
     });
     setTotal({
-      [IMAGE_STATUS.IDENTIFYED]: total[IMAGE_STATUS.IDENTIFYED],
+      [IMAGE_STATUS.IDENTIFYED]: imagesInfo.totalCount,
+      [IMAGE_STATUS.UNIDENTIFYED]: unIdentifyImagesInfo.totalCount,
+      [IMAGE_STATUS.ALL]: allImagesInfo.totalCount,
       [IMAGE_STATUS.MORE]: 0,
     });
   };
@@ -191,7 +202,9 @@ export default function EventSearchPage({
           return {
             ...prev,
             [category]:
-              curPage[category] === 1
+              data.images.length === 0
+                ? []
+                : curPage[category] === 1
                 ? data.images
                 : [...prev[category], ...data.images],
           };
@@ -245,8 +258,8 @@ export default function EventSearchPage({
 
   const getMoreImages = async () => {
     setIsGetMoreLoading(true);
-    //相同 author且 依據lastModified 排序，差距在30000ms以內的視為同一組
-    const groupedImages = await images[IMAGE_STATUS.IDENTIFYED].reduce(
+    //相同 author且 依據lastModified 排序，差距在50000ms以內的視為同一組
+    const groupedImages = await images[IMAGE_STATUS.ALL].reduce(
       (acc: any, curr: any) => {
         const lastGroup = acc[acc.length - 1];
         if (
@@ -254,7 +267,7 @@ export default function EventSearchPage({
           lastGroup[lastGroup.length - 1].author === curr.author &&
           new Date(curr.lastModified).getTime() -
             new Date(lastGroup[lastGroup.length - 1].lastModified).getTime() <
-            30000
+            50000
         ) {
           lastGroup.push(curr);
         } else {
@@ -300,9 +313,8 @@ export default function EventSearchPage({
                 : [...prev[IMAGE_STATUS.MORE], ...data.images],
           };
         });
-        setCategory(IMAGE_STATUS.ALL);
+        setCategory(IMAGE_STATUS.MORE);
         setIsGetMoreLoading(false);
-
         return (accCount += data.totalCount);
       })
       .then((count) => {
@@ -336,8 +348,10 @@ export default function EventSearchPage({
   const handleOnChangePhotographer = (value: string) => {
     if (value === "請選擇攝影師") return;
     setCurPage({
-      [IMAGE_STATUS.MORE]: 1,
       [IMAGE_STATUS.IDENTIFYED]: 1,
+      [IMAGE_STATUS.UNIDENTIFYED]: 1,
+      [IMAGE_STATUS.ALL]: 1,
+      [IMAGE_STATUS.MORE]: 1,
     });
     setAuthor(value);
   };
@@ -345,8 +359,10 @@ export default function EventSearchPage({
   const handleOnChangeLastModified = (value: any) => {
     if (value === null) return;
     setCurPage({
-      [IMAGE_STATUS.MORE]: 1,
       [IMAGE_STATUS.IDENTIFYED]: 1,
+      [IMAGE_STATUS.UNIDENTIFYED]: 1,
+      [IMAGE_STATUS.ALL]: 1,
+      [IMAGE_STATUS.MORE]: 1,
     });
     setCategory(IMAGE_STATUS.ALL);
     const eventDate = dayjs(date).format("YYYY-MM-DD");
@@ -457,7 +473,12 @@ export default function EventSearchPage({
                 >
                   <p>號碼布可能被擋到了...</p>
                   {isGetMore ? (
-                    <Button loading={isGetMoreLoading}>返回</Button>
+                    <Button
+                      loading={isGetMoreLoading}
+                      onClick={() => setCategory(IMAGE_STATUS.ALL)}
+                    >
+                      返回
+                    </Button>
                   ) : (
                     <Button
                       onClick={() => {
@@ -510,6 +531,11 @@ export default function EventSearchPage({
                   format="HH:mm"
                   placeholder={["開始時間", "結束時間"]}
                   onChange={handleOnChangeLastModified}
+                  value={
+                    lastModified.length > 0
+                      ? [dayjs(lastModified[0]), dayjs(lastModified[1])]
+                      : undefined
+                  }
                 />
               </div>
             }
