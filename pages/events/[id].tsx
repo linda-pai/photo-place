@@ -357,22 +357,26 @@ export default function EventSearchPage({
   };
 
   const handleOnChangeLastModified = (value: any) => {
-    if (value === null) return;
-    setCurPage({
-      [IMAGE_STATUS.IDENTIFYED]: 1,
-      [IMAGE_STATUS.UNIDENTIFYED]: 1,
-      [IMAGE_STATUS.ALL]: 1,
-      [IMAGE_STATUS.MORE]: 1,
-    });
+    if (value === null) {
+      setLastModified([]);
+      return;
+    } else {
+      setCurPage({
+        [IMAGE_STATUS.IDENTIFYED]: 1,
+        [IMAGE_STATUS.UNIDENTIFYED]: 1,
+        [IMAGE_STATUS.ALL]: 1,
+        [IMAGE_STATUS.MORE]: 1,
+      });
+      const eventDate = dayjs(date).format("YYYY-MM-DD");
+
+      const lastModifiedStart =
+        `${eventDate}T${dayjs(value[0]).format("HH:mm:ss")}` || "";
+      const lastModifiedEnd =
+        `${eventDate}T${dayjs(value[1]).format("HH:mm:ss")}` || "";
+
+      setLastModified([lastModifiedStart, lastModifiedEnd]);
+    }
     setCategory(IMAGE_STATUS.ALL);
-    const eventDate = dayjs(date).format("YYYY-MM-DD");
-
-    const lastModifiedStart =
-      `${eventDate} ${dayjs(value[0]).format("HH:mm:ss")}` || "";
-    const lastModifiedEnd =
-      `${eventDate} ${dayjs(value[1]).format("HH:mm:ss")}` || "";
-
-    setLastModified([lastModifiedStart, lastModifiedEnd]);
   };
 
   return (
@@ -499,7 +503,7 @@ export default function EventSearchPage({
             </div>
 
             {
-              <div className="flex items-center mx-3">
+              <div className="sm:flex items-center mx-3 my-1">
                 <div className="my-1 mx-1 text-[color:var(--main-color-dark)] text-sm">
                   <Radio.Group
                     defaultValue={IMAGE_STATUS.IDENTIFYED}
@@ -517,7 +521,7 @@ export default function EventSearchPage({
                   </Radio.Group>
                 </div>
                 <Select
-                  className="mx-1 w-[200px]"
+                  className="mx-1 my-1 w-[200px]"
                   options={[
                     { label: "全部", value: "" },
                     ...photographerOptions,
