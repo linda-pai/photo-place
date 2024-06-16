@@ -1,7 +1,7 @@
 import { message } from "antd";
 import { sha256 } from "js-sha256";
 
-const featureImg = ({
+const removeImg = ({
   eventId,
   id,
   isRemoved,
@@ -31,11 +31,11 @@ const featureImg = ({
         message.success(isRemoved ? "從相簿恢復" : "從相簿移除成功");
         return data;
       } else {
-        message.error("設定精選失敗");
+        message.error("從相簿移除失敗");
       }
     });
 
   return response;
 };
 
-export default featureImg;
+export default removeImg;

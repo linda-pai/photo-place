@@ -10,7 +10,7 @@ import { sha256 } from "js-sha256";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import ImageLightBox from "@/components/image/ImageLightBox";
 import userPermission from "@/hooks/usePermission";
-import featureImg from "@/lib/featured/featureImg";
+import { featureImg } from "@/lib/editImages";
 // import dynamic from "next/dynamic";
 import { DETECTING_IMG } from "@/constants";
 

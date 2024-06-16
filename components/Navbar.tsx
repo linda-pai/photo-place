@@ -125,7 +125,7 @@ const Nav = ({ navBarRef }: any) => {
     <nav
       className={
         `${showLightColor ? "text-white" : "text-[color:var(--main-color)]"}` +
-        " h-16 fixed top-0 z-10 w-full shadow-sm flex items-center"
+        " h-16 fixed top-0 z-10 w-full shadow-sm flex items-center backdrop-filter backdrop-blur-sm"
       }
     >
       <div
@@ -151,6 +151,13 @@ const Nav = ({ navBarRef }: any) => {
         </Link>
 
         <div className="flex items-center gap-5">
+          {routerPath === "/" && (
+            <a target="_blank" href="https://forms.gle/FB9fSzyuLvzVms856">
+              <div className="text-sm bg-[#454545] bg-opacity-60 rounded-lg px-2 py-1 hover:bg-[#ca7c6f]">
+                登記成為攝影師
+              </div>
+            </a>
+          )}
           <Link href="/user/shoppingCart">
             <div className="text-3xl hover:text-[#ca7c6f]">
               <ShoppingCartOutlined />

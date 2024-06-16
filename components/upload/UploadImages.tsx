@@ -26,7 +26,6 @@ import UploadQueue from "@/lib/upload/uploadQueue";
 import completeUpload from "@/lib/upload/completeUpload";
 import getStartMultipartUploadURL from "@/lib/upload/getStartMultipartUploadURL";
 import chunkFileAndPutS3 from "@/lib/upload/chunkFileAndPutS3";
-import updateFirst50IsFeatured from "@/lib/upload/updateFirst50IsFeatured";
 import isUploadable from "@/utils/isUploadable";
 import {
   getAuthorDisplayName,
@@ -152,8 +151,6 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
       author: session.id,
       isAll: false,
     });
-
-    updateFirst50IsFeatured(eventId, session.id);
 
     modal.confirm({
       title: `已上傳完成${fileOptionsList.length}張照片`,

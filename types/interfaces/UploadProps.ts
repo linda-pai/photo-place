@@ -24,4 +24,5 @@ export interface RecordOfUploadProps {
   featuredLength: number;
   removeImageLength: number;
   detectedImageLength: number;
+  emptyPathImageLength: number;
 }

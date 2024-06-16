@@ -55,6 +55,9 @@ const uploadService = () => {
                     <li className="before:content-['•'] before:mr-4 flex">
                       攝影師可於上傳照片時，自行設定照片售價。
                     </li>
+                    <li className="before:content-['•'] before:mr-4 flex">
+                      拍攝前請檢查並確認相機時間是否正確。因系統具有時間的搜索功能，準確的時間能夠協助順利找到照片。
+                    </li>
                   </ul>
                   <b className="text-xl">二、照片格式</b>
                   <ul className="pl-8">
@@ -86,13 +89,17 @@ const uploadService = () => {
                       照片將保存三個月，三個月後將會自動刪除或進行壓縮，僅保留精選照片。
                     </li>
                   </ul>
-                  <b className="text-xl">六、費用</b>
+                  <b className="text-xl">六、平台服務費用</b>
                   <ul className="pl-8">
                     <li className="before:content-['•'] before:mr-4 flex">
-                      上傳照片需支付每張0.4元的費用，如有優惠活動將另行通知。
+                      使用量制：上傳照片每張 0.2元＋第三方金流手續費（售出價格x
+                      3%）
                     </li>
                     <li className="before:content-['•'] before:mr-4 flex">
-                      於照片售出時，將扣除攝影師自訂照片售價之3%，為金流費用。
+                      售出抽成：號碼辨識每張 0.1元＋售出價格 x 35%
+                    </li>
+                    <li className="before:content-['•'] before:mr-4 flex">
+                      以上兩種收費制度將於結帳日擇優計算，平台服務費用與規則可能會有所變動，請以網站公告為準。
                     </li>
                   </ul>
                   <b className="text-xl">七、收益與結算</b>
