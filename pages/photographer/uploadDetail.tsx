@@ -55,14 +55,22 @@ const uploadDetail = ({
 export default uploadDetail;
 
 export async function getServerSideProps(context: any) {
-  const { eventId, status } = context.query;
-  const record = JSON.parse(context.query.record);
+  const { eventId, status, record } = context.query;
+
+  if (!eventId || !status || !record) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
 
   return {
     props: {
       eventId,
-      status: status || "",
-      record,
+      status,
+      record: JSON.parse(record),
     },
   };
 }
