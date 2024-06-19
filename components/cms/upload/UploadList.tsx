@@ -36,14 +36,14 @@ const UploadList = ({ events }: any) => {
       title: "活動名稱",
       dataIndex: "eventName",
       key: "eventName",
-      width: 340,
+      width: 320,
       responsive: ["sm"],
     },
     {
       title: "攝影師數量",
       dataIndex: "photographers",
       key: "photographers",
-      width: 120,
+      width: 60,
       render: (photographers: string[]) => photographers.length,
       responsive: ["sm"],
     },
@@ -51,13 +51,20 @@ const UploadList = ({ events }: any) => {
     {
       title: "Action",
       key: "action",
-      width: 50,
+      width: 100,
       render: (_: string, record: Event) => (
-        <Button type="primary">
-          <Link href={`/cms/uploadManagement?eventId=${record.eventId}`}>
-            顯示更多
-          </Link>
-        </Button>
+        <div className="flex gap-1">
+          <Button type="primary">
+            <Link href={`/cms/uploadManagement?eventId=${record.eventId}`}>
+              顯示更多
+            </Link>
+          </Button>
+          <Button type="primary">
+            <Link href={`/cms/checkBibsAdmin?eventId=${record.eventId}`}>
+              編輯
+            </Link>
+          </Button>
+        </div>
       ),
     },
   ];

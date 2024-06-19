@@ -121,9 +121,8 @@ const EditImages = ({ images, setImages, eventId, loading }: EditBibsProps) => {
                 className="w-full h-auto"
                 src={item.watermarkedUrl || DETECTING_IMG}
                 alt={item.watermarkedUrl || DETECTING_IMG}
-                width="0"
-                height="0"
-                sizes="100vw"
+                width={300}
+                height={400}
                 quality={30}
               />
               <div className="flex gap-2 py-2 px-1 justify-between items-center bg-[#404040] bg-opacity-40 absolute top-0 w-full  group hover:bg-opacity-80 transition-all duration-300">
