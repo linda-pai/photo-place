@@ -31,6 +31,7 @@ export default function EventSearchPage({
   bib,
   photoBy,
   dateTime,
+  categoryQuery,
   imagesInfo,
   unIdentifyImagesInfo,
   allImagesInfo,
@@ -57,6 +58,7 @@ export default function EventSearchPage({
 
   const [isGetMore, setIsGetMore] = useState(false);
   const [isGetMoreLoading, setIsGetMoreLoading] = useState(false);
+  const [disableReset, setDisableReset] = useState(true);
 
   const [loadedCount, setLoadedCount] = useState({
     [IMAGE_STATUS.IDENTIFYED]: 0,
@@ -65,7 +67,7 @@ export default function EventSearchPage({
     [IMAGE_STATUS.MORE]: 0,
   });
 
-  const [category, setCategory] = useState(IMAGE_STATUS.IDENTIFYED);
+  const [category, setCategory] = useState(categoryQuery);
   const [author, setAuthor] = useState(photoBy || "");
   const [lastModified, setLastModified] = useState(dateTime || []);
   const [isLoading, setIsLoading] = useState(false);
@@ -97,22 +99,13 @@ export default function EventSearchPage({
   };
 
   useEffect(() => {
+    if (category === IMAGE_STATUS.MORE) return;
     onSearch();
-  }, [curPage, author, lastModified]);
+  }, [curPage, author, lastModified, category]);
 
   useEffect(() => {
     if (isGetMore) getMoreImages();
   }, [curPage[IMAGE_STATUS.MORE]]);
-
-  useEffect(() => {
-    setIsGetMore(false);
-    setCurPage((prev) => {
-      return {
-        ...prev,
-        [IMAGE_STATUS.MORE]: 1,
-      };
-    });
-  }, [author, lastModified]);
 
   useEffect(() => {
     if (search && isSearched) {
@@ -125,6 +118,20 @@ export default function EventSearchPage({
       setCategory(IMAGE_STATUS.ALL);
     }
   }, [search, isSearched]);
+
+  useEffect(() => {
+    if (search || author || lastModified.length > 0) {
+      setDisableReset(false);
+    } else {
+      setDisableReset(true);
+      setIsSearched(false);
+    }
+  }, [search, author, lastModified]);
+
+  useEffect(() => {
+    setIsGetMore(false);
+    setCategory(IMAGE_STATUS.ALL);
+  }, [lastModified]);
 
   const memoImages = useMemo(() => {
     return {
@@ -154,7 +161,6 @@ export default function EventSearchPage({
 
   const handleOnChangeCategory = (e: any) => {
     setCategory(e.target.value);
-    setLastModified([]);
     setSearch("");
   };
 
@@ -179,6 +185,16 @@ export default function EventSearchPage({
     });
   };
 
+  const resetState = () => {
+    setAuthor("");
+    setLastModified([]);
+    setSearch("");
+    setCategory(IMAGE_STATUS.ALL);
+
+    setDisableReset(true);
+    setIsGetMore(false);
+  };
+
   const onSearch = () => {
     setIsLoading(true);
     if (search !== "" && search.match(/^[0-9]+$/) == null)
@@ -187,7 +203,12 @@ export default function EventSearchPage({
     router.push(
       {
         pathname: `/events/${eventId}`,
-        query: { bib: search, photoBy: author, lastModified: lastModified },
+        query: {
+          bib: search,
+          photoBy: author,
+          lastModified,
+          category,
+        },
       },
       undefined,
       { shallow: true }
@@ -376,7 +397,6 @@ export default function EventSearchPage({
 
       setLastModified([lastModifiedStart, lastModifiedEnd]);
     }
-    setCategory(IMAGE_STATUS.ALL);
   };
 
   return (
@@ -486,11 +506,6 @@ export default function EventSearchPage({
                   ) : (
                     <Button
                       onClick={() => {
-                        if (
-                          lastPage[IMAGE_STATUS.MORE] ===
-                          curPage[IMAGE_STATUS.MORE]
-                        )
-                          return;
                         getMoreImages();
                       }}
                       loading={isGetMoreLoading}
@@ -541,6 +556,9 @@ export default function EventSearchPage({
                       : undefined
                   }
                 />
+                <Button onClick={() => resetState()} disabled={disableReset}>
+                  清空
+                </Button>
               </div>
             }
             {/* add transition */}
@@ -611,9 +629,10 @@ export async function getServerSideProps(context: any) {
   const bib = context.query.bib || "";
   const photoBy = context.query.photoBy || "";
   const dateTime = context.query.lastModified || "";
+  const categoryQuery = Number(context.query.category) || IMAGE_STATUS.ALL;
 
   const imagesInfo = await fetch(
-    `${domain}/api/images/getByPathAndEventId/${eventId}`
+    `${domain}/api/images/getByPathAndEventId/${eventId}?category=${IMAGE_STATUS.IDENTIFYED}`
   ).then((res) => res.json());
 
   const unIdentifyImagesInfo = await fetch(
@@ -653,6 +672,7 @@ export async function getServerSideProps(context: any) {
       bib,
       photoBy,
       dateTime,
+      categoryQuery,
       imagesInfo,
       unIdentifyImagesInfo,
       allImagesInfo,
