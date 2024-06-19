@@ -33,7 +33,7 @@ export default function UploadPreview({ eventId }: { eventId: string }) {
         eventId,
         author: session.id,
         curPage,
-        sortBy: "lastModified",
+        lastModifiedSorting: "asc",
         fileName: "",
       }),
     })
