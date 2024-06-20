@@ -118,17 +118,14 @@ const SoldList = ({ eventId }: { eventId: string }) => {
   const columns = tableConfig(columnsRenderMap);
 
   const getSoldData = (eventId: string) => {
-    fetch(
-      `${domain}/api/photographer/getSoldInfoByAuthor/${eventId}/${session.id}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + session.id,
-          secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
-        },
-      }
-    )
+    fetch(`${domain}/api/photographer/getSoldInfoByAuthor/${eventId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + session.id,
+        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         setSoldInfoData(data);

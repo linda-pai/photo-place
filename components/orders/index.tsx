@@ -217,8 +217,8 @@ const Orders = () => {
   }, [session]);
 
   const getOrders = () => {
-    fetch(`${domain}/api/orders/getByUser/${session.id}`, {
-      method: "GET",
+    fetch(`${domain}/api/orders/getByUser`, {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer " + session.id,
@@ -293,13 +293,15 @@ const Orders = () => {
     const eventId = items[0].eventId;
 
     return await fetch(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/orders/getByEventIdAndImageIds/${orderId}/${eventId}/${imageIdList}`,
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/orders/getByEventIdAndImageIds`,
       {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: "Bearer " + session.id,
           secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
         },
+        body: JSON.stringify({ orderId, eventId, imageIdList }),
       }
     )
       .then((res) => res.json())

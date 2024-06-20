@@ -14,7 +14,7 @@ const SearchWrapper = ({
   eventName,
   search,
 }: Props) => {
-  const [showHelp, setShowHelp] = useState(true);
+  const [showHelp, setShowHelp] = useState(false);
   return (
     <div className="mb-10">
       <div className="relative w-full h-screen bg-cover bg-[url('/banner.png')]">

@@ -52,7 +52,6 @@ export default function NoneDetected({
       },
       body: JSON.stringify({
         eventId,
-        author: session.id,
         curPage,
         lastModifiedSorting,
         fileName: search,

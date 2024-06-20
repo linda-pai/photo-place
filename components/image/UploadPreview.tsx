@@ -31,7 +31,6 @@ export default function UploadPreview({ eventId }: { eventId: string }) {
       },
       body: JSON.stringify({
         eventId,
-        author: session.id,
         curPage,
         lastModifiedSorting: "asc",
         fileName: "",

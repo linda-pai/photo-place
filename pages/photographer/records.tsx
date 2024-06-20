@@ -26,8 +26,8 @@ const records = () => {
   }, [session]);
 
   const getUploadDetail = async () => {
-    fetch(`${domain}/api/photographer/getUploadInfo/${session.id}`, {
-      method: "GET",
+    fetch(`${domain}/api/photographer/getUploadInfo`, {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer " + session.id,

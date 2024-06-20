@@ -55,7 +55,6 @@ export default function CheckBibs({
       },
       body: JSON.stringify({
         eventId,
-        author: session.id,
         curPage,
         lastModifiedSorting,
         fileName: search,
