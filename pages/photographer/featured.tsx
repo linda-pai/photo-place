@@ -88,7 +88,7 @@ export default function Featured({
       eventId,
       id,
       isFeatured,
-      session,
+      author: session.id,
     }).then((data) => {
       if (data.status === "success") {
         const updatedImages = featuredImages.map((item) => {

@@ -58,7 +58,7 @@ export default function CheckBibs({
       },
       body: JSON.stringify({
         eventId,
-        author,
+        authorQuery: author,
         curPage,
         lastModifiedSorting,
         detectLengthSorting,
@@ -215,6 +215,7 @@ export default function CheckBibs({
               setImages={setImages}
               eventId={eventId}
               loading={loading}
+              author={author}
             />
           </div>
           <div className="text-center my-10">

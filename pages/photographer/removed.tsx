@@ -79,7 +79,7 @@ export default function Removed({
       eventId,
       id,
       isRemoved,
-      session,
+      author: session.id,
     }).then((data) => {
       if (data.status === "success") {
         const updatedImages = removedImages.map((item) => {
