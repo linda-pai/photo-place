@@ -12,9 +12,25 @@ const IMAGE_STATUS = {
   ALL: 1,
 };
 
+const REMOVE_IMAGE_STATUS = {
+  REMOVE: "1",
+  REPORTED: "2",
+};
+
 const CHARGE_TYPE = {
   PAY_AS_YOU_GO: 1,
   REVENEUE_SHARING: 2,
+};
+
+const REPORT_TYPE = {
+  //照片涉及色情、暴力
+  PORNOGRAPH: 1,
+  //照片涉及侵權
+  INFRINGEMENT: 2,
+  //照片涉及仇恨或惡意
+  HATEFUL: 3,
+  //照片涉及騷擾
+  HARASSMENT: 4,
 };
 
 const DEFAULT_COVER_IMG =
@@ -29,8 +45,10 @@ export {
   paymentConst,
   CHARGE_PERCENTAGE,
   IMAGE_STATUS,
+  REMOVE_IMAGE_STATUS,
   CHARGE_TYPE,
   DEFAULT_COVER_IMG,
   DETECTING_IMG,
   SITE_NAME,
+  REPORT_TYPE,
 };

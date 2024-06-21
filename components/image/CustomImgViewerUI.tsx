@@ -1,9 +1,14 @@
-import { ShoppingCartOutlined } from "@ant-design/icons";
+import { ShoppingCartOutlined, FlagOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 
-const customImgViewerUI = ({ image, isExistInCart, handleClickCart }: any) => {
+const customImgViewerUI = ({
+  image,
+  isExistInCart,
+  handleClickCart,
+  handleClickReport,
+}: any) => {
   return (
-    <div className="flex justify-between mx-auto sm:gap-40 gap-20 mb-2">
+    <div className="flex justify-between sm:gap-24 gap-4 mb-2 max-w-[100%] sm:mx-auto mx-4">
       <div>
         {image?.authorName && (
           <p className="text-sm text-[#8f8f8f] sm:m-1 m-0">
@@ -16,11 +21,18 @@ const customImgViewerUI = ({ image, isExistInCart, handleClickCart }: any) => {
           </p>
         )}
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 mt-2">
         <div>
           <p className="line-through text-xs text-[#8f8f8f]">TWD: 169</p>
           <p className="text-red-500 ">TWD: {image.price} </p>
         </div>
+        <button
+          onClick={() => handleClickReport(image?.id)}
+          className="cursor-pointer"
+        >
+          <FlagOutlined className={`sm:text-[24px] text-4xl text-white`} />
+          <p className={`text-xs hidden sm:block text-white`}>檢舉</p>
+        </button>
         <button
           onClick={() => handleClickCart(image?.id)}
           className="cursor-pointer"

@@ -82,7 +82,7 @@ const RecordOfUpload = ({
           />
         </Link>
         <Link
-          href={`/photographer/removed?eventId=${record.eventId}&date=${record.date}`}
+          href={`/photographer/removed?eventId=${record.eventId}&date=${record.date}&reportedImageLength=${record.reportedImageLength}`}
           className={`hover:bg-[#e7e5e4] p-1 rounded-md cursor-pointer ${
             record.allImageLength > 0 ? "" : "pointer-events-none"
           }`}

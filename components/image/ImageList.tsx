@@ -1,13 +1,22 @@
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/router";
 import { setCookie, getCookie } from "cookies-next";
 import { useSession } from "next-auth/react";
-import { message } from "antd";
+import { message, Modal } from "antd";
 import { clickAddToCart, removeAddToCart } from "@/lib/gtag";
 import ImageItems from "./ImageItems";
 import ImageLightBox from "./ImageLightBox";
+import { REPORT_TYPE } from "@/constants";
 
-const CustomImgViewerUI = dynamic(() => import("./CustomImgViewerUI"), {
+const CustomImgViewerUI = dynamic(
+  () => import("@/components/image/CustomImgViewerUI"),
+  {
+    ssr: false,
+  }
+);
+
+const ReportForm = dynamic(() => import("@/components/image/ReportForm"), {
   ssr: false,
 });
 
@@ -42,7 +51,10 @@ const ImageList = ({
   onLoad: () => void;
 }) => {
   const { data: session }: any = useSession();
+  const router = useRouter();
   const [cartData, setCartData] = useState({} as any);
+  const [modal, contextHolder] = Modal.useModal();
+  const [reportType, setReportType] = useState<typeof REPORT_TYPE>();
 
   useEffect(() => {
     setCartData(JSON.parse(getCookie("cart") || "{}"));
@@ -99,6 +111,44 @@ const ImageList = ({
     }
   };
 
+  const handleClickReport = (id: string) => {
+    //檢查是否登入
+    if (!session) {
+      return router.push(
+        `${process.env.NEXT_PUBLIC_APP_URL}/auth/signIn?previousUrl=${router.asPath}`
+      );
+    }
+    modal.confirm({
+      title: "檢舉",
+      content: <ReportForm setReportType={setReportType} />,
+      onOk() {
+        //fetch api
+        fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/user/reportImage`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            eventId,
+            imageId: id,
+            reportType,
+            reporterId: session.id,
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.status === "success") {
+              message.success("檢舉成功，我們將盡快進行審核");
+              router.reload();
+            } else {
+              message.error(data.message || "檢舉失敗");
+            }
+          });
+      },
+      onCancel() {},
+    });
+  };
+
   return (
     <div className="masonry">
       {images?.map((item: any, key: number) => (
@@ -123,9 +173,11 @@ const ImageList = ({
             image={images[curIndex]}
             isExistInCart={isExistInCart}
             handleClickCart={handleClickCart}
+            handleClickReport={handleClickReport}
           />
         }
       />
+      {contextHolder}
     </div>
   );
 };
