@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { setCookie, getCookie } from "cookies-next";
 import { useSession } from "next-auth/react";
 import { message, Modal } from "antd";
+import { WarningOutlined } from "@ant-design/icons";
 import { clickAddToCart, removeAddToCart } from "@/lib/gtag";
 import ImageItems from "./ImageItems";
 import ImageLightBox from "./ImageLightBox";
@@ -53,8 +54,8 @@ const ImageList = ({
   const { data: session }: any = useSession();
   const router = useRouter();
   const [cartData, setCartData] = useState({} as any);
-  const [modal, contextHolder] = Modal.useModal();
   const [reportType, setReportType] = useState<typeof REPORT_TYPE>();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     setCartData(JSON.parse(getCookie("cart") || "{}"));
@@ -111,42 +112,46 @@ const ImageList = ({
     }
   };
 
-  const handleClickReport = (id: string) => {
+  const handleChange = (e: any) => setReportType(e.target.value);
+
+  const handleReport = (image: any) => {
+    if (!reportType) return message.error("請選擇檢舉原因");
+
+    fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/user/reportImage`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        eventId,
+        eventName,
+        imageId: image.id,
+        watermarkedUrl: image.watermarkedUrl,
+        reportType,
+        reporterId: session.id,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === "success") {
+          message.success("檢舉成功，我們將盡快進行審核");
+          router.reload();
+          setReportType(undefined);
+        } else {
+          message.error(data.message || "檢舉失敗");
+        }
+      });
+  };
+
+  const handleClickReport = () => {
     //檢查是否登入
     if (!session) {
       return router.push(
         `${process.env.NEXT_PUBLIC_APP_URL}/auth/signIn?previousUrl=${router.asPath}`
       );
     }
-    modal.confirm({
-      title: "檢舉",
-      content: <ReportForm setReportType={setReportType} />,
-      onOk() {
-        //fetch api
-        fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/user/reportImage`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            eventId,
-            imageId: id,
-            reportType,
-            reporterId: session.id,
-          }),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.status === "success") {
-              message.success("檢舉成功，我們將盡快進行審核");
-              router.reload();
-            } else {
-              message.error(data.message || "檢舉失敗");
-            }
-          });
-      },
-      onCancel() {},
-    });
+
+    setIsModalOpen(true);
   };
 
   return (
@@ -177,7 +182,29 @@ const ImageList = ({
           />
         }
       />
-      {contextHolder}
+      <Modal
+        title={
+          <>
+            <WarningOutlined className="text-[#f6c343] mr-2" />
+            <span>檢舉照片</span>
+          </>
+        }
+        onCancel={() => {
+          setIsModalOpen(false);
+          setReportType(undefined);
+        }}
+        cancelButtonProps={{ style: { display: "none" } }}
+        onOk={() => handleReport(images[curIndex])}
+        okText="送出"
+        open={isModalOpen}
+        className="w-[20%] mx-auto"
+      >
+        <ReportForm
+          handleChange={handleChange}
+          reportType={reportType}
+          key={reportType}
+        />
+      </Modal>
     </div>
   );
 };

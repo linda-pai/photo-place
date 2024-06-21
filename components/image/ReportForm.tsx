@@ -1,7 +1,7 @@
 import { Radio } from "antd";
 import { REPORT_TYPE } from "@/constants";
 
-const ReportForm = ({ setReportType }: any) => {
+const ReportForm = ({ handleChange, reportType }: any) => {
   const reportTypes = [
     { label: "照片涉及色情或暴力", value: REPORT_TYPE.PORNOGRAPH },
     { label: "照片涉及仇恨或惡意", value: REPORT_TYPE.HATEFUL },
@@ -9,12 +9,12 @@ const ReportForm = ({ setReportType }: any) => {
     { label: "照片侵權或爭議", value: REPORT_TYPE.INFRINGEMENT },
   ];
 
-  const handleChange = (e: any) => {
-    setReportType(e.target.value);
-  };
-
   return (
-    <Radio.Group className="flex flex-col gap-2" onChange={handleChange}>
+    <Radio.Group
+      className="flex flex-col gap-2"
+      onChange={handleChange}
+      defaultValue={reportType}
+    >
       {reportTypes.map((type) => (
         <div>
           <Radio key={type.value} value={type.value}>
