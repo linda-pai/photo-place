@@ -15,6 +15,7 @@ const IMAGE_STATUS = {
 const REMOVE_IMAGE_STATUS = {
   REMOVE: "1",
   REPORTED: "2",
+  FEATURED: "3",
 };
 
 const CHARGE_TYPE = {

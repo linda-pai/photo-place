@@ -12,7 +12,7 @@ import ImageLightBox from "@/components/image/ImageLightBox";
 import userPermission from "@/hooks/usePermission";
 import { featureImg } from "@/lib/editImages";
 // import dynamic from "next/dynamic";
-import { DETECTING_IMG } from "@/constants";
+import { DETECTING_IMG, REMOVE_IMAGE_STATUS } from "@/constants";
 
 //TODO: Phase2
 // const WatermarkModal = dynamic(
@@ -49,7 +49,7 @@ export default function Featured({
     if (!session) return;
 
     fetch(
-      `${domain}/api/photographer/getByStatus/${eventId}/${session.id}?page=${curPage}&status=featured`,
+      `${domain}/api/photographer/getByStatus/${eventId}/${session.id}?page=${curPage}&status=${REMOVE_IMAGE_STATUS.FEATURED}`,
       {
         method: "GET",
         headers: {
