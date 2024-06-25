@@ -69,6 +69,14 @@ export default UploadManagement;
 
 export async function getServerSideProps(context: any) {
   const session = (await getSession(context)) as any;
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const events = await fetch(`${domain}/api/cms/getUploadInfo`, {

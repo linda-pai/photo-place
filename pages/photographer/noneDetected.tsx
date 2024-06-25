@@ -65,7 +65,7 @@ export default function NoneDetected({
 
         if (search) return;
         setTotal(data.totalCount);
-        setEventName(data.images[0].eventName);
+        setEventName(data.images[0]?.eventName);
       });
   });
 
