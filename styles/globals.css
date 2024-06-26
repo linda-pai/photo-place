@@ -286,6 +286,11 @@ td {
     margin: 4px;
     flex-basis: calc(100% / 3 - 8px);
   }
+  .fc {
+    font-size: 12px;
+    width: 85%;
+    margin: 0 auto;
+  }
 }
 
 @media only screen and (max-width: 320px) {
@@ -320,4 +325,33 @@ input::placeholder {
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
+}
+.fc .fc-button-primary {
+  background-color: var(--main-color) !important;
+  border-color: var(--main-color) !important;
+  opacity: 1 !important;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+  background-color: #e5c100 !important;
+  border-color: #e5c100 !important;
+  opacity: 1 !important;
+}
+
+.fc .fc-button:disabled {
+  opacity: 0.6 !important;
+}
+
+:where(.css-dev-only-do-not-override-djtmh8).ant-timeline
+  .ant-timeline-item-head-blue {
+  color: var(--main-color) !important;
+  border-color: var(--main-color) !important;
+}
+
+.fc-event-main {
+  overflow: hidden;
+}
+.fc .fc-popover {
+  z-index: 999 !important;
 }
