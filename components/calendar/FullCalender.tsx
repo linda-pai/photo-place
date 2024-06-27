@@ -59,11 +59,7 @@ export default function Calendar() {
   return (
     <div className="flex gap-1">
       <TimeLineDrawer setCurrEvent={setCurrEvent} />
-      <div
-        className={`${
-          currentView === "dayGridMonth" ? "sm:w-[95%]" : "sm:w-[100%]"
-        } w-full mx-auto`}
-      >
+      <div className="w-full mx-auto px-4">
         <FullCalendar
           plugins={[dayGridPlugin, multiMonthPlugin, interactionPlugin]}
           initialView={currentView}
