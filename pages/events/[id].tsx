@@ -32,12 +32,10 @@ export default function EventSearchPage({
   photoBy,
   dateTime,
   categoryQuery,
-  imagesInfo,
-  unIdentifyImagesInfo,
   allImagesInfo,
   photographerOptions,
 }: any) {
-  const pageSize = 24;
+  const pageSize = 12;
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
 
   const { eventId, eventName, coverImg, description, date } = eventInfo;
@@ -49,16 +47,14 @@ export default function EventSearchPage({
   const [search, setSearch] = useState(bib || "");
   const [isSearched, setIsSearched] = useState(false);
   const [images, setImages] = useState({
-    [IMAGE_STATUS.IDENTIFYED]: imagesInfo.images as ImageItemProps[],
-    [IMAGE_STATUS.UNIDENTIFYED]:
-      unIdentifyImagesInfo.images as ImageItemProps[],
+    [IMAGE_STATUS.IDENTIFYED]: [] as ImageItemProps[],
+    [IMAGE_STATUS.UNIDENTIFYED]: [] as ImageItemProps[],
     [IMAGE_STATUS.ALL]: allImagesInfo.images as ImageItemProps[],
     [IMAGE_STATUS.MORE]: [] as ImageItemProps[],
   });
 
   const [isGetMore, setIsGetMore] = useState(false);
   const [isGetMoreLoading, setIsGetMoreLoading] = useState(false);
-  const [disableReset, setDisableReset] = useState(true);
 
   const [loadedCount, setLoadedCount] = useState({
     [IMAGE_STATUS.IDENTIFYED]: 0,
@@ -81,9 +77,16 @@ export default function EventSearchPage({
   });
 
   const [total, setTotal] = useState({
-    [IMAGE_STATUS.IDENTIFYED]: imagesInfo.totalCount,
-    [IMAGE_STATUS.UNIDENTIFYED]: unIdentifyImagesInfo.totalCount,
+    [IMAGE_STATUS.IDENTIFYED]: 0,
+    [IMAGE_STATUS.UNIDENTIFYED]: 0,
     [IMAGE_STATUS.ALL]: allImagesInfo.totalCount,
+    [IMAGE_STATUS.MORE]: 0,
+  });
+
+  const [searchedPage, setSearchedPage] = useState({
+    [IMAGE_STATUS.IDENTIFYED]: 0,
+    [IMAGE_STATUS.UNIDENTIFYED]: 0,
+    [IMAGE_STATUS.ALL]: 1,
     [IMAGE_STATUS.MORE]: 0,
   });
 
@@ -101,37 +104,16 @@ export default function EventSearchPage({
   useEffect(() => {
     if (category === IMAGE_STATUS.MORE) return;
     onSearch();
-  }, [curPage, author, lastModified, category]);
+  }, [author, lastModified]);
+
+  useEffect(() => {
+    if (curPage[category] === searchedPage[category]) return;
+    onSearch();
+  }, [curPage[category], category]);
 
   useEffect(() => {
     if (isGetMore) getMoreImages();
   }, [curPage[IMAGE_STATUS.MORE]]);
-
-  useEffect(() => {
-    if (search && isSearched) {
-      setCurPage((prev) => {
-        return {
-          ...prev,
-          [category]: 1,
-        };
-      });
-      setCategory(IMAGE_STATUS.ALL);
-    }
-  }, [search, isSearched]);
-
-  useEffect(() => {
-    if (search || author || lastModified.length > 0) {
-      setDisableReset(false);
-    } else {
-      setDisableReset(true);
-      setIsSearched(false);
-    }
-  }, [search, author, lastModified]);
-
-  useEffect(() => {
-    setIsGetMore(false);
-    setCategory(IMAGE_STATUS.ALL);
-  }, [lastModified]);
 
   const memoImages = useMemo(() => {
     return {
@@ -150,37 +132,40 @@ export default function EventSearchPage({
   }, [images]);
 
   const handleOnChangeSearch = (e: any) => {
-    setSearch(e.target.value.trim());
-    if (e.target.value.trim() === "") {
-      resetImages();
-    }
     setIsSearched(false);
-    setIsGetMore(false);
-    setCategory(IMAGE_STATUS.ALL);
-  };
+    resetOnSearch();
 
-  const handleOnChangeCategory = (e: any) => {
-    setCategory(e.target.value);
-    setSearch("");
+    setSearch(e.target.value.trim());
+    setCategory(IMAGE_STATUS.ALL);
+    if (e.target.value.trim() === "") resetState();
   };
 
   const resetImages = () => {
+    setImages({
+      [IMAGE_STATUS.IDENTIFYED]: memoImages[IMAGE_STATUS.IDENTIFYED],
+      [IMAGE_STATUS.UNIDENTIFYED]: memoImages[IMAGE_STATUS.UNIDENTIFYED],
+      [IMAGE_STATUS.ALL]: allImagesInfo.images,
+      [IMAGE_STATUS.MORE]: [],
+    });
+  };
+
+  const resetOnSearch = () => {
     setCurPage({
       [IMAGE_STATUS.IDENTIFYED]: 1,
       [IMAGE_STATUS.UNIDENTIFYED]: 1,
       [IMAGE_STATUS.ALL]: 1,
       [IMAGE_STATUS.MORE]: 1,
     });
-    setImages({
-      [IMAGE_STATUS.IDENTIFYED]: imagesInfo.images,
-      [IMAGE_STATUS.UNIDENTIFYED]: unIdentifyImagesInfo.images,
-      [IMAGE_STATUS.ALL]: allImagesInfo.images,
-      [IMAGE_STATUS.MORE]: [],
+    setLoadedCount({
+      [IMAGE_STATUS.IDENTIFYED]: pageSize,
+      [IMAGE_STATUS.UNIDENTIFYED]: pageSize,
+      [IMAGE_STATUS.ALL]: pageSize,
+      [IMAGE_STATUS.MORE]: 0,
     });
-    setTotal({
-      [IMAGE_STATUS.IDENTIFYED]: imagesInfo.totalCount,
-      [IMAGE_STATUS.UNIDENTIFYED]: unIdentifyImagesInfo.totalCount,
-      [IMAGE_STATUS.ALL]: allImagesInfo.totalCount,
+    setSearchedPage({
+      [IMAGE_STATUS.IDENTIFYED]: 0,
+      [IMAGE_STATUS.UNIDENTIFYED]: 0,
+      [IMAGE_STATUS.ALL]: 0,
       [IMAGE_STATUS.MORE]: 0,
     });
   };
@@ -191,28 +176,16 @@ export default function EventSearchPage({
     setSearch("");
     setCategory(IMAGE_STATUS.ALL);
 
-    setDisableReset(true);
     setIsGetMore(false);
+    setIsSearched(false);
+
+    resetImages();
   };
 
   const onSearch = () => {
     setIsLoading(true);
     if (search !== "" && search.match(/^[0-9]+$/) == null)
       return message.error("請輸入正確的號碼布");
-
-    router.push(
-      {
-        pathname: `/events/${eventId}`,
-        query: {
-          bib: search,
-          photoBy: author,
-          lastModified,
-          category,
-        },
-      },
-      undefined,
-      { shallow: true }
-    );
 
     fetch(
       `${domain}/api/images/getByPathAndEventId/${eventId}?path=${search}&page=${curPage[category]}&author=${author}&lastModified=${lastModified}&date=${date}&category=${category}`
@@ -240,7 +213,15 @@ export default function EventSearchPage({
 
         // set more to true if nextPage exists
         setIsLoading(false);
-        (search || author || lastModified.length > 0) && setIsSearched(true);
+
+        setSearchedPage((prev) => {
+          return {
+            ...prev,
+            [category]: curPage[category],
+          };
+        });
+
+        if (search || author || lastModified.length > 0) setIsSearched(true);
 
         curPage[category] === 1 &&
           scrollIntoViewWithOffset("#result-container", 100);
@@ -253,6 +234,20 @@ export default function EventSearchPage({
           number_of_results: String(data.length),
           user_id_number: String(session?.id) || "",
         });
+
+        router.push(
+          {
+            pathname: `/events/${eventId}`,
+            query: {
+              bib: search,
+              photoBy: author,
+              lastModified,
+              category,
+            },
+          },
+          undefined,
+          { shallow: true }
+        );
       });
   };
 
@@ -278,6 +273,8 @@ export default function EventSearchPage({
   };
 
   const getMoreImages = async () => {
+    if (curPage[IMAGE_STATUS.MORE] === searchedPage[IMAGE_STATUS.MORE]) return;
+
     setIsGetMoreLoading(true);
     //相同 author且 依據lastModified 排序，差距在50000ms以內的視為同一組
     const groupedImages = await images[IMAGE_STATUS.ALL].reduce(
@@ -336,6 +333,12 @@ export default function EventSearchPage({
         });
         setCategory(IMAGE_STATUS.MORE);
         setIsGetMoreLoading(false);
+        setSearchedPage((prev) => {
+          return {
+            ...prev,
+            [IMAGE_STATUS.MORE]: curPage[IMAGE_STATUS.MORE],
+          };
+        });
         return (accCount += data.totalCount);
       })
       .then((count) => {
@@ -366,28 +369,22 @@ export default function EventSearchPage({
     });
   };
 
+  const handleOnChangeCategory = (e: any) => {
+    setCategory(e.target.value);
+    setSearch("");
+  };
+
   const handleOnChangePhotographer = (value: string) => {
+    resetOnSearch();
     if (value === "請選擇攝影師") return;
-    setCurPage({
-      [IMAGE_STATUS.IDENTIFYED]: 1,
-      [IMAGE_STATUS.UNIDENTIFYED]: 1,
-      [IMAGE_STATUS.ALL]: 1,
-      [IMAGE_STATUS.MORE]: 1,
-    });
     setAuthor(value);
   };
 
   const handleOnChangeLastModified = (value: any) => {
+    resetOnSearch();
     if (value === null) {
-      setLastModified([]);
-      return;
+      return setLastModified([]);
     } else {
-      setCurPage({
-        [IMAGE_STATUS.IDENTIFYED]: 1,
-        [IMAGE_STATUS.UNIDENTIFYED]: 1,
-        [IMAGE_STATUS.ALL]: 1,
-        [IMAGE_STATUS.MORE]: 1,
-      });
       const eventDate = dayjs(date).format("YYYY-MM-DD");
 
       const lastModifiedStart =
@@ -436,7 +433,10 @@ export default function EventSearchPage({
       <div ref={navBarRef}>
         <SearchWrapper
           handleOnChange={handleOnChangeSearch}
-          onSearch={onSearch}
+          onSearch={() => {
+            onSearch();
+            resetOnSearch();
+          }}
           eventName={eventName}
           search={search}
         />
@@ -455,51 +455,45 @@ export default function EventSearchPage({
                   : "invisible h-0"
               }
             >
-              {/* <p>試營運期間，只有一位攝影師🥲</p> */}
-              {
-                <>
-                  <div className="flex items-center gap-2 justify-center">
-                    {search && <p>{`號碼布: ${search}`} | </p>}
-                    {author && (
-                      <p>
-                        {`攝影師: ${
-                          photographerOptions.find(
-                            (item: any) => item.value === author
-                          )?.label
-                        }`}{" "}
-                        |{" "}
-                      </p>
-                    )}
-                    {lastModified.length > 0 && (
-                      <p>
-                        {`時間: ${dayjs(lastModified[0]).format(
-                          "HH:mm"
-                        )} ~ ${dayjs(lastModified[1]).format("HH:mm")}`}{" "}
-                        |{" "}
-                      </p>
-                    )}
-                    搜尋結果：
-                  </div>
-                  <p>{`找到 ${
-                    isGetMore ? total[IMAGE_STATUS.MORE] : total[category]
-                  } 張照片${
-                    images?.[category]?.length === 0
-                      ? "，我們未來會努力增加攝影師的💪"
-                      : ""
-                  }`}</p>
-                </>
-              }
-              {/* <p>不囉唆⚡全面 65 折優惠</p> */}
+              <div className="flex items-center gap-2 justify-center">
+                {search && <p>{`號碼布: ${search}`} | </p>}
+                {author && (
+                  <p>
+                    {`攝影師: ${
+                      photographerOptions.find(
+                        (item: any) => item.value === author
+                      )?.label
+                    }`}{" "}
+                    |{" "}
+                  </p>
+                )}
+                {lastModified.length > 0 && (
+                  <p>
+                    {`時間: ${dayjs(lastModified[0]).format("HH:mm")} ~ ${dayjs(
+                      lastModified[1]
+                    ).format("HH:mm")}`}{" "}
+                    |{" "}
+                  </p>
+                )}
+                搜尋結果：
+              </div>
+              <p>{`找到 ${
+                isGetMore ? total[IMAGE_STATUS.MORE] : total[category]
+              } 張照片${
+                images?.[category]?.length === 0
+                  ? "，我們未來會努力增加攝影師的💪"
+                  : ""
+              }`}</p>
               {memoImages[category]?.length > 0 && search && (
-                <div
-                  className="my-4 flex justify-center gap-3"
-                  onClick={() => setIsGetMore((prev) => !prev)}
-                >
+                <div className="my-4 mx-auto flex justify-center gap-3 w-fit">
                   <p>號碼布可能被擋到了...</p>
                   {isGetMore ? (
                     <Button
                       loading={isGetMoreLoading}
-                      onClick={() => setCategory(IMAGE_STATUS.ALL)}
+                      onClick={() => {
+                        setCategory(IMAGE_STATUS.ALL);
+                        setIsGetMore((prev) => !prev);
+                      }}
                     >
                       返回
                     </Button>
@@ -507,6 +501,7 @@ export default function EventSearchPage({
                     <Button
                       onClick={() => {
                         getMoreImages();
+                        setIsGetMore((prev) => !prev);
                       }}
                       loading={isGetMoreLoading}
                     >
@@ -527,10 +522,16 @@ export default function EventSearchPage({
                     value={category}
                   >
                     <Radio.Button value={IMAGE_STATUS.ALL}>全部</Radio.Button>
-                    <Radio.Button value={IMAGE_STATUS.IDENTIFYED}>
+                    <Radio.Button
+                      value={IMAGE_STATUS.IDENTIFYED}
+                      disabled={isGetMore || (isSearched && search)}
+                    >
                       精選照片
                     </Radio.Button>
-                    <Radio.Button value={IMAGE_STATUS.UNIDENTIFYED}>
+                    <Radio.Button
+                      value={IMAGE_STATUS.UNIDENTIFYED}
+                      disabled={isGetMore || (isSearched && search)}
+                    >
                       無法辨識號碼布
                     </Radio.Button>
                   </Radio.Group>
@@ -544,6 +545,7 @@ export default function EventSearchPage({
                   onChange={handleOnChangePhotographer}
                   placeholder="請選擇攝影師"
                   value={author || undefined}
+                  disabled={isGetMore}
                 />
                 <TimePicker.RangePicker
                   className="mx-1"
@@ -555,13 +557,13 @@ export default function EventSearchPage({
                       ? [dayjs(lastModified[0]), dayjs(lastModified[1])]
                       : undefined
                   }
+                  disabled={isGetMore}
                 />
-                <Button onClick={() => resetState()} disabled={disableReset}>
+                <Button onClick={() => resetState()} disabled={!isSearched}>
                   清空
                 </Button>
               </div>
             }
-            {/* add transition */}
             {images[category]?.length > 0 ? (
               <>
                 <div className="transition-all duration-500 mx-2">
@@ -631,14 +633,6 @@ export async function getServerSideProps(context: any) {
   const dateTime = context.query.lastModified || "";
   const categoryQuery = Number(context.query.category) || IMAGE_STATUS.ALL;
 
-  const imagesInfo = await fetch(
-    `${domain}/api/images/getByPathAndEventId/${eventId}?category=${IMAGE_STATUS.IDENTIFYED}`
-  ).then((res) => res.json());
-
-  const unIdentifyImagesInfo = await fetch(
-    `${domain}/api/images/getByPathAndEventId/${eventId}?category=${IMAGE_STATUS.UNIDENTIFYED}`
-  ).then((res) => res.json());
-
   const allImagesInfo = await fetch(
     `${domain}/api/images/getByPathAndEventId/${eventId}?category=${IMAGE_STATUS.ALL}`
   ).then((res) => res.json());
@@ -673,8 +667,6 @@ export async function getServerSideProps(context: any) {
       photoBy,
       dateTime,
       categoryQuery,
-      imagesInfo,
-      unIdentifyImagesInfo,
       allImagesInfo,
       photographerOptions,
     },

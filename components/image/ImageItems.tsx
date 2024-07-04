@@ -11,6 +11,10 @@ const ImageItems = ({
 }: any) => {
   const { id, watermarkedUrl, price, lastModified, orientation } = item;
 
+  const customLoader = ({ src, width, height, quality }: any) => {
+    return `${src}?w=${width}&h=${height}&q=${quality || 75}`;
+  };
+
   return (
     <div
       className={`${`masonry-item-${orientation}`} masonry-item h-fit cursor-pointer scale-100 hover:scale-105 transition-all duration-300 group`}
@@ -21,10 +25,12 @@ const ImageItems = ({
         src={watermarkedUrl}
         alt={watermarkedUrl}
         width={300}
-        height={400}
+        height={450}
         quality={30}
         onLoad={onLoad}
         onContextMenu={(e) => e.preventDefault()}
+        loading="lazy"
+        loader={customLoader}
       />
       <div className="bg-[#fff] bg-opacity-70 absolute bottom-12 sm:p-2 p-1 leading-4 hidden group-hover:block">
         <p className="line-through sm:text-xs text-[12px] text-[#8f8f8f] ">
