@@ -6,27 +6,37 @@ interface UploaderProps {
   onChange: (files: File[]) => void;
   filesList?: File[];
   loading?: boolean;
+  isSimple?: boolean;
 }
-const Uploader = ({ onChange, filesList, loading }: UploaderProps) => {
+const Uploader = ({
+  onChange,
+  filesList,
+  loading,
+  isSimple = false,
+}: UploaderProps) => {
   const { getRootProps, getInputProps } = useDropzone({
     onDrop: (acceptedFiles: any) => onChange(acceptedFiles),
     disabled: loading,
   });
 
   return (
-    <div className="max-w-[550px] mx-auto my-10 text-center">
-      <div
-        {...getRootProps()}
-        className={`${
-          loading
-            ? "hover:cursor-not-allowed bg-[#FFF] text-[color:var(--main-color-light)]"
-            : "hover:cursor-pointer bg-[#FFFDFB] text-[color:var(--main-color-dark)]"
-        } my-10 border-2 border-dashed border-[color:var(--main-color-light)] rounded-2xl p-10`}
-      >
-        <input {...getInputProps()} />
-        <UploadOutlined className="text-3xl mb-4" />
-        <p>上傳照片 - 從檔案選擇或拖曳</p>
-      </div>
+    <div
+      {...getRootProps()}
+      className={`${
+        loading
+          ? "hover:cursor-not-allowed bg-[#FFF] text-[color:var(--main-color-light)]"
+          : "hover:cursor-pointer bg-[#FFFDFB] text-[color:var(--main-color-dark)]"
+      } border-2 border-dashed border-[color:var(--main-color-light)] rounded-lg ${
+        isSimple ? "p-[5px]" : "p-10"
+      }`}
+    >
+      <input {...getInputProps()} />
+      <UploadOutlined className={`${isSimple ? "text-lg" : "text-3xl"}`} />
+      {!isSimple ? (
+        <p className="mt-4">上傳照片 - 從檔案選擇或拖曳</p>
+      ) : (
+        <span className="mx-1">新增浮水印</span>
+      )}
     </div>
   );
 };

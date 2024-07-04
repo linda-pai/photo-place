@@ -431,7 +431,7 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
               />
             </div>
           </div>
-          <div className="text-center mx-auto my-10  max-w-[800px] min-h-[30vh]">
+          <div className="text-center mx-auto my-10 max-w-[500px] min-h-[30vh]">
             <Uploader
               onChange={handleOnUploaderChange}
               filesList={fileOptionsList}
@@ -443,7 +443,7 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
                 loading
               }
               onClick={handleUpload}
-              className="bg-[color:var(--main-color-dark)] text-white w-1/4 text-lg h-auto"
+              className="my-10 bg-[color:var(--main-color-dark)] text-white w-1/4 text-lg h-auto"
             >
               確定上傳
             </Button>
