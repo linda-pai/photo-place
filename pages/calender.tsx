@@ -6,7 +6,7 @@ const Calendar = dynamic(() => import("@/components/calendar/FullCalender"), {
   ssr: false,
 });
 
-export default function Calender() {
+export default function Calender({ eventList }: { eventList: any }) {
   const name = "全國賽事列表 | 賽事行事曆";
   return (
     <>
@@ -37,8 +37,31 @@ export default function Calender() {
         <p className="text-center text-sm mb-12">
           賽事資訊以主辦單位公告為主，以下資訊僅供參考。
         </p>
-        <Calendar />
+        <Calendar events={eventList} />
       </div>
     </>
   );
+}
+
+export async function getServerSideProps(context: any) {
+  const domain = process.env.NEXT_PUBLIC_SERVER_URL;
+  // Fetch data from external API
+  const res = await fetch(`${domain}/api/events/getAllEvents`);
+  const events = await res.json();
+
+  const eventList: any = events.map((event: any) => {
+    return {
+      id: event.eventId,
+      title: event.eventName,
+      start: event.date,
+      url: event?.url || "",
+      allDay: true,
+      backgroundColor: "#857e85",
+      borderColor: "#857e85",
+    };
+  });
+
+  return {
+    props: { eventList },
+  };
 }

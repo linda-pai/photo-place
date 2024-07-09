@@ -4,7 +4,6 @@ import dayGridPlugin from "@fullcalendar/daygrid"; // a plugin!
 import multiMonthPlugin from "@fullcalendar/multimonth";
 import interactionPlugin from "@fullcalendar/interaction";
 import { Tooltip } from "antd";
-import EventJson from "@/static/eventData.json";
 import dynamic from "next/dynamic";
 
 const TimeLineDrawer = dynamic(
@@ -12,25 +11,13 @@ const TimeLineDrawer = dynamic(
   { ssr: false }
 );
 
-export default function Calendar() {
+export default function Calendar({ events }: { events: any }) {
   const [currentView, setCurrentView] = useState("dayGridMonth"); // dayGridMonth, multiMonthPlugin
   const [currEvent, setCurrEvent] = useState<any>(null);
 
   useEffect(() => {
     setCurrEvent(null);
   }, [currentView]);
-
-  const events: any = EventJson.map((event) => {
-    return {
-      id: event.eventId,
-      title: event.eventName,
-      start: event.date,
-      url: event.url,
-      allDay: true,
-      backgroundColor: "#857e85",
-      borderColor: "#857e85",
-    };
-  });
 
   const renderEventContent = (eventInfo: any) => {
     return (
@@ -58,7 +45,7 @@ export default function Calendar() {
 
   return (
     <div className="flex gap-1">
-      <TimeLineDrawer setCurrEvent={setCurrEvent} />
+      <TimeLineDrawer setCurrEvent={setCurrEvent} events={events} />
       <div className="w-full mx-auto px-4">
         <FullCalendar
           plugins={[dayGridPlugin, multiMonthPlugin, interactionPlugin]}

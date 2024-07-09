@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { Timeline, Drawer } from "antd";
 import { CloseCircleOutlined, DoubleRightOutlined } from "@ant-design/icons";
-import EventJson from "@/static/eventData.json";
 
-const TimeLineDrawer = ({ setCurrEvent }: any) => {
+const TimeLineDrawer = ({ setCurrEvent, events }: any) => {
   const [open, setOpen] = useState(false);
 
   const showDrawer = () => {
@@ -40,16 +39,16 @@ const TimeLineDrawer = ({ setCurrEvent }: any) => {
       >
         <Timeline
           className="max-h-[80vh] overflow-scroll text-slate-600 p-4 w-fit ml-[-40%]"
-          items={EventJson.map((event) => {
+          items={events.map((event: any) => {
             return {
               children: event.url ? (
                 <a href={event.url || undefined} target="_blank">
-                  <h3>{event.eventName}</h3>
+                  <h3>{event.title}</h3>
                 </a>
               ) : (
-                <h3>{event.eventName}</h3>
+                <h3>{event.title}</h3>
               ),
-              label: event.date,
+              label: event.start,
             };
           })}
           mode="left"
