@@ -34,7 +34,7 @@ const ChooseWatermark = ({
 
   useEffect(() => {
     if (session) handleGetWatermark();
-  }, [session]);
+  }, []);
 
   const handleGetWatermark = () => {
     fetch(`${domain}/api/photographer/getWatermark/${session.id}`, {

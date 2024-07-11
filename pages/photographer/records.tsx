@@ -23,7 +23,7 @@ const records = () => {
 
   useEffect(() => {
     if (session) getUploadDetail();
-  }, [session]);
+  }, []);
 
   const getUploadDetail = async () => {
     fetch(`${domain}/api/photographer/getUploadInfo`, {
