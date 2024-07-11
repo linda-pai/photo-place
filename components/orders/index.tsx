@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Table, Spin, Space, Button, Tag, Modal, message } from "antd";
+import { Table, Spin, Space, Button, Tag, Modal, message, Badge } from "antd";
 import {
   DownloadOutlined,
   CreditCardOutlined,
   CopyOutlined,
   ExclamationCircleOutlined,
+  PlayCircleOutlined,
 } from "@ant-design/icons";
 import { CartDataProps } from "@/types/interfaces/CartDataProps";
 import dynamic from "next/dynamic";
@@ -27,6 +28,10 @@ const ImageItemDisplay = dynamic(
   }
 );
 
+const GenGifModal = dynamic(() => import("@/components/orders/GenGifModal"), {
+  loading: () => <Spin />,
+});
+
 interface Order {
   orderId: string;
   totalAmount: number;
@@ -45,6 +50,7 @@ const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isGenGifModalOpen, setIsGenGifModalOpen] = useState(false);
   const [modal, contextHolder] = Modal.useModal();
   const [currentOrder, setCurrentOrder] = useState({} as Order);
 
@@ -213,7 +219,7 @@ const Orders = () => {
   const columns = tableConfig(columnsRenderMap);
 
   useEffect(() => {
-    if (session) getOrders();
+    if (session && orders.length === 0) getOrders();
   }, [session]);
 
   const getOrders = () => {
@@ -235,6 +241,10 @@ const Orders = () => {
 
   const handleCancel = () => {
     setIsModalOpen(false);
+  };
+
+  const handleGenGifCancel = () => {
+    setIsGenGifModalOpen(false);
   };
 
   const showModal = () => {
@@ -313,6 +323,19 @@ const Orders = () => {
 
   return !loading ? (
     <div className="text-slate-600 sm:mx-0 mx-2">
+      <div className="flex justify-end my-4 mx-5">
+        <Badge count="new" offset={[-2, 2]}>
+          <Button
+            onClick={() => setIsGenGifModalOpen(true)}
+            className="flex items-center mt-1"
+          >
+            <div className="sm:block hidden">
+              <PlayCircleOutlined />
+            </div>
+            &nbsp;製作GIF
+          </Button>
+        </Badge>
+      </div>
       <Table
         dataSource={orders}
         columns={columns}
@@ -329,6 +352,12 @@ const Orders = () => {
         currentOrder={currentOrder}
         modelDescription="付款完成後即可下載照片，是否要前往付款?"
       />
+      {isGenGifModalOpen && (
+        <GenGifModal
+          isModalOpen={isGenGifModalOpen}
+          handleCancel={handleGenGifCancel}
+        />
+      )}
     </div>
   ) : (
     <div className="flex justify-center items-center h-[80vh]">
