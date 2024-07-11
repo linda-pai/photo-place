@@ -33,8 +33,8 @@ const ChooseWatermark = ({
   const [imageFile, setImageFile] = useState([] as any[]);
 
   useEffect(() => {
-    if (session) handleGetWatermark();
-  }, []);
+    if (session && watermarkImgOption.length === 0) handleGetWatermark();
+  }, [session]);
 
   const handleGetWatermark = () => {
     fetch(`${domain}/api/photographer/getWatermark/${session.id}`, {
