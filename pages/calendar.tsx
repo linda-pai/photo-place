@@ -2,7 +2,7 @@ import dynamic from "next/dynamic";
 import Head from "next/head";
 import { SITE_NAME } from "@/constants";
 
-const Calendar = dynamic(() => import("@/components/calendar/FullCalender"), {
+const Calendar = dynamic(() => import("@/components/calendar/FullCalendar"), {
   ssr: false,
 });
 
