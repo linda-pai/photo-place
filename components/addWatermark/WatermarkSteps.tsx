@@ -20,12 +20,10 @@ const ChooseWatermark = dynamic(
 
 const WatermarkSteps = ({
   toBeWatermarked,
-  featuredImages,
   handleRemoveWatermarkedImg,
   eventId,
 }: {
   toBeWatermarked: any[];
-  featuredImages: any[];
   handleRemoveWatermarkedImg: (item: any) => void;
   eventId: string;
 }) => {
@@ -79,6 +77,9 @@ const WatermarkSteps = ({
         .then((result) => {
           message.success("下載成功");
           message.destroy("loading");
+          handleRemoveWatermarkedImg(toBeWatermarked);
+          setDisabledDownload(true);
+          setCurrent(0);
           return result;
         })
         .catch((err) => {
@@ -140,7 +141,7 @@ const WatermarkSteps = ({
       title: "選擇照片",
       content: (
         <div className="flex flex-wrap justify-center gap-2 my-8">
-          {toBeWatermarked.map((item: any, key: number) => (
+          {toBeWatermarked?.map((item: any, key: number) => (
             <div className="relative" key={key}>
               <Image
                 src={item}
@@ -166,8 +167,7 @@ const WatermarkSteps = ({
       title: "浮水印樣式",
       content: (
         <ChooseWatermark
-          featuredImages={featuredImages}
-          eventId={eventId}
+          toBeWatermarked={toBeWatermarked}
           onChange={onChange}
           control={{ position, opacity, watermarkImg }}
         />

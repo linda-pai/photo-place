@@ -133,18 +133,17 @@ export default function Featured({
     isWatermarked: boolean,
     watermarkedUrl: string
   ) => {
-    //寫入cookie
-    const currentWatermarked = JSON.parse(getCookie("watermarked") || "{}");
-
     if (!isExistInWatermark(watermarkedUrl)) {
       //max 20 images
-      if (toBeWatermarked[eventId].length >= 20 && !isWatermarked) {
+      if (toBeWatermarked[eventId]?.length >= 20 && !isWatermarked) {
         return message.error("最多只能選擇20張照片");
       }
       //存入cookie
       pushToCookie(watermarkedUrl);
       message.success("已加入浮水印清單");
     } else {
+      //寫入cookie
+      const currentWatermarked = JSON.parse(getCookie("watermarked") || "{}");
       //從cookie移除
       const newCookie = currentWatermarked[eventId].filter(
         (item: string) => item !== watermarkedUrl
@@ -155,10 +154,10 @@ export default function Featured({
     }
   };
 
-  const handleRemoveWatermarkedImg = (item: any) => {
+  const handleRemoveWatermarkedImg = (items: string[]) => {
     const currentWatermarked = JSON.parse(getCookie("watermarked") || "{}");
     const newCookie = currentWatermarked[eventId].filter(
-      (cookie: string) => cookie !== item
+      (cookie: string) => !items.includes(cookie)
     );
     currentWatermarked[eventId] = newCookie;
     updateWatermarkImg(currentWatermarked);
@@ -180,14 +179,11 @@ export default function Featured({
           <div className="container mx-auto text-slate-600 my-24 overflow-hidden">
             <h2 className="text-center text-2xl mb-8">精選照片</h2>
             <div className="container mx-auto sm:my-10 my-4">
-              {toBeWatermarked[eventId] && (
-                <WatermarkModal
-                  featuredImages={featuredImages}
-                  eventId={eventId}
-                  toBeWatermarked={toBeWatermarked[eventId]}
-                  handleRemoveWatermarkedImg={handleRemoveWatermarkedImg}
-                />
-              )}
+              <WatermarkModal
+                eventId={eventId}
+                toBeWatermarked={toBeWatermarked[eventId]}
+                handleRemoveWatermarkedImg={handleRemoveWatermarkedImg}
+              />
               <Link
                 href={`/photographer/checkBibs?eventId=${eventId}&date=${date}`}
                 className={`mx-2 my-2 flex ${

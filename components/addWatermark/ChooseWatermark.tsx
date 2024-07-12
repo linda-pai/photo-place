@@ -19,12 +19,7 @@ import { sha256 } from "js-sha256";
 const Uploader = dynamic(() => import("@/components/upload/Uploader"), {
   loading: () => <Spin />,
 });
-const ChooseWatermark = ({
-  featuredImages,
-  eventId,
-  onChange,
-  control,
-}: any) => {
+const ChooseWatermark = ({ toBeWatermarked, onChange, control }: any) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const { data: session }: any = useSession();
   const { position, opacity, watermarkImg } = control;
@@ -47,7 +42,6 @@ const ChooseWatermark = ({
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("data", data);
         if (data.error) {
           message.error(data.error);
         } else {
@@ -123,13 +117,6 @@ const ChooseWatermark = ({
           handleGetWatermark();
         }
       });
-  };
-
-  const removeFromWatermark = () => {
-    const currentWatermark = JSON.parse(getCookie("watermark") || "{}");
-    //delete by key =eventId
-    delete currentWatermark[eventId];
-    setCookie("watermarked", JSON.stringify(currentWatermark));
   };
 
   return (
@@ -209,7 +196,7 @@ const ChooseWatermark = ({
           <div className="w-full flex justify-center">
             <div className="relative w-[180px] h-[270px]">
               <Image
-                src={featuredImages[0].watermarkedUrl}
+                src={toBeWatermarked[0]}
                 width="180"
                 height="270"
                 className={`absolute ${

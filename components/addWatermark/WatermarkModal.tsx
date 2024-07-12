@@ -1,28 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal, message, Button, Badge } from "antd";
 import { BgColorsOutlined } from "@ant-design/icons";
-import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import WatermarkSteps from "./WatermarkSteps";
 
 const WatermarkModal = ({
-  featuredImages,
   eventId,
   toBeWatermarked,
   handleRemoveWatermarkedImg,
 }: {
-  featuredImages: ImageItemProps[];
   eventId: string;
   toBeWatermarked: any[];
   handleRemoveWatermarkedImg: (item: any) => void;
 }) => {
   const [isModalOpen, setModalOpen] = useState(false);
 
+  useEffect(() => {
+    if (toBeWatermarked?.length === 0) setModalOpen(false);
+  }, [toBeWatermarked]);
+
   return (
     <div className="flex justify-end mb-4 mr-4 gap-1">
-      <Badge count={toBeWatermarked.length}>
+      <Badge count={toBeWatermarked?.length || 0}>
         <Button
           onClick={() => {
-            if (toBeWatermarked.length === 0) {
+            if (!toBeWatermarked || toBeWatermarked?.length === 0) {
               message.error("請選擇要添加浮水印的照片");
               return;
             }
@@ -43,7 +44,6 @@ const WatermarkModal = ({
       >
         <WatermarkSteps
           toBeWatermarked={toBeWatermarked}
-          featuredImages={featuredImages}
           handleRemoveWatermarkedImg={handleRemoveWatermarkedImg}
           eventId={eventId}
         />
