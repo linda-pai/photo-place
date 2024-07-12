@@ -2,7 +2,11 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { Steps, Button, message, Spin } from "antd";
-import { LeftOutlined, RightOutlined } from "@ant-design/icons";
+import {
+  LeftOutlined,
+  RightOutlined,
+  MinusCircleOutlined,
+} from "@ant-design/icons";
 import dynamic from "next/dynamic";
 import { sha256 } from "js-sha256";
 import downloadImage from "@/utils/downloadImage";
@@ -32,6 +36,8 @@ const WatermarkSteps = ({
   const [watermarkImg, setWatermarkImg] = useState("");
   const [position, setPosition] = useState("southeast"); // southeast or northwest
   const [opacity, setOpacity] = useState(100);
+  const [disabledDownload, setDisabledDownload] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const onChange = (label: string, value: any) => {
     switch (label) {
@@ -96,6 +102,8 @@ const WatermarkSteps = ({
       key: "loading",
       content: "處理中...",
     };
+
+    setLoading(true);
     message.open({ ...loadingMsgConfig, type: "loading" });
 
     fetch(`${domain}/api/photographer/generateWatermark`, {
@@ -120,6 +128,8 @@ const WatermarkSteps = ({
         } else {
           message.success("添加浮水印成功");
           message.destroy("loading");
+          setDisabledDownload(false);
+          setLoading(false);
           //   removeFromWatermark();
         }
       });
@@ -129,19 +139,24 @@ const WatermarkSteps = ({
     {
       title: "選擇照片",
       content: (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap justify-center gap-2 my-8">
           {toBeWatermarked.map((item: any, key: number) => (
-            <div className="" key={key}>
+            <div className="relative" key={key}>
               <Image
                 src={item}
                 alt={item}
-                width={100}
-                height={100}
+                width={90}
+                height={90}
                 quality={30}
               />
-              <Button onClick={() => handleRemoveWatermarkedImg(item)}>
-                移除
-              </Button>
+              <div className="absolute top-[-6px] right-[-6px]">
+                <div
+                  onClick={() => handleRemoveWatermarkedImg(item)}
+                  className="flex items-center text-2xl text-white bg-red-400 rounded-full cursor-pointer hover:bg-red-600"
+                >
+                  <MinusCircleOutlined />
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -165,10 +180,15 @@ const WatermarkSteps = ({
           <Button
             className=""
             onClick={() => generateWatermark(position, opacity)}
+            loading={loading}
           >
             產生浮水印
           </Button>
-          <Button onClick={handleWatermarkDownload} type="primary">
+          <Button
+            onClick={handleWatermarkDownload}
+            type="primary"
+            disabled={disabledDownload}
+          >
             下載
           </Button>
         </div>

@@ -3,24 +3,24 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Head from "next/head";
 import Link from "next/link";
-import { Pagination, Spin, Button, Empty } from "antd";
-import { StarOutlined } from "@ant-design/icons";
+import { setCookie, getCookie } from "cookies-next";
+import { Pagination, Spin, Button, Empty, message } from "antd";
+import { StarOutlined, BgColorsOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { sha256 } from "js-sha256";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import ImageLightBox from "@/components/image/ImageLightBox";
 import userPermission from "@/hooks/usePermission";
 import { featureImg } from "@/lib/editImages";
-// import dynamic from "next/dynamic";
+import dynamic from "next/dynamic";
 import { DETECTING_IMG, REMOVE_IMAGE_STATUS } from "@/constants";
 
-//TODO: Phase2
-// const WatermarkModal = dynamic(
-//   () => import("@/components/addWatermark/WatermarkModal"),
-//   {
-//     loading: () => <Spin />,
-//   }
-// );
+const WatermarkModal = dynamic(
+  () => import("@/components/addWatermark/WatermarkModal"),
+  {
+    loading: () => <Spin />,
+  }
+);
 
 export default function Featured({
   eventId,
@@ -41,6 +41,7 @@ export default function Featured({
   const [curPage, setCurPage] = useState(1);
 
   const [totalFeatured, setTotalFeatured] = useState(0);
+  const [toBeWatermarked, setToBeWatermarked] = useState({} as any);
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const pageSize = 24;
@@ -65,6 +66,10 @@ export default function Featured({
         setTotalFeatured(data.totalCount);
       });
   }, [session, curPage]);
+
+  useEffect(() => {
+    setToBeWatermarked(JSON.parse(getCookie("watermarked") || "{}"));
+  }, []);
 
   const gotoPrevious = () =>
     currImgIndex > 0 && setCurrImgIndex(currImgIndex - 1);
@@ -102,6 +107,63 @@ export default function Featured({
     });
   };
 
+  const updateWatermarkImg = (data: any) => {
+    setCookie("watermarked", JSON.stringify(data), {
+      expires: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+    });
+
+    setToBeWatermarked(data);
+  };
+
+  const pushToCookie = (id: string) => {
+    const currentCookie = JSON.parse(getCookie("watermarked") || "{}");
+    if (currentCookie[eventId]?.includes(id)) return;
+    const newCookie = currentCookie[eventId]
+      ? [...currentCookie[eventId], id]
+      : [id];
+
+    currentCookie[eventId] = newCookie;
+    updateWatermarkImg(currentCookie);
+  };
+
+  const isExistInWatermark = (watermarkedUrl: string) =>
+    toBeWatermarked[eventId]?.includes(watermarkedUrl);
+
+  const handleToBeWatermarkedImg = (
+    isWatermarked: boolean,
+    watermarkedUrl: string
+  ) => {
+    //寫入cookie
+    const currentWatermarked = JSON.parse(getCookie("watermarked") || "{}");
+
+    if (!isExistInWatermark(watermarkedUrl)) {
+      //max 20 images
+      if (toBeWatermarked[eventId].length >= 20 && !isWatermarked) {
+        return message.error("最多只能選擇20張照片");
+      }
+      //存入cookie
+      pushToCookie(watermarkedUrl);
+      message.success("已加入浮水印清單");
+    } else {
+      //從cookie移除
+      const newCookie = currentWatermarked[eventId].filter(
+        (item: string) => item !== watermarkedUrl
+      );
+      currentWatermarked[eventId] = newCookie;
+      updateWatermarkImg(currentWatermarked);
+      message.success("已從浮水印清單移除");
+    }
+  };
+
+  const handleRemoveWatermarkedImg = (item: any) => {
+    const currentWatermarked = JSON.parse(getCookie("watermarked") || "{}");
+    const newCookie = currentWatermarked[eventId].filter(
+      (cookie: string) => cookie !== item
+    );
+    currentWatermarked[eventId] = newCookie;
+    updateWatermarkImg(currentWatermarked);
+  };
+
   return (
     <>
       <Head>
@@ -118,10 +180,14 @@ export default function Featured({
           <div className="container mx-auto text-slate-600 my-24 overflow-hidden">
             <h2 className="text-center text-2xl mb-8">精選照片</h2>
             <div className="container mx-auto sm:my-10 my-4">
-              {/* <WatermarkModal
+              {toBeWatermarked[eventId] && (
+                <WatermarkModal
                   featuredImages={featuredImages}
                   eventId={eventId}
-                /> */}
+                  toBeWatermarked={toBeWatermarked[eventId]}
+                  handleRemoveWatermarkedImg={handleRemoveWatermarkedImg}
+                />
+              )}
               <Link
                 href={`/photographer/checkBibs?eventId=${eventId}&date=${date}`}
                 className={`mx-2 my-2 flex ${
@@ -148,6 +214,25 @@ export default function Featured({
                         />
                         <div className="flex gap-2 py-2 px-1 justify-end items-center bg-[#404040] bg-opacity-40 absolute top-0 w-full group hover:bg-opacity-80 transition-all duration-300">
                           <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToBeWatermarkedImg(
+                                item.isWatermarked,
+                                item.watermarkedUrl
+                              );
+                            }}
+                            className={`flex items-center justify-center mr-1 ${
+                              isExistInWatermark(item.watermarkedUrl)
+                                ? "text-white border border-[#fff] bg-[#f97316] text-[#fff]"
+                                : "text-white bg-[#fff] border border-white bg-transparent"
+                            }`}
+                            size="small"
+                            title="加浮水印"
+                          >
+                            <BgColorsOutlined />
+                          </Button>
+
+                          <Button
                             onClick={(e) =>
                               handleFeatureImg(item.id, item.isFeatured, e)
                             }
@@ -157,6 +242,7 @@ export default function Featured({
                                 : "text-white bg-[#fff] border border-white bg-transparent"
                             }`}
                             size="small"
+                            title="精選"
                           >
                             <StarOutlined />
                           </Button>

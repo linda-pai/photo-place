@@ -144,7 +144,7 @@ const ChooseWatermark = ({
         <Segmented
           options={watermarkImgOption.map((item: any) => ({
             label: (
-              <div className="p-1 group h-[40px]">
+              <div className="p-1 group h-[40px] w-[40px]">
                 <Image
                   src={item.watermarkImg}
                   width="120"
@@ -153,7 +153,7 @@ const ChooseWatermark = ({
                   className="object-cover w-full h-full"
                 />
                 <div
-                  className="absolute top-[-20px] right-[-10px] p-1 group-hover:bg-opacity-100 cursor-pointer hover:bg-opacity-100 bg-opacity-0 transition-all duration-300 bg-white rounded-full"
+                  className="absolute top-[-15px] right-[-10px] group-hover:bg-opacity-100 cursor-pointer hover:bg-opacity-100 bg-opacity-0 transition-all duration-300 rounded-full"
                   onClick={() => handleDelete(item.watermarkImg)}
                 >
                   <CloseCircleOutlined />
@@ -166,11 +166,9 @@ const ChooseWatermark = ({
           defaultValue={watermarkImg}
           key={watermarkImg}
         />
-        <Uploader
-          onChange={handleUpload}
-          filesList={imageFile}
-          isSimple={true}
-        />
+        <div className="mx-4">
+          <Uploader onChange={handleUpload} isSimple={true} />
+        </div>
       </Row>
 
       <Row className="items-center">
@@ -219,11 +217,9 @@ const ChooseWatermark = ({
                 }`}
                 alt="預覽圖片"
               />
-              <Image
+              <img
                 src={watermarkImg || URL.createObjectURL(imageFile[0])}
-                width="100"
-                height="100"
-                className={`absolute ${
+                className={`absolute h-[27px] object-contain ${
                   position === "northwest" ? "top-2 left-2" : "bottom-2 right-2"
                 }`}
                 style={{ opacity: opacity / 100 }}

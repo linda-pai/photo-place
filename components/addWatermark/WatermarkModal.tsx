@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Modal, message, Button, Badge } from "antd";
+import { BgColorsOutlined } from "@ant-design/icons";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import WatermarkSteps from "./WatermarkSteps";
 
@@ -27,7 +28,9 @@ const WatermarkModal = ({
             }
             setModalOpen((prev) => !prev);
           }}
+          className="flex items-center bg-[#f97316] text-white border-[#f97316]"
         >
+          <BgColorsOutlined />
           添加浮水印
         </Button>
       </Badge>
@@ -44,7 +47,6 @@ const WatermarkModal = ({
           handleRemoveWatermarkedImg={handleRemoveWatermarkedImg}
           eventId={eventId}
         />
-        {/* <ChooseWatermark featuredImages={featuredImages} /> */}
       </Modal>
     </div>
   );
