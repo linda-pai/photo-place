@@ -4,16 +4,10 @@ import { UploadOutlined } from "@ant-design/icons";
 
 interface UploaderProps {
   onChange: (files: File[]) => void;
-  filesList?: File[];
   loading?: boolean;
   isSimple?: boolean;
 }
-const Uploader = ({
-  onChange,
-  filesList,
-  loading,
-  isSimple = false,
-}: UploaderProps) => {
+const Uploader = ({ onChange, loading, isSimple = false }: UploaderProps) => {
   const { getRootProps, getInputProps } = useDropzone({
     onDrop: (acceptedFiles: any) => onChange(acceptedFiles),
     disabled: loading,
@@ -35,7 +29,7 @@ const Uploader = ({
       {!isSimple ? (
         <p className="mt-4">上傳照片 - 從檔案選擇或拖曳</p>
       ) : (
-        <span className="mx-1">新增浮水印</span>
+        <span className="mx-1">上傳</span>
       )}
     </div>
   );

@@ -107,7 +107,7 @@ const CreateEventBlock = ({
       </div>
       {isShowImageUpload && (
         <div className="max-w-[550px] mx-auto my-10 text-center">
-          <Uploader onChange={handleUpload} filesList={imageFile} />
+          <Uploader onChange={handleUpload} />
         </div>
       )}
       {imageFile.length > 0 && (

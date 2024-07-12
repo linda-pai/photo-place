@@ -432,11 +432,7 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
             </div>
           </div>
           <div className="text-center mx-auto my-10 max-w-[500px] min-h-[30vh]">
-            <Uploader
-              onChange={handleOnUploaderChange}
-              filesList={fileOptionsList}
-              loading={loading}
-            />
+            <Uploader onChange={handleOnUploaderChange} loading={loading} />
             <Button
               disabled={
                 fileOptionsList.filter((file: any) => file.type).length === 0 ||
