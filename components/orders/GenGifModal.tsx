@@ -140,7 +140,6 @@ const GenGifModal = ({
                   <div className="w-full">
                     <Select
                       options={[
-                        { label: "全部", value: "" },
                         ...events.map((event: any) => ({
                           label: event.eventName,
                           value: event.eventId,
