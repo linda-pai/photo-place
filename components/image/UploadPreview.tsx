@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import { sha256 } from "js-sha256";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import { DETECTING_IMG } from "@/constants";
+import customLoader from "@/utils/customLoader";
 
 const ImageLightBox = dynamic(
   () => import("@/components/image/ImageLightBox"),
@@ -61,10 +62,6 @@ export default function UploadPreview({ eventId }: { eventId: string }) {
     setCurrImgIndex(
       allImages.findIndex((item: ImageItemProps) => item.id === id)
     );
-  };
-
-  const customLoader = ({ src, width, height, quality }: any) => {
-    return `${src}?w=${width}&h=${height}&q=${quality || 75}`;
   };
 
   return (

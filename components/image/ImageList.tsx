@@ -7,11 +7,17 @@ import { message, Modal } from "antd";
 import { WarningOutlined } from "@ant-design/icons";
 import { clickAddToCart, removeAddToCart } from "@/lib/gtag";
 import ImageItems from "./ImageItems";
-import ImageLightBox from "./ImageLightBox";
 import { REPORT_TYPE } from "@/constants";
 
 const CustomImgViewerUI = dynamic(
   () => import("@/components/image/CustomImgViewerUI"),
+  {
+    ssr: false,
+  }
+);
+
+const ImageLightBox = dynamic(
+  () => import("@/components/image/ImageLightBox"),
   {
     ssr: false,
   }
