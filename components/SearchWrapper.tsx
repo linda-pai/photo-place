@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { QuestionCircleOutlined } from "@ant-design/icons";
+
 interface Props {
   handleOnChange: (e: any) => void;
   onSearch: () => void;
@@ -11,6 +14,7 @@ const SearchWrapper = ({
   eventName,
   search,
 }: Props) => {
+  const [showHelp, setShowHelp] = useState(false);
   return (
     <div className="mb-10">
       <div className="relative w-full h-screen bg-cover bg-[url('/banner.png')]">
@@ -60,6 +64,22 @@ const SearchWrapper = ({
                   搜尋號碼布
                 </h3>
               </button>
+
+              <div
+                className="flex items-center w-fit text-white text-center text-sm mt-2 py-1 px-2 rounded-md bg-[#5f5b50] bg-opacity-70 w-fit max-w-[90%] mx-auto cursor-pointer"
+                onClick={() => setShowHelp((prev) => !prev)}
+              >
+                <QuestionCircleOutlined />
+                <div
+                  className={`${
+                    showHelp ? "w-full ml-1 max-h-10" : "w-0 max-h-5"
+                  } transition-all duration-200 ease-in-out overflow-hidden sm:max-h-5 max-h-10`}
+                >
+                  <p>
+                    接力賽號碼布輸入數字部分即可 ex: 123-1 只需輸入 1231 或 123
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

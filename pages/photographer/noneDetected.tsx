@@ -30,14 +30,12 @@ export default function NoneDetected({
 
   const [images, setImages] = useState([] as ImageItemProps[]);
   const [total, setTotal] = useState(0);
-  const [sorting, setSorting] = useState("asc"); //  asc or desc
+  const [lastModifiedSorting, setLastModifiedSorting] = useState("asc"); //  asc or desc
   const [eventName, setEventName] = useState("");
   const [search, setSearch] = useState("");
 
   const [curPage, setCurPage] = useState(1);
   const [loading, setLoading] = useState(true);
-
-  const [detectLength, setDetectLength] = useState(0);
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const pageSize = 24;
@@ -54,9 +52,8 @@ export default function NoneDetected({
       },
       body: JSON.stringify({
         eventId,
-        author: session.id,
         curPage,
-        sorting,
+        lastModifiedSorting,
         fileName: search,
         isEmptyPath: true,
       }),
@@ -68,15 +65,14 @@ export default function NoneDetected({
 
         if (search) return;
         setTotal(data.totalCount);
-        setDetectLength(data.detectedImageLength);
-        setEventName(data.images[0].eventName);
+        setEventName(data.images[0]?.eventName);
       });
   });
 
   useEffect(() => {
     if (!session) return;
     getImageInfo();
-  }, [session, sorting, curPage, search]);
+  }, [session, lastModifiedSorting, curPage, search]);
 
   const onSearch = (value: string) => {
     setSearch(value);
@@ -84,7 +80,7 @@ export default function NoneDetected({
   };
 
   const onRadioChange = (e: any) => {
-    setSorting(e.target.value);
+    setLastModifiedSorting(e.target.value);
     setLoading(true);
   };
 

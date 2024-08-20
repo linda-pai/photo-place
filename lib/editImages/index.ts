@@ -5,22 +5,22 @@ const featureImg = ({
   eventId,
   id,
   isFeatured,
-  session,
+  author,
 }: {
   eventId: string;
   id: string;
   isFeatured: boolean;
-  session: any;
+  author: any;
 }) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const response = fetch(
-    `${domain}/api/photographer/setStatus/${eventId}/${id}/${session.id}`,
+    `${domain}/api/photographer/setStatus/${eventId}/${id}/${author}`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + session.id,
-        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
+        Authorization: "Bearer " + author,
+        secret: sha256(author + process.env.NEXT_PUBLIC_SALT),
       },
       body: JSON.stringify({ isFeatured: !isFeatured }),
     }
@@ -38,63 +38,26 @@ const featureImg = ({
   return response;
 };
 
-const deleteImg = async ({
-  eventId,
-  id,
-  isRemoved,
-  session,
-}: {
-  eventId: string;
-  id: string;
-  isRemoved: boolean;
-  session: any;
-}) => {
-  const domain = process.env.NEXT_PUBLIC_SERVER_URL;
-  const response = fetch(
-    `${domain}/api/photographer/setStatus/${eventId}/${id}/${session.id}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + session.id,
-        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
-      },
-      body: JSON.stringify({ isRemoved: !isRemoved }),
-    }
-  )
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.status === "success") {
-        message.success(isRemoved ? "從相簿恢復" : "從相簿移除成功");
-      } else {
-        message.error(data.message || "設定精選失敗");
-      }
-      return data;
-    });
-
-  return response;
-};
-
 const removeImg = ({
   eventId,
   id,
   isRemoved,
-  session,
+  author,
 }: {
   eventId: string;
   id: string;
   isRemoved: boolean;
-  session: any;
+  author: any;
 }) => {
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const response = fetch(
-    `${domain}/api/photographer/setStatus/${eventId}/${id}/${session.id}`,
+    `${domain}/api/photographer/setStatus/${eventId}/${id}/${author}`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + session.id,
-        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
+        Authorization: "Bearer " + author,
+        secret: sha256(author + process.env.NEXT_PUBLIC_SALT),
       },
       body: JSON.stringify({ isRemoved: !isRemoved }),
     }
@@ -112,4 +75,4 @@ const removeImg = ({
   return response;
 };
 
-export { featureImg, deleteImg, removeImg };
+export { featureImg, removeImg };

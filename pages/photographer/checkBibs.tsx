@@ -31,7 +31,7 @@ export default function CheckBibs({
 
   const [images, setImages] = useState([] as ImageItemProps[]);
   const [total, setTotal] = useState(0);
-  const [sorting, setSorting] = useState("asc"); //  asc or desc
+  const [lastModifiedSorting, setLastModifiedSorting] = useState("asc"); //  asc or desc
   const [eventName, setEventName] = useState("");
   const [search, setSearch] = useState("");
 
@@ -55,9 +55,8 @@ export default function CheckBibs({
       },
       body: JSON.stringify({
         eventId,
-        author: session.id,
         curPage,
-        sorting,
+        lastModifiedSorting,
         fileName: search,
         isEmptyPath: false,
       }),
@@ -77,7 +76,7 @@ export default function CheckBibs({
   useEffect(() => {
     if (!session) return;
     getImageInfo();
-  }, [session, sorting, curPage, search]);
+  }, [session, lastModifiedSorting, curPage, search]);
 
   const isProcessing = detectLength !== total;
 
@@ -87,7 +86,7 @@ export default function CheckBibs({
   };
 
   const onRadioChange = (e: any) => {
-    setSorting(e.target.value);
+    setLastModifiedSorting(e.target.value);
     setLoading(true);
   };
 

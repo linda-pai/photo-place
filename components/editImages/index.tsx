@@ -8,16 +8,23 @@ import ImageLightBox from "@/components/image/ImageLightBox";
 import { DETECTING_IMG } from "@/constants";
 import AddableTags from "@/components/AddableTags";
 import { sha256 } from "js-sha256";
-import { featureImg, deleteImg } from "@/lib/editImages";
+import { featureImg, removeImg } from "@/lib/editImages";
 
 interface EditBibsProps {
   images: ImageItemProps[];
   setImages: React.Dispatch<React.SetStateAction<ImageItemProps[]>>;
   eventId: string;
   loading: boolean;
+  author?: string;
 }
 
-const EditImages = ({ images, setImages, eventId, loading }: EditBibsProps) => {
+const EditImages = ({
+  images,
+  setImages,
+  eventId,
+  loading,
+  author,
+}: EditBibsProps) => {
   const { data: session }: any = useSession();
 
   const [showImageViewer, setShowImageViewer] = useState(false);
@@ -47,7 +54,7 @@ const EditImages = ({ images, setImages, eventId, loading }: EditBibsProps) => {
       eventId,
       id,
       isFeatured,
-      session,
+      author: author || session.id,
     }).then((data) => {
       if (data.status === "success") {
         setImages((prev) =>
@@ -65,11 +72,11 @@ const EditImages = ({ images, setImages, eventId, loading }: EditBibsProps) => {
   const handleDeleteImg = (id: string, isRemoved: boolean, e: any) => {
     e.stopPropagation();
 
-    deleteImg({
+    removeImg({
       eventId,
       id,
       isRemoved,
-      session,
+      author: author || session.id,
     }).then((data: any) => {
       if (data.status === "success") {
         setImages((prev) =>
@@ -91,8 +98,8 @@ const EditImages = ({ images, setImages, eventId, loading }: EditBibsProps) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + session.id,
-        secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
+        Authorization: "Bearer " + (author || session.id),
+        secret: sha256((author || session.id) + process.env.NEXT_PUBLIC_SALT),
       },
       body: JSON.stringify({ bibs: newTags, imageId: id, eventId }),
     });
@@ -121,9 +128,8 @@ const EditImages = ({ images, setImages, eventId, loading }: EditBibsProps) => {
                 className="w-full h-auto"
                 src={item.watermarkedUrl || DETECTING_IMG}
                 alt={item.watermarkedUrl || DETECTING_IMG}
-                width="0"
-                height="0"
-                sizes="100vw"
+                width={300}
+                height={400}
                 quality={30}
               />
               <div className="flex gap-2 py-2 px-1 justify-between items-center bg-[#404040] bg-opacity-40 absolute top-0 w-full  group hover:bg-opacity-80 transition-all duration-300">

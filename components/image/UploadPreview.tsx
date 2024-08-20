@@ -1,12 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { Pagination } from "antd";
+import dynamic from "next/dynamic";
+import { Pagination, Spin } from "antd";
 import dayjs from "dayjs";
 import { sha256 } from "js-sha256";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
-import ImageLightBox from "@/components/image/ImageLightBox";
 import { DETECTING_IMG } from "@/constants";
+
+const ImageLightBox = dynamic(
+  () => import("@/components/image/ImageLightBox"),
+  {
+    loading: () => <Spin />,
+  }
+);
 
 export default function UploadPreview({ eventId }: { eventId: string }) {
   const { data: session }: any = useSession();
@@ -31,9 +38,8 @@ export default function UploadPreview({ eventId }: { eventId: string }) {
       },
       body: JSON.stringify({
         eventId,
-        author: session.id,
         curPage,
-        sortBy: "lastModified",
+        lastModifiedSorting: "asc",
         fileName: "",
       }),
     })
@@ -57,6 +63,10 @@ export default function UploadPreview({ eventId }: { eventId: string }) {
     );
   };
 
+  const customLoader = ({ src, width, height, quality }: any) => {
+    return `${src}?w=${width}&h=${height}&q=${quality || 75}`;
+  };
+
   return (
     <>
       {allImages.length > 0 && (
@@ -75,6 +85,8 @@ export default function UploadPreview({ eventId }: { eventId: string }) {
                   width={300}
                   height={400}
                   quality={30}
+                  loading="lazy"
+                  loader={customLoader}
                 />
                 <div className="absolute bottom-0 text-start text-sm text-[color:var(--main-color-dark)] p-1 bg-[#fff] bg-opacity-70">
                   <p>{item.fileName}</p>

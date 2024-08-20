@@ -11,14 +11,16 @@ import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import ImageLightBox from "@/components/image/ImageLightBox";
 import userPermission from "@/hooks/usePermission";
 import { removeImg } from "@/lib/editImages";
-import { DETECTING_IMG } from "@/constants";
+import { DETECTING_IMG, REMOVE_IMAGE_STATUS } from "@/constants";
 
 export default function Removed({
   eventId,
   date,
+  reportedImageLength,
 }: {
   eventId: string;
   date: string;
+  reportedImageLength: number;
 }) {
   const title = "已移除照片 - " + process.env.NEXT_PUBLIC_APP_NAME;
   const isAllowed = userPermission();
@@ -32,15 +34,19 @@ export default function Removed({
   const [curPage, setCurPage] = useState(1);
 
   const [totalRemoved, setTotalRemoved] = useState(0);
+  const [status, setStatus] = useState<string>(REMOVE_IMAGE_STATUS.REMOVE);
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const pageSize = 24;
 
   useEffect(() => {
     if (!session) return;
+    getImageInfo();
+  }, [session, curPage, status]);
 
+  const getImageInfo = () => {
     fetch(
-      `${domain}/api/photographer/getByStatus/${eventId}/${session.id}?page=${curPage}&status=removed`,
+      `${domain}/api/photographer/getByStatus/${eventId}/${session.id}?page=${curPage}&status=${status}`,
       {
         method: "GET",
         headers: {
@@ -55,7 +61,7 @@ export default function Removed({
         setRemovedImages(data.images);
         setTotalRemoved(data.totalCount);
       });
-  }, [session, curPage]);
+  };
 
   const gotoPrevious = () =>
     currImgIndex > 0 && setCurrImgIndex(currImgIndex - 1);
@@ -79,7 +85,7 @@ export default function Removed({
       eventId,
       id,
       isRemoved,
-      session,
+      author: session.id,
     }).then((data) => {
       if (data.status === "success") {
         const updatedImages = removedImages.map((item) => {
@@ -92,6 +98,8 @@ export default function Removed({
       }
     });
   };
+
+  const handleChangeStats = (status: string) => setStatus(status);
 
   return (
     <>
@@ -110,14 +118,34 @@ export default function Removed({
             <h2 className="text-center text-2xl mb-8">已移除照片</h2>
 
             <div className="container mx-auto sm:my-10 my-4">
-              <Link
-                href={`/photographer/checkBibs?eventId=${eventId}&date=${date}`}
-                className={`mx-2 my-2 flex ${
-                  removedImages.length > 0 ? "justify-start" : "justify-center"
-                }`}
-              >
-                <Button type="primary">編輯相簿</Button>
-              </Link>
+              <div className="flex items-center">
+                <Link
+                  href={`/photographer/checkBibs?eventId=${eventId}&date=${date}`}
+                  className={`mx-2 my-2 flex ${
+                    removedImages.length > 0
+                      ? "justify-start"
+                      : "justify-center"
+                  }`}
+                >
+                  <Button type="primary">編輯相簿</Button>
+                </Link>
+                <Button
+                  onClick={() =>
+                    status === REMOVE_IMAGE_STATUS.REMOVE
+                      ? handleChangeStats(REMOVE_IMAGE_STATUS.REPORTED)
+                      : handleChangeStats(REMOVE_IMAGE_STATUS.REMOVE)
+                  }
+                  disabled={reportedImageLength == 0}
+                  className={
+                    status === REMOVE_IMAGE_STATUS.REMOVE
+                      ? ""
+                      : "bg-[#faad14] text-white border border-[#faad14]" +
+                        "hover:bg-[#f6e05e] hover:border-[#f6e05e]"
+                  }
+                >
+                  {`被檢舉(${reportedImageLength})`}
+                </Button>
+              </div>
               {removedImages.length > 0 ? (
                 <>
                   <div className="masonry">
@@ -194,13 +222,13 @@ export default function Removed({
 }
 
 export async function getServerSideProps(context: any) {
-  const eventId = context.query.eventId;
-  const date = context.query.date;
+  const { eventId, date, reportedImageLength } = context.query;
 
   return {
     props: {
       eventId: eventId || "",
       date: date || "",
+      reportedImageLength: reportedImageLength || 0,
     },
   };
 }

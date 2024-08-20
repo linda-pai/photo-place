@@ -69,12 +69,21 @@ export default UploadManagement;
 
 export async function getServerSideProps(context: any) {
   const session = (await getSession(context)) as any;
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
 
   const domain = process.env.NEXT_PUBLIC_SERVER_URL;
   const events = await fetch(`${domain}/api/cms/getUploadInfo`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
+      Authorization: "Bearer " + session.id,
       secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
     },
   }).then((res) => res.json());
@@ -87,6 +96,7 @@ export async function getServerSideProps(context: any) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        Authorization: "Bearer " + session.id,
         secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
       },
     }).then((res) => res.json());

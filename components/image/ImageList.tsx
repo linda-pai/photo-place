@@ -1,13 +1,23 @@
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/router";
 import { setCookie, getCookie } from "cookies-next";
 import { useSession } from "next-auth/react";
-import { message } from "antd";
+import { message, Modal } from "antd";
+import { WarningOutlined } from "@ant-design/icons";
 import { clickAddToCart, removeAddToCart } from "@/lib/gtag";
 import ImageItems from "./ImageItems";
 import ImageLightBox from "./ImageLightBox";
+import { REPORT_TYPE } from "@/constants";
 
-const CustomImgViewerUI = dynamic(() => import("./CustomImgViewerUI"), {
+const CustomImgViewerUI = dynamic(
+  () => import("@/components/image/CustomImgViewerUI"),
+  {
+    ssr: false,
+  }
+);
+
+const ReportForm = dynamic(() => import("@/components/image/ReportForm"), {
   ssr: false,
 });
 
@@ -42,7 +52,10 @@ const ImageList = ({
   onLoad: () => void;
 }) => {
   const { data: session }: any = useSession();
+  const router = useRouter();
   const [cartData, setCartData] = useState({} as any);
+  const [reportType, setReportType] = useState<typeof REPORT_TYPE>();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     setCartData(JSON.parse(getCookie("cart") || "{}"));
@@ -99,6 +112,48 @@ const ImageList = ({
     }
   };
 
+  const handleChange = (e: any) => setReportType(e.target.value);
+
+  const handleReport = (image: any) => {
+    if (!reportType) return message.error("請選擇檢舉原因");
+
+    fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/user/reportImage`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        eventId,
+        eventName,
+        imageId: image.id,
+        watermarkedUrl: image.watermarkedUrl,
+        reportType,
+        reporterId: session.id,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === "success") {
+          message.success("檢舉成功，我們將盡快進行審核");
+          router.reload();
+          setReportType(undefined);
+        } else {
+          message.error(data.message || "檢舉失敗");
+        }
+      });
+  };
+
+  const handleClickReport = () => {
+    //檢查是否登入
+    if (!session) {
+      return router.push(
+        `${process.env.NEXT_PUBLIC_APP_URL}/auth/signIn?previousUrl=${router.asPath}`
+      );
+    }
+
+    setIsModalOpen(true);
+  };
+
   return (
     <div className="masonry">
       {images?.map((item: any, key: number) => (
@@ -123,9 +178,33 @@ const ImageList = ({
             image={images[curIndex]}
             isExistInCart={isExistInCart}
             handleClickCart={handleClickCart}
+            handleClickReport={handleClickReport}
           />
         }
       />
+      <Modal
+        title={
+          <>
+            <WarningOutlined className="text-[#f6c343] mr-2" />
+            <span>檢舉照片</span>
+          </>
+        }
+        onCancel={() => {
+          setIsModalOpen(false);
+          setReportType(undefined);
+        }}
+        cancelButtonProps={{ style: { display: "none" } }}
+        onOk={() => handleReport(images[curIndex])}
+        okText="送出"
+        open={isModalOpen}
+        className="w-[20%] mx-auto"
+      >
+        <ReportForm
+          handleChange={handleChange}
+          reportType={reportType}
+          key={reportType}
+        />
+      </Modal>
     </div>
   );
 };

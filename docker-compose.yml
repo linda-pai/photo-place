@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   node-express:
     image: photopacer2023/photopacer-backend:latest

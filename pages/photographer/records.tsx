@@ -22,12 +22,12 @@ const records = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (session) getUploadDetail();
+    if (session && uploadData.length === 0) getUploadDetail();
   }, [session]);
 
   const getUploadDetail = async () => {
-    fetch(`${domain}/api/photographer/getUploadInfo/${session.id}`, {
-      method: "GET",
+    fetch(`${domain}/api/photographer/getUploadInfo`, {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer " + session.id,

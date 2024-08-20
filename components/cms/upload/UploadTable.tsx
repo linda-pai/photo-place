@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Space, Button, Spin, Modal } from "antd";
+import { Table, Space, Button, Spin, Modal, message } from "antd";
 import { CopyOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import dynamic from "next/dynamic";
@@ -48,6 +48,39 @@ const UploadTable = ({ tableData, eventId, session }: any) => {
           }
         });
       });
+  };
+
+  const handleClickDelete = (record: any) => {
+    modal.confirm({
+      title: "刪除照片",
+      icon: <ExclamationCircleOutlined />,
+      content: `此動作將刪除非精選照片的所有照片，確定要刪除 ${record.eventName} 的照片嗎？`,
+      okText: "確認",
+      cancelText: "取消",
+      onOk: () => {
+        //loading
+        message.loading("刪除中...", 0);
+
+        fetch(`${domain}/api/cms/deleteImages`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + session.id,
+            secret: sha256(session.id + process.env.NEXT_PUBLIC_SALT),
+          },
+          body: JSON.stringify({
+            eventId: record.eventId,
+          }),
+        }).then((res) => {
+          if (res.status === 200) {
+            message.success("刪除成功");
+            setTimeout(() => {
+              message.destroy();
+            }, 1000);
+          }
+        });
+      },
+    });
   };
 
   const columns = [
@@ -114,7 +147,7 @@ const UploadTable = ({ tableData, eventId, session }: any) => {
       title: "詳細資訊",
       dataIndex: "status",
       key: "status",
-      width: 800,
+      width: 600,
       render: (text: string, record: UploadProps) => {
         return (
           uploadData[record.author] && (
@@ -131,9 +164,9 @@ const UploadTable = ({ tableData, eventId, session }: any) => {
     {
       title: "Action",
       key: "action",
-      width: 110,
+      width: 180,
       render: (_: string, record: UploadProps) => (
-        <>
+        <div className="flex gap-1">
           <Space size="middle">
             <Button
               type="primary"
@@ -144,7 +177,12 @@ const UploadTable = ({ tableData, eventId, session }: any) => {
               詳細資訊
             </Button>
           </Space>
-        </>
+          <Space size="middle">
+            <Button danger onClick={() => handleClickDelete(record)}>
+              刪除照片
+            </Button>
+          </Space>
+        </div>
       ),
       responsive: ["sm"],
     },

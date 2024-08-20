@@ -41,8 +41,8 @@ const UploadImagePage: React.FC = () => {
 
   return isAllowed ? (
     <div className="container mx-auto h-[100vh] flex flex-col justify-center">
-      <div className="mx-auto">
-        <Uploader onChange={handleUpload} filesList={imageFile} />
+      <div className="max-w-[550px] mx-auto my-10 text-center">
+        <Uploader onChange={handleUpload} />
       </div>
       {coverImg && (
         <>

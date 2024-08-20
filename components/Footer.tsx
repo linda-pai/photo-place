@@ -7,7 +7,7 @@ const Footer = () => {
     <footer className="bg-[color:var(--main-color-lighter)] py-16">
       <div className="container mx-auto px-4">
         <div className="flex flex-wrap justify-between sm:gap-0 gap-6">
-          <div className="w-full lg:w-1/4">
+          <div className="w-full lg:w-1/5">
             <h6 className="text-[color:var(--main-color-dark)] text-lg font-bold mb-5">
               Photo Pacer 攝影小隊
             </h6>
@@ -30,7 +30,7 @@ const Footer = () => {
               </li>
             </ul>
           </div>
-          <div className="w-full lg:w-1/4">
+          <div className="w-full lg:w-1/6">
             <h6 className="text-[color:var(--main-color-dark)] text-lg font-bold mb-5">
               社群媒體
             </h6>
@@ -74,6 +74,21 @@ const Footer = () => {
               </li>
               <li>客服信箱：photopacer@gmail.com</li>
               <li>服務時間：週一至週日 8:30 - 21:00</li>
+            </ul>
+          </div>
+          <div className="w-full lg:w-1/6">
+            <h6 className="text-[color:var(--main-color-dark)] text-lg font-bold mb-5">
+              小工具
+            </h6>
+            <ul className="text-[color:var(--main-color-light)]">
+              <li>
+                <Link
+                  href="/calendar"
+                  className="hover:text-teal-600 transition duration-150 ease-in-out"
+                >
+                  賽事行事曆
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
