@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { ShoppingCartOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import customLoader from "@/utils/customLoader";
 
 const ImageItems = ({
   item,
@@ -10,10 +11,6 @@ const ImageItems = ({
   onLoad,
 }: any) => {
   const { id, watermarkedUrl, price, lastModified, orientation } = item;
-
-  const customLoader = ({ src, width, height, quality }: any) => {
-    return `${src}?w=${width}&h=${height}&q=${quality || 75}`;
-  };
 
   return (
     <div

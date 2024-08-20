@@ -3,15 +3,23 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Head from "next/head";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Pagination, Spin, Button, Empty } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { sha256 } from "js-sha256";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
-import ImageLightBox from "@/components/image/ImageLightBox";
 import userPermission from "@/hooks/usePermission";
 import { removeImg } from "@/lib/editImages";
 import { DETECTING_IMG, REMOVE_IMAGE_STATUS } from "@/constants";
+import customLoader from "@/utils/customLoader";
+
+const ImageLightBox = dynamic(
+  () => import("@/components/image/ImageLightBox"),
+  {
+    loading: () => <Spin />,
+  }
+);
 
 export default function Removed({
   eventId,
@@ -161,6 +169,8 @@ export default function Removed({
                           width={300}
                           height={400}
                           quality={30}
+                          loading="lazy"
+                          loader={customLoader}
                         />
                         <div className="flex gap-2 py-2 px-1 justify-end items-center bg-[#404040] bg-opacity-40 absolute top-0 w-full group hover:bg-opacity-80 transition-all duration-300">
                           <Button

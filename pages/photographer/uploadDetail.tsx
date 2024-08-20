@@ -1,8 +1,15 @@
 import Head from "next/head";
+import dynamic from "next/dynamic";
 import { Descriptions, Spin } from "antd";
 import dayjs from "dayjs";
-import UploadPreview from "@/components/image/UploadPreview";
 import userPermission from "@/hooks/usePermission";
+
+const UploadPreview = dynamic(
+  () => import("@/components/image/UploadPreview"),
+  {
+    loading: () => <Spin />,
+  }
+);
 
 const uploadDetail = ({
   eventId,

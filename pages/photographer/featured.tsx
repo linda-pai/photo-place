@@ -11,6 +11,7 @@ import { sha256 } from "js-sha256";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
 import userPermission from "@/hooks/usePermission";
 import { featureImg } from "@/lib/editImages";
+import customLoader from "@/utils/customLoader";
 import dynamic from "next/dynamic";
 import { DETECTING_IMG, REMOVE_IMAGE_STATUS } from "@/constants";
 
@@ -167,10 +168,6 @@ export default function Featured({
     );
     currentWatermarked[eventId] = newCookie;
     updateWatermarkImg(currentWatermarked);
-  };
-
-  const customLoader = ({ src, width, height, quality }: any) => {
-    return `${src}?w=${width}&h=${height}&q=${quality || 75}`;
   };
 
   return (

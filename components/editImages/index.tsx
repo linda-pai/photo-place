@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { Button, Empty, Spin, message } from "antd";
 import { DeleteOutlined, StarOutlined } from "@ant-design/icons";
 import { ImageItemProps } from "@/types/interfaces/ImageDataProps";
-import ImageLightBox from "@/components/image/ImageLightBox";
 import { DETECTING_IMG } from "@/constants";
-import AddableTags from "@/components/AddableTags";
+import customLoader from "@/utils/customLoader";
 import { sha256 } from "js-sha256";
 import { featureImg, removeImg } from "@/lib/editImages";
 
@@ -17,6 +17,17 @@ interface EditBibsProps {
   loading: boolean;
   author?: string;
 }
+
+const ImageLightBox = dynamic(
+  () => import("@/components/image/ImageLightBox"),
+  {
+    loading: () => <Spin />,
+  }
+);
+
+const AddableTags = dynamic(() => import("@/components/AddableTags"), {
+  loading: () => <Spin />,
+});
 
 const EditImages = ({
   images,
@@ -131,6 +142,8 @@ const EditImages = ({
                 width={300}
                 height={400}
                 quality={30}
+                loading="lazy"
+                loader={customLoader}
               />
               <div className="flex gap-2 py-2 px-1 justify-between items-center bg-[#404040] bg-opacity-40 absolute top-0 w-full  group hover:bg-opacity-80 transition-all duration-300">
                 <p className="w-[60%] text-white ml-1 text-sm break-words">
