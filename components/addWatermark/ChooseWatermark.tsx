@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import { setCookie, getCookie } from "cookies-next";
 import {
   message,
   Row,

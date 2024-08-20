@@ -1,9 +1,10 @@
 import dynamic from "next/dynamic";
 import Head from "next/head";
+import { Spin } from "antd";
 import { SITE_NAME } from "@/constants";
 
 const Calendar = dynamic(() => import("@/components/calendar/FullCalendar"), {
-  ssr: false,
+  loading: () => <Spin />,
 });
 
 export default function Calender({ eventList }: { eventList: any }) {
