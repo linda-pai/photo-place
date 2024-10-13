@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
-import { setCookie, getCookie, deleteCookie } from "cookies-next";
 import {
   Input,
   InputNumber,
@@ -21,7 +20,11 @@ import {
 } from "@ant-design/icons";
 import parallelUploadWithLimit from "@/utils/parallelUploadWithLimit";
 import addWaterMarkAndDetect from "@/lib/upload/addWaterMarkAndDetect";
-import { writeUploadInfo } from "@/lib/upload/writeUploadInfo";
+import {
+  writeUploadInfo,
+  writeUploadProgress,
+  getUploadProgress,
+} from "@/lib/upload/writeUploadInfo";
 import UploadQueue from "@/lib/upload/uploadQueue";
 import completeUpload from "@/lib/upload/completeUpload";
 import getStartMultipartUploadURL from "@/lib/upload/getStartMultipartUploadURL";
@@ -83,11 +86,14 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
   }, [eventId]);
 
   useEffect(() => {
-    const uploadData = JSON.parse(getCookie(`uploadInfo-${eventId}`) || "[]");
-    setFileOptionsList(uploadData);
-    setCompleteCount(
-      uploadData.filter((file: any) => file.uploaded).length || 0
-    );
+    const fetchUploadProgress = async () => {
+      const uploadData = await getUploadProgress(eventId, session.id);
+      setFileOptionsList(uploadData || []);
+      setCompleteCount(
+        uploadData.filter((file: any) => file.uploaded).length || 0
+      );
+    };
+    fetchUploadProgress();
   }, []);
 
   const handleEventIdError = () => {
@@ -136,7 +142,13 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
     setFileOptionsList(newFileOptionsList);
 
     //set in cookie
-    setCookie(`uploadInfo-${eventId}`, JSON.stringify(newFileOptionsList));
+    const reqBody = {
+      eventId,
+      author: session.id,
+      progress: newFileOptionsList,
+    };
+
+    writeUploadProgress(reqBody);
   };
 
   const handleOnFinishAll = async () => {
@@ -156,10 +168,9 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
       title: `已上傳完成${fileOptionsList.length}張照片`,
       icon: <ExclamationCircleOutlined />,
       content:
-        "提醒您：相簿僅會顯示精選照片，預設為您上傳照片排序前50張， \n 如要變更，請至[攝影師成就 -> 編輯]挑選精選照片",
+        "提醒您：相簿精選照片，預設為您上傳照片排序前50張， \n 如要變更，請至[攝影師成就 -> 編輯]挑選精選照片",
       okText: "編輯照片",
       onOk: () => {
-        deleteCookie(`uploadInfo-${eventId}`);
         router.push(`/photographer/checkBibs?eventId=${eventId}&date=${date}`);
       },
       cancelText: "繼續上傳",
@@ -185,10 +196,13 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
                 ? { ...item, uploaded: true }
                 : item
             );
-            setCookie(
-              `uploadInfo-${eventId}`,
-              JSON.stringify(newFileOptionsList)
-            );
+            const reqBody = {
+              eventId,
+              author: session.id,
+              progress: newFileOptionsList,
+            };
+
+            writeUploadProgress(reqBody);
             return newFileOptionsList;
           });
 
@@ -359,6 +373,7 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
         a: any,
         b: any //boolean
       ) => (a.uploaded ? 1 : b.uploaded ? -1 : 0),
+      defaultSortOrder: "descend",
     },
     {
       title: "Action",
@@ -372,10 +387,14 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
                 (file: any) => file.path !== record.path
               );
               setFileOptionsList(newFileOptionsList);
-              setCookie(
-                `uploadInfo-${eventId}`,
-                JSON.stringify(newFileOptionsList)
-              );
+
+              const reqBody = {
+                eventId,
+                author: session.id,
+                progress: newFileOptionsList,
+              };
+
+              writeUploadProgress(reqBody);
             }}
             className="flex items-center"
             disabled={record.uploaded}
@@ -469,10 +488,10 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
                     .sort((a: any, b: any) =>
                       a.uploaded ? 1 : b.uploaded ? -1 : 0
                     )}
-                  columns={columns}
+                  columns={columns as any}
                   pagination={{
                     defaultPageSize: 50,
-                    pageSizeOptions: ["50", "100", "200", "500", "1000"],
+                    pageSizeOptions: ["50", "100", "200"],
                     position: ["bottomCenter"],
                   }}
                   className="w-2/3 mx-auto my-10 max-h-[50vh] overflow-y-auto"
