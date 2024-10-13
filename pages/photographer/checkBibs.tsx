@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Head from "next/head";
@@ -20,22 +21,29 @@ import EditImages from "@/components/editImages";
 export default function CheckBibs({
   eventId,
   date,
+  page,
+  sorting,
 }: {
   eventId: string;
   date: string;
+  page: number;
+  sorting: string;
 }) {
   const title = "編輯照片 - " + process.env.NEXT_PUBLIC_APP_NAME;
   const isAllowed = userPermission();
+  const router = useRouter();
 
   const { data: session }: any = useSession();
 
   const [images, setImages] = useState([] as ImageItemProps[]);
   const [total, setTotal] = useState(0);
-  const [lastModifiedSorting, setLastModifiedSorting] = useState("asc"); //  asc or desc
+  const [lastModifiedSorting, setLastModifiedSorting] = useState(
+    sorting || "asc"
+  ); //  asc or desc
   const [eventName, setEventName] = useState("");
   const [search, setSearch] = useState("");
 
-  const [curPage, setCurPage] = useState(1);
+  const [curPage, setCurPage] = useState(page || 1);
   const [loading, setLoading] = useState(true);
 
   const [detectLength, setDetectLength] = useState(0);
@@ -65,6 +73,17 @@ export default function CheckBibs({
       .then((data) => {
         setLoading(false);
         setImages(data.images);
+
+        //router push
+        router.push({
+          pathname: `/photographer/checkBibs`,
+          query: {
+            eventId,
+            date,
+            page: curPage,
+            lastModifiedSorting,
+          },
+        } as any);
 
         if (search) return;
         setTotal(data.totalCount);
@@ -216,11 +235,15 @@ export default function CheckBibs({
 export async function getServerSideProps(context: any) {
   const eventId = context.query.eventId || "";
   const date = context.query.date || "";
+  const page = Number(context.query.page) || 1;
+  const sorting = context.query.lastModifiedSorting || "asc";
 
   return {
     props: {
       eventId,
       date,
+      page,
+      sorting,
     },
   };
 }
