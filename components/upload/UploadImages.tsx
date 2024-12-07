@@ -23,6 +23,7 @@ import addWaterMarkAndDetect from "@/lib/upload/addWaterMarkAndDetect";
 import {
   writeUploadInfo,
   writeUploadProgress,
+  removeUploadProgress,
   getUploadProgress,
 } from "@/lib/upload/writeUploadInfo";
 import UploadQueue from "@/lib/upload/uploadQueue";
@@ -30,6 +31,7 @@ import completeUpload from "@/lib/upload/completeUpload";
 import getStartMultipartUploadURL from "@/lib/upload/getStartMultipartUploadURL";
 import chunkFileAndPutS3 from "@/lib/upload/chunkFileAndPutS3";
 import isUploadable from "@/utils/isUploadable";
+import isFileType from "@/utils/isFileType";
 import {
   getAuthorDisplayName,
   setAuthorDisplayName,
@@ -56,6 +58,7 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
 
   const [loading, setLoading] = useState(false);
   const [fileOptionsList, setFileOptionsList] = useState([] as any);
+  const [remoteFileOptionsList, setRemoteFileOptionsList] = useState([] as any);
   const [completeCount, setCompleteCount] = useState(0);
 
   const [modal, contextHolder] = Modal.useModal();
@@ -89,6 +92,7 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
     const fetchUploadProgress = async () => {
       const uploadData = await getUploadProgress(eventId, session.id);
       setFileOptionsList(uploadData || []);
+      setRemoteFileOptionsList(uploadData || []);
       setCompleteCount(
         uploadData.filter((file: any) => file.uploaded).length || 0
       );
@@ -112,6 +116,24 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
 
   const handleChangeAuthorName = (e: any) => setAuthorName(e.target.value);
   const handleChangePrice = (value: any) => setPrice(value);
+
+  const handleWriteUploadInfo = async (filesInfo: any[]) => {
+    const newFileUploadList = filesInfo.filter(
+      (file: any) =>
+        !remoteFileOptionsList.find((remoteFile: any) => {
+          return remoteFile.path === file.path;
+        })
+    );
+
+    if (newFileUploadList.length === 0) return;
+    const reqBody = {
+      eventId,
+      author: session.id,
+      fileList: newFileUploadList,
+    };
+
+    writeUploadProgress(reqBody);
+  };
 
   const handleOnUploaderChange = async (imageFile: File[]) => {
     //overwrite fileOptionsList with new files when has same path
@@ -141,14 +163,7 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
     );
     setFileOptionsList(newFileOptionsList);
 
-    //set in cookie
-    const reqBody = {
-      eventId,
-      author: session.id,
-      progress: newFileOptionsList,
-    };
-
-    writeUploadProgress(reqBody);
+    handleWriteUploadInfo(newFileOptionsList);
   };
 
   const handleOnFinishAll = async () => {
@@ -165,7 +180,7 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
     });
 
     modal.confirm({
-      title: `已上傳完成${fileOptionsList.length}張照片`,
+      title: `已上傳完成${completeCount + 1}張照片`,
       icon: <ExclamationCircleOutlined />,
       content:
         "提醒您：相簿精選照片，預設為您上傳照片排序前50張， \n 如要變更，請至[攝影師成就 -> 編輯]挑選精選照片",
@@ -196,18 +211,16 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
                 ? { ...item, uploaded: true }
                 : item
             );
-            const reqBody = {
-              eventId,
-              author: session.id,
-              progress: newFileOptionsList,
-            };
 
-            writeUploadProgress(reqBody);
             return newFileOptionsList;
           });
 
           setCompleteCount((prev) => {
-            if (prev + 1 === fileOptionsList.length) handleOnFinishAll();
+            const unSelectedFiles = fileOptionsList.filter(
+              (file: any) => !file.uploaded && !isFileType(file)
+            );
+            if (prev + 1 === fileOptionsList.length - unSelectedFiles.length)
+              handleOnFinishAll();
             return prev + 1;
           });
         }
@@ -250,6 +263,8 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
 
     const uploadFunction = async () => {
       const { key, uploadId } = await getStartMultipartUploadURL(
+        eventId,
+        session.id,
         path,
         fileName
       ).then((res) => {
@@ -388,13 +403,17 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
               );
               setFileOptionsList(newFileOptionsList);
 
+              const removeFile = fileOptionsList.find(
+                (file: any) => file.path === record.path
+              );
+
               const reqBody = {
                 eventId,
                 author: session.id,
-                progress: newFileOptionsList,
+                fileList: removeFile,
               };
 
-              writeUploadProgress(reqBody);
+              removeUploadProgress(reqBody);
             }}
             className="flex items-center"
             disabled={record.uploaded}
