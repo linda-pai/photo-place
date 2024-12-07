@@ -57,6 +57,7 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
+  const [fullPageLoading, setFullPageLoading] = useState(true);
   const [fileOptionsList, setFileOptionsList] = useState([] as any);
   const [remoteFileOptionsList, setRemoteFileOptionsList] = useState([] as any);
   const [completeCount, setCompleteCount] = useState(0);
@@ -97,7 +98,7 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
         uploadData.filter((file: any) => file.uploaded).length || 0
       );
     };
-    fetchUploadProgress();
+    fetchUploadProgress().then(() => setFullPageLoading(false));
   }, []);
 
   const handleEventIdError = () => {
@@ -428,6 +429,11 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
 
   return (
     <div className="mt-24 container mx-auto px-4">
+      {fullPageLoading && (
+        <div className="text-center bg-white h-screen w-full flex items-center justify-center">
+          <Spin />
+        </div>
+      )}
       <UploadBreadcrumb />
       {
         <>
