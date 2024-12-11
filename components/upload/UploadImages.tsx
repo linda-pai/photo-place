@@ -63,6 +63,7 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
   const [completeCount, setCompleteCount] = useState(0);
 
   const [modal, contextHolder] = Modal.useModal();
+  const [initialAuthorName, setInitialAuthorName] = useState("");
   const [authorName, setAuthorName] = useState(session?.user?.name || "");
   const [price, setPrice] = useState(169);
   const [eventName, setEventName] = useState("");
@@ -72,9 +73,10 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
   useEffect(() => {
     //get user Name
     if (!session?.id) return;
-    getAuthorDisplayName(session.id).then((data) =>
-      setAuthorName(data?.displayName || session?.user?.name)
-    );
+    getAuthorDisplayName(session.id).then((data) => {
+      setAuthorName(data?.displayName || session?.user?.name);
+      setInitialAuthorName(data?.displayName || session?.user?.name);
+    });
   }, [session]);
 
   useEffect(() => {
@@ -330,6 +332,20 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
     message.destroy();
   };
 
+  const handleSetAuthorDisplayName = (author: string, displayName: string) => {
+    modal.confirm({
+      title: "確認修改攝影師名稱",
+      icon: <ExclamationCircleOutlined />,
+      content: `我們將會統一顯示您的名稱為：${displayName}`,
+      okText: "確認",
+      cancelText: "取消",
+      onOk: () => {
+        setAuthorDisplayName(author, displayName);
+      },
+      onCancel: () => initialAuthorName && setAuthorName(initialAuthorName),
+    });
+  };
+
   const currentStep = completeCount === fileOptionsList.length ? 1 : 0;
 
   const steps = [
@@ -453,10 +469,12 @@ const UploadImages = ({ eventId, date }: { eventId: string; date: string }) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
                     e.target.blur();
-                    setAuthorDisplayName(session.id, e.target.value);
+                    handleSetAuthorDisplayName(session.id, e.target.value);
                   }
                 }}
-                onBlur={(e) => setAuthorDisplayName(session.id, e.target.value)}
+                onBlur={(e) =>
+                  handleSetAuthorDisplayName(session.id, e.target.value)
+                }
                 value={authorName}
                 defaultValue={authorName || ""}
                 addonBefore="攝影師名稱"
